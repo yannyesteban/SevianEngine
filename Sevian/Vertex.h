@@ -1,9 +1,34 @@
 #pragma once
-
+#define GLM_FORCE_RADIANS
+#define GLM_FORCE_DEPTH_ZERO_TO_ONE
+#define GLM_ENABLE_EXPERIMENTAL
 
 #include <glm/glm.hpp>
 #include <vector>
 #include <string>
+
+
+
+
+//#include <glm/glm.hpp>
+#include <glm/gtc/matrix_transform.hpp>
+#include <glm/gtx/hash.hpp>
+
+
+#include <iostream>
+#include <fstream>
+#include <stdexcept>
+#include <algorithm>
+#include <chrono>
+#include <vector>
+#include <cstring>
+#include <cstdlib>
+#include <cstdint>
+#include <limits>
+#include <array>
+#include <optional>
+#include <set>
+#include <unordered_map>
 
 namespace SEVIAN {
 
@@ -15,7 +40,13 @@ namespace SEVIAN {
         glm::vec3 normal;
         glm::vec2 texCoords;
         glm::vec3 color;
+
+        bool operator==( const Vertex& other ) const {
+            return position == other.position && color == other.color && texCoords == other.texCoords;
+        }
     };
+
+    
 
     struct VertexText
     {
@@ -45,6 +76,14 @@ namespace SEVIAN {
     };
 
 
+    struct Model3D
+    {
+        uint32_t entityId;
+        std::string model;
+        std::string texture;
+        
+    };
+
     struct Info3D
     {
         uint32_t entityId;
@@ -63,6 +102,7 @@ namespace SEVIAN {
         glm::vec3 position = glm::vec3 ( 0.0f, 0.0f, 0.0f );
         float width = 1.0;
         float height = 1.0;
+        glm::vec3 color = glm::vec3 ( 0.0f, 0.0f, 0.0f );
         //uint32_t type;
         float x;
         float y;
@@ -72,5 +112,15 @@ namespace SEVIAN {
 
         std::string texture;
         std::string path;
+    };
+}
+
+
+namespace std {
+    template<> struct hash<SEVIAN::Vertex>
+    {
+        size_t operator()( SEVIAN::Vertex const& vertex ) const {
+            return ((hash<glm::vec3> ()(vertex.position) ^ (hash<glm::vec3> ()(vertex.color) << 1)) >> 1) ^ (hash<glm::vec2> ()(vertex.texCoords) << 1);
+        }
     };
 }

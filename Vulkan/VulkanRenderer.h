@@ -20,10 +20,6 @@
 
 
 
-#define GLM_FORCE_RADIANS
-#define GLM_FORCE_DEPTH_ZERO_TO_ONE
-#define GLM_ENABLE_EXPERIMENTAL
-
 
 
 
@@ -38,8 +34,16 @@ const bool CenableValidationLayers = true;
 
 
 namespace SEVIAN {
-
-
+    /*namespace std {
+        template<> struct hash<Vertex>
+        {
+            size_t operator()( Vertex const& vertex ) const {
+                return ((hash<glm::vec3> ()(vertex.pos) ^ (hash<glm::vec3> ()(vertex.color) << 1)) >> 1) ^ (hash<glm::vec2> ()(vertex.texCoord) << 1);
+            }
+        };
+    }
+    */
+    static void loadModel ( const std::string path, std::vector<Vertex>& vertices, std::vector<uint32_t>& indices );
    
 
     struct Entity3D: PropertyRender
@@ -227,6 +231,7 @@ namespace SEVIAN {
 
         std::unique_ptr<PropertyRender> createEntity ( Info3D info ) override;
         std::unique_ptr<PropertyRender> createSprite ( Sprite3D info ) override;
+        std::unique_ptr<PropertyRender> createModel ( Model3D info ) override;
 
         void draw ( std::shared_ptr<PropertyRender>, glm::vec3 position, Camera ) override;
         void drawText ( std::string text, glm::vec3 position, Camera camera ) override;

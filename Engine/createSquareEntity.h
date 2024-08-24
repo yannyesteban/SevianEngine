@@ -8,7 +8,9 @@ namespace SEVIAN {
 
     std::shared_ptr<Entity> createCamera ( Scene& scene );
 
-    std::shared_ptr<Entity> createSpriteEntity ( const Key & name, Scene& scene, const std::string& textureName, const std::string& textureFile, float deltaX, float deltaY, float deltaZ, float width, float height );
+    std::shared_ptr<Entity> createModelEntity ( Scene& scene, const std::string& path, const std::string texture );
+
+    std::shared_ptr<Entity> createSpriteEntity ( const Key & name, Scene& scene, const std::string& textureName, const std::string& textureFile, float deltaX, float deltaY, float deltaZ, float width, float height, glm::vec3 color );
 
     std::shared_ptr<Entity> createSpriteEntity ( Scene& scene, const std::string& textureName, const std::string& textureFile, float deltaX, float deltaY, float deltaZ );
 

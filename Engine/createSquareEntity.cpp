@@ -19,15 +19,27 @@ namespace SEVIAN {
 
 	}
 
-	std::shared_ptr<Entity> createSpriteEntity ( const Key& name, Scene& scene, const std::string& textureName, const std::string& textureFile, float deltaX, float deltaY, float deltaZ, float width, float height ) {
+	std::shared_ptr<Entity> createModelEntity ( Scene& scene, const std::string& path, const std::string texture ) {
+		auto entity = scene.createEntity ();
+
+		entity->addComponent<ModelComponent> ( path, texture );
+		entity->addComponent<PositionComponent> ( glm::vec3 ( 0.0, 0.0, 0.0 ) );
+		entity->addComponent<RotationComponent> ( glm::vec3 ( 0.0f, 0.0f, 0.0f ) );
+		entity->addComponent<ScaleComponent> ( glm::vec3 ( 1.0f, 1.0f, 1.0f ) );
+		entity->addComponent<InputComponent> ();
+
+		return entity;
+	}
+
+	std::shared_ptr<Entity> createSpriteEntity ( const Key& name, Scene& scene, const std::string& textureName, const std::string& textureFile, float deltaX, float deltaY, float deltaZ, float width, float height, glm::vec3 color ) {
 		auto entity = scene.createEntity ();
 
 		// Define vertices for a sprite (a single square plane) with the given width and height
 		std::vector<Vertex> vertices = {
-			{{-width / 2.0f, -height / 2.0f, 0.0f}, {0.0f, 0.0f, 1.0f}, {0.0f, 1.0f}, {1.0f, 1.0f, 1.0f}}, // Bottom-left
-			{{ width / 2.0f, -height / 2.0f, 0.0f}, {0.0f, 0.0f, 1.0f}, {1.0f, 1.0f}, {1.0f, 1.0f, 1.0f}}, // Bottom-right
-			{{ width / 2.0f,  height / 2.0f, 0.0f}, {0.0f, 0.0f, 1.0f}, {1.0f, 0.0f}, {1.0f, 1.0f, 1.0f}}, // Top-right
-			{{-width / 2.0f,  height / 2.0f, 0.0f}, {0.0f, 0.0f, 1.0f}, {0.0f, 0.0f}, {1.0f, 1.0f, 1.0f}}  // Top-left
+			{{-width / 2.0f, -height / 2.0f, 0.0f}, {0.0f, 0.0f, 1.0f}, {0.0f, 1.0f}, color}, // Bottom-left
+			{{ width / 2.0f, -height / 2.0f, 0.0f}, {0.0f, 0.0f, 1.0f}, {1.0f, 1.0f}, color}, // Bottom-right
+			{{ width / 2.0f,  height / 2.0f, 0.0f}, {0.0f, 0.0f, 1.0f}, {1.0f, 0.0f}, color}, // Top-right
+			{{-width / 2.0f,  height / 2.0f, 0.0f}, {0.0f, 0.0f, 1.0f}, {0.0f, 0.0f}, color}  // Top-left
 		};
 
 		std::vector<uint32_t> indices = {
@@ -56,7 +68,7 @@ namespace SEVIAN {
 		entity->addComponent<NameComponent> (name);
 
 
-		SpriteComponent sprite = SpriteComponent ( glm::vec3 ( deltaX, deltaY, deltaZ ), width, height, textureName, glm::vec4 ( 1.0, 0.0, 0.0, 1.0 ) );
+		SpriteComponent sprite = SpriteComponent ( glm::vec3 ( deltaX, deltaY, deltaZ ), width, height, textureName, color );
 		entity->addComponent<SpriteComponent> ( sprite );
 		
 

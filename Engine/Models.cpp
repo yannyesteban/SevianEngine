@@ -29,3 +29,6 @@ void SEVIAN::SpriteComponent::update ( float deltaTime ) {
 
 void SEVIAN::NameComponent::update ( float deltaTime ) {
 }
+
+void SEVIAN::ModelComponent::update ( float deltaTime ) {
+}

@@ -148,5 +148,17 @@
     <None Include="solid.frag">
       <Filter>shaders</Filter>
     </None>
+    <None Include="solid_color.vert">
+      <Filter>shaders</Filter>
+    </None>
+    <None Include="solid_color.frag">
+      <Filter>shaders</Filter>
+    </None>
+    <None Include="model.vert">
+      <Filter>shaders</Filter>
+    </None>
+    <None Include="model.frag">
+      <Filter>shaders</Filter>
+    </None>
   </ItemGroup>
 </Project>

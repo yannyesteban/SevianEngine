@@ -22,8 +22,8 @@ namespace SEVIAN {
         float width = 1.0f;
         float height = 1.0f;
         std::string texture;
-        glm::vec4 color;
-        SpriteComponent (const glm::vec3& _pos, float& _width, float & _height, const std::string& _texture, const glm::vec4 & _color )
+        glm::vec3 color;
+        SpriteComponent (const glm::vec3& _pos, float& _width, float & _height, const std::string& _texture, const glm::vec3 & _color )
             : position ( _pos ), width ( _width ), height(_height), texture (_texture), color(_color) {
             // prop = PropertyRender {};
         }
@@ -31,6 +31,20 @@ namespace SEVIAN {
         void update ( float deltaTime ) override;
     };
 
+    struct ModelComponent : public Component
+    {
+
+        std::string path;
+        std::string texture;
+        
+
+        ModelComponent ( const std::string & path, const std::string & texture )
+            : path ( path ), texture ( texture ) {
+            // prop = PropertyRender {};
+        }
+
+        void update ( float deltaTime ) override;
+    };
 
     struct MeshComponent : public Component
     {

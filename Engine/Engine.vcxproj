@@ -179,10 +179,14 @@
     <ClInclude Include="World.h" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="model.frag" />
+    <None Include="model.vert" />
     <None Include="sdf.frag" />
     <None Include="sdf2.frag" />
     <None Include="solid.frag" />
     <None Include="solid.vert" />
+    <None Include="solid_color.frag" />
+    <None Include="solid_color.vert" />
     <None Include="text_frag.frag" />
     <None Include="text_vert.vert" />
   </ItemGroup>

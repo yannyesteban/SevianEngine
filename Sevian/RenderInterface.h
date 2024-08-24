@@ -65,6 +65,8 @@ namespace SEVIAN {
         virtual std::unique_ptr<PropertyRender> createEntity ( Info3D info ) = 0;
         virtual std::unique_ptr<PropertyRender> createSprite ( Sprite3D info ) = 0;
 
+        virtual std::unique_ptr<PropertyRender> createModel ( Model3D info ) = 0;
+
     };
 
     // TextureInterface.h
