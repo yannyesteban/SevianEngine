@@ -557,9 +557,9 @@ namespace SEVIAN {
 		
 
 		// Posición de la cámara arriba en el eje Z
-		//glm::vec3 cameraPos = camera.position;//glm::vec3 ( 0.0f, 0.0f, -5.0f );
+		glm::vec3 cameraPos = camera.position;//glm::vec3 ( 0.0f, 0.0f, -5.0f );
 
-		glm::vec3 cameraPos = glm::vec3 ( 0.0f, 0.0f, 5.0f );
+		//glm::vec3 cameraPos = glm::vec3 ( 0.0f, 0.0f, 5.0f );
 
 		// Punto al que está mirando la cámara (el origen en este caso)
 		glm::vec3 target = glm::vec3 ( 0.0f, 0.0f, 0.0f );
@@ -870,7 +870,7 @@ namespace SEVIAN {
 		if (pipeline.pipeline == VK_NULL_HANDLE) {
 
 			//auto fragShaderCode = device->readFile ( "shaders/solid_f.spv" );
-			pipeline = device->createGraphPipeline ( getBindingDescription (), attributeDescriptions, device->descriptorSetLayout, "shaders/solid_color_vert.spv", "shaders/solid_color_frag.spv" );
+			pipeline = device->createGraphPipeline ( getBindingDescription (), attributeDescriptions, device->descriptorSetLayout, "shaders/solid_v.spv", "shaders/solid_f.spv" );
 		}
 
 		entity->vertex = device->createDataBuffer ( (void*) vertices.data (), sizeof ( vertices[0] ) * vertices.size (), VK_BUFFER_USAGE_VERTEX_BUFFER_BIT );

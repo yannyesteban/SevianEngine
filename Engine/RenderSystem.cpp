@@ -73,12 +73,14 @@ namespace SEVIAN {
             auto camera = entity->getComponent<CameraComponent> ();
 
             if (camera) {
-                Tools::setCamera ( (Camera *)camera );
+                std::cout << "... PRE SET " << camera->position.z << "\n";
+                Tools::setCamera ( camera );
+                
             }
 
             if (model) {
                 auto cam = *Tools::getCamera ();
-
+                std::cout << "..." << cam.position.z << "\n";
                 // renderer->drawEntity ( entity->getID (), position->position, cam );
                 //renderer->draw ( mesh->prop, position->position, cam);
                  //auto ee = units[entity->getID ()]; // Aquí no se usa .get() si units es std::shared_ptr<PropertyRender>
@@ -92,6 +94,7 @@ namespace SEVIAN {
 
             if (mesh && material && texture) {
                 auto cam = *Tools::getCamera ();
+               
 
                // renderer->drawEntity ( entity->getID (), position->position, cam );
                //renderer->draw ( mesh->prop, position->position, cam);

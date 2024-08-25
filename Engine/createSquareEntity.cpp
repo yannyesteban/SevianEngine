@@ -10,7 +10,7 @@ namespace SEVIAN {
 		// entity->addComponent<MaterialComponent> ( material );
 
 		CameraComponent camera { };
-		camera.position = glm::vec3 ( 0.0f, 0.0f, -5.0f );
+		camera.position = glm::vec3 ( 0.1f, 0.0f, 5.0f );
 		camera.front = glm::vec3 ( 0.0f, 0.0f, 0.0f );
 		camera.up = glm::vec3 ( 0.0f, 1.0f, 0.0f );
 

@@ -7,6 +7,20 @@ namespace SEVIAN {
 	Camera * lastCamera;
 	std::bitset<static_cast<size_t>(Key::MAX_KEYS)> keyStates;
 
+	void Tools::setCamera ( Camera* camera ) {
+		if (camera != nullptr) {
+			lastCamera = camera;
+		}
+		else {
+			std::cerr << "Error: Intento de asignar un puntero nulo a la cámara." << std::endl;
+		}
+		std::cout << "...lastCamera set " << camera->position.z << "\n";
+	}
+
+	Camera* Tools::getCamera () {
+		std::cout << "...lastCamera get " << lastCamera->position.z << "\n";
+		return lastCamera;
+	}
 
 	bool Tools::isKeyPressed ( Key key ) {
 		//std::cout << static_cast<size_t>(key) << "\n";
@@ -22,13 +36,7 @@ namespace SEVIAN {
 		lastKey = key;
 	}
 
-	void Tools::setCamera ( Camera * camera ) {
-		lastCamera = camera;
-	}
-
-	Camera * Tools::getCamera () {
-		return lastCamera;
-	}
+	
 
 	void Tools::keyCallback ( GLFWwindow* window, int key, int scancode, int action, int mods ) {
 
