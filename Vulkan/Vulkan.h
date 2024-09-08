@@ -2,6 +2,7 @@
 #define GLFW_INCLUDE_VULKAN
 #include <GLFW/glfw3.h>
 #include <vector>
+//#define GLM_FORCE_DEFAULT_ALIGNED_GENTYPES
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 #include <optional>
@@ -54,6 +55,17 @@ struct VulkanUBuffer
     VkBuffer buffers;
     VkDeviceMemory buffersMemory;
     void* buffersMapped;
+};
+
+struct BufferInfo
+{
+    VkDescriptorType descriptorType; // Tipo de descriptor
+    std::vector<VulkanUBuffer>& buffers; 
+    VkDeviceSize range = 0;             // Tamaño del rango del buffer
+   
+    VkImageView imageView = VK_NULL_HANDLE;
+    VkSampler sampler = VK_NULL_HANDLE;
+    uint32_t binding;               // Índice de binding
 };
 
 struct VulkanTexture

@@ -179,6 +179,8 @@
     <ClInclude Include="World.h" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="lights.frag" />
+    <None Include="lights.vert" />
     <None Include="model.frag" />
     <None Include="model.vert" />
     <None Include="sdf.frag" />
@@ -189,6 +191,8 @@
     <None Include="solid_color.vert" />
     <None Include="text_frag.frag" />
     <None Include="text_vert.vert" />
+    <None Include="total_f.frag" />
+    <None Include="total_v.vert" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

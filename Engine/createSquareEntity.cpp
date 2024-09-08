@@ -27,6 +27,7 @@ namespace SEVIAN {
 		entity->addComponent<RotationComponent> ( glm::vec3 ( 0.0f, 0.0f, 0.0f ) );
 		entity->addComponent<ScaleComponent> ( glm::vec3 ( 1.0f, 1.0f, 1.0f ) );
 		entity->addComponent<InputComponent> ();
+		entity->addComponent<NameComponent> ( Key::N4 );
 
 		return entity;
 	}
@@ -206,67 +207,74 @@ namespace SEVIAN {
 	}
 
 
-	std::shared_ptr<Entity> createCubeEntity ( Scene& scene, float deltaX, float deltaY, float deltaZ ) {
+	std::shared_ptr<Entity> createCubeEntity ( const Key& name, Scene& scene, float deltaX, float deltaY, float deltaZ ) {
 		auto entity = scene.createEntity ();
+
+		glm::vec3 color1 = {(float)5/255, (float) 51/255, (float) 255/255 };
+		glm::vec3 color2 = { (float) 255 / 255, (float) 255 / 255, (float) 51 / 255 };
+		glm::vec3 color3= { (float) 96 / 255, (float) 96 / 255, (float) 96 / 255 };
+		glm::vec3 color4 = { (float) 204 / 255, (float) 0 / 255, (float) 0 / 255 };
+		glm::vec3 color5 = { (float) 0 / 255, (float) 255 / 255, (float) 0 / 255 };
+		glm::vec3 color6 = { (float) 32 / 255, (float) 32 / 255, (float) 32 / 255 };
 
 		// Define vertices and indices for a cube
 		std::vector<Vertex> vertices = {
-			// Front face
-			{{-0.5f, -0.5f,  0.5f}, { 0.0f,  0.0f,  1.0f}, {0.0f, 0.0f}, {1.0f, 0.0f, 0.0f}}, // Bottom-left
-			{{ 0.5f, -0.5f,  0.5f}, { 0.0f,  0.0f,  1.0f}, {1.0f, 0.0f}, {0.0f, 1.0f, 0.0f}}, // Bottom-right
-			{{ 0.5f,  0.5f,  0.5f}, { 0.0f,  0.0f,  1.0f}, {1.0f, 1.0f}, {0.0f, 0.0f, 1.0f}}, // Top-right
-			{{-0.5f,  0.5f,  0.5f}, { 0.0f,  0.0f,  1.0f}, {0.0f, 1.0f}, {1.0f, 1.0f, 1.0f}}, // Top-left
+			// Frente
+			{{-0.5f, -0.5f,  0.5f}, { 0.0f,  0.0f,  1.0f}, {0.0f, 0.0f}, color1}, // Abajo-izquierda
+			{{ 0.5f, -0.5f,  0.5f}, { 0.0f,  0.0f,  1.0f}, {1.0f, 0.0f}, color1}, // Abajo-derecha
+			{{ 0.5f,  0.5f,  0.5f}, { 0.0f,  0.0f,  1.0f}, {1.0f, 1.0f}, color1}, // Arriba-derecha
+			{{-0.5f,  0.5f,  0.5f}, { 0.0f,  0.0f,  1.0f}, {0.0f, 1.0f}, color1}, // Arriba-izquierda
 
-			// Back face
-			{{-0.5f, -0.5f, -0.5f}, { 0.0f,  0.0f, -1.0f}, {1.0f, 0.0f}, {1.0f, 0.0f, 0.0f}}, // Bottom-left
-			{{ 0.5f, -0.5f, -0.5f}, { 0.0f,  0.0f, -1.0f}, {0.0f, 0.0f}, {0.0f, 1.0f, 0.0f}}, // Bottom-right
-			{{ 0.5f,  0.5f, -0.5f}, { 0.0f,  0.0f, -1.0f}, {0.0f, 1.0f}, {0.0f, 0.0f, 1.0f}}, // Top-right
-			{{-0.5f,  0.5f, -0.5f}, { 0.0f,  0.0f, -1.0f}, {1.0f, 1.0f}, {1.0f, 1.0f, 1.0f}}, // Top-left
+			// Atrás
+			{{-0.5f, -0.5f, -0.5f}, { 0.0f,  0.0f, -1.0f}, {0.0f, 0.0f}, color2}, // Abajo-izquierda
+			{{ 0.5f, -0.5f, -0.5f}, { 0.0f,  0.0f, -1.0f}, {1.0f, 0.0f}, color2}, // Abajo-derecha
+			{{ 0.5f,  0.5f, -0.5f}, { 0.0f,  0.0f, -1.0f}, {1.0f, 1.0f}, color2}, // Arriba-derecha
+			{{-0.5f,  0.5f, -0.5f}, { 0.0f,  0.0f, -1.0f}, {0.0f, 1.0f}, color2}, // Arriba-izquierda
 
-			// Left face
-			{{-0.5f, -0.5f, -0.5f}, {-1.0f,  0.0f,  0.0f}, {0.0f, 0.0f}, {1.0f, 0.0f, 0.0f}}, // Bottom-back
-			{{-0.5f, -0.5f,  0.5f}, {-1.0f,  0.0f,  0.0f}, {1.0f, 0.0f}, {0.0f, 1.0f, 0.0f}}, // Bottom-front
-			{{-0.5f,  0.5f,  0.5f}, {-1.0f,  0.0f,  0.0f}, {1.0f, 1.0f}, {0.0f, 0.0f, 1.0f}}, // Top-front
-			{{-0.5f,  0.5f, -0.5f}, {-1.0f,  0.0f,  0.0f}, {0.0f, 1.0f}, {1.0f, 1.0f, 1.0f}}, // Top-back
+			// Izquierda
+			{{-0.5f, -0.5f, -0.5f}, {-1.0f,  0.0f,  0.0f}, {0.0f, 0.0f}, color3}, // Abajo-izquierda
+			{{-0.5f, -0.5f,  0.5f}, {-1.0f,  0.0f,  0.0f}, {1.0f, 0.0f}, color3}, // Abajo-derecha
+			{{-0.5f,  0.5f,  0.5f}, {-1.0f,  0.0f,  0.0f}, {1.0f, 1.0f}, color3}, // Arriba-derecha
+			{{-0.5f,  0.5f, -0.5f}, {-1.0f,  0.0f,  0.0f}, {0.0f, 1.0f}, color3}, // Arriba-izquierda
 
-			// Right face
-			{{ 0.5f, -0.5f, -0.5f}, { 1.0f,  0.0f,  0.0f}, {0.0f, 0.0f}, {1.0f, 0.0f, 0.0f}}, // Bottom-back
-			{{ 0.5f, -0.5f,  0.5f}, { 1.0f,  0.0f,  0.0f}, {1.0f, 0.0f}, {0.0f, 1.0f, 0.0f}}, // Bottom-front
-			{{ 0.5f,  0.5f,  0.5f}, { 1.0f,  0.0f,  0.0f}, {1.0f, 1.0f}, {0.0f, 0.0f, 1.0f}}, // Top-front
-			{{ 0.5f,  0.5f, -0.5f}, { 1.0f,  0.0f,  0.0f}, {0.0f, 1.0f}, {1.0f, 1.0f, 1.0f}}, // Top-back
+			// Derecha
+			{{ 0.5f, -0.5f, -0.5f}, { 1.0f,  0.0f,  0.0f}, {0.0f, 0.0f}, color4}, // Abajo-izquierda
+			{{ 0.5f, -0.5f,  0.5f}, { 1.0f,  0.0f,  0.0f}, {1.0f, 0.0f}, color4}, // Abajo-derecha
+			{{ 0.5f,  0.5f,  0.5f}, { 1.0f,  0.0f,  0.0f}, {1.0f, 1.0f}, color4}, // Arriba-derecha
+			{{ 0.5f,  0.5f, -0.5f}, { 1.0f,  0.0f,  0.0f}, {0.0f, 1.0f}, color4}, // Arriba-izquierda
 
-			// Top face
-			{{-0.5f,  0.5f,  0.5f}, { 0.0f,  1.0f,  0.0f}, {0.0f, 0.0f}, {1.0f, 0.0f, 0.0f}}, // Front-left
-			{{ 0.5f,  0.5f,  0.5f}, { 0.0f,  1.0f,  0.0f}, {1.0f, 0.0f}, {0.0f, 1.0f, 0.0f}}, // Front-right
-			{{ 0.5f,  0.5f, -0.5f}, { 0.0f,  1.0f,  0.0f}, {1.0f, 1.0f}, {0.0f, 0.0f, 1.0f}}, // Back-right
-			{{-0.5f,  0.5f, -0.5f}, { 0.0f,  1.0f,  0.0f}, {0.0f, 1.0f}, {1.0f, 1.0f, 1.0f}}, // Back-left
+			// Arriba
+			{{-0.5f,  0.5f,  0.5f}, { 0.0f,  1.0f,  0.0f}, {0.0f, 0.0f}, color5}, // Abajo-izquierda
+			{{ 0.5f,  0.5f,  0.5f}, { 0.0f,  1.0f,  0.0f}, {1.0f, 0.0f}, color5}, // Abajo-derecha
+			{{ 0.5f,  0.5f, -0.5f}, { 0.0f,  1.0f,  0.0f}, {1.0f, 1.0f}, color5}, // Arriba-derecha
+			{{-0.5f,  0.5f, -0.5f}, { 0.0f,  1.0f,  0.0f}, {0.0f, 1.0f}, color5}, // Arriba-izquierda
 
-			// Bottom face
-			{{-0.5f, -0.5f,  0.5f}, { 0.0f, -1.0f,  0.0f}, {0.0f, 0.0f}, {1.0f, 0.0f, 0.0f}}, // Front-left
-			{{ 0.5f, -0.5f,  0.5f}, { 0.0f, -1.0f,  0.0f}, {1.0f, 0.0f}, {0.0f, 1.0f, 0.0f}}, // Front-right
-			{{ 0.5f, -0.5f, -0.5f}, { 0.0f, -1.0f,  0.0f}, {1.0f, 1.0f}, {0.0f, 0.0f, 1.0f}}, // Back-right
-			{{-0.5f, -0.5f, -0.5f}, { 0.0f, -1.0f,  0.0f}, {0.0f, 1.0f}, {1.0f, 1.0f, 1.0f}}, // Back-left
+			// Abajo
+			{{-0.5f, -0.5f,  0.5f}, { 0.0f, -1.0f,  0.0f}, {0.0f, 0.0f}, color6}, // Abajo-izquierda
+			{{ 0.5f, -0.5f,  0.5f}, { 0.0f, -1.0f,  0.0f}, {1.0f, 0.0f}, color6}, // Abajo-derecha
+			{{ 0.5f, -0.5f, -0.5f}, { 0.0f, -1.0f,  0.0f}, {1.0f, 1.0f}, color6}, // Arriba-derecha
+			{{-0.5f, -0.5f, -0.5f}, { 0.0f, -1.0f,  0.0f}, {0.0f, 1.0f}, color6}, // Arriba-izquierda
 		};
 
 		std::vector<uint32_t> indices = {
 			// Front face
 			0, 1, 2, 2, 3, 0,
 			// Back face
-			4, 5, 6, 6, 7, 4,
+			6, 5, 4, 4, 7, 6,
 			// Left face
 			8, 9, 10, 10, 11, 8,
 			// Right face
-			12, 13, 14, 14, 15, 12,
+			14, 13, 12, 12, 15, 14,
 			// Top face
 			16, 17, 18, 18, 19, 16,
 			// Bottom face
-			20, 21, 22, 22, 23, 20
+			22, 21, 20, 20, 23, 22
 		};
 
 		// Add components to the entity
 		entity->addComponent<MeshComponent> ( vertices, indices );
 
-		TextureComponent texture { "diffuse", "textures/a1.jpeg" };
+		TextureComponent texture { "diffuse1", "textures/a1.jpeg" };
 		entity->addComponent<TextureComponent> ( texture );
 
 		MaterialComponent material = MaterialComponent (
@@ -280,7 +288,8 @@ namespace SEVIAN {
 		entity->addComponent<PositionComponent> ( glm::vec3 ( 0.0f + deltaX, 0.0f + deltaY, 0.0f + deltaZ ) );
 		entity->addComponent<RotationComponent> ( glm::vec3 ( 0.0f, 0.0f, 0.0f ) );
 		entity->addComponent<ScaleComponent> ( glm::vec3 ( 1.0f, 1.0f, 1.0f ) );
-
+		entity->addComponent<InputComponent> ();
+		entity->addComponent<NameComponent> ( name );
 		return entity;
 	}
 

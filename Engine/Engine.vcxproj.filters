@@ -160,5 +160,17 @@
     <None Include="model.frag">
       <Filter>shaders</Filter>
     </None>
+    <None Include="lights.vert">
+      <Filter>shaders</Filter>
+    </None>
+    <None Include="lights.frag">
+      <Filter>shaders</Filter>
+    </None>
+    <None Include="total_v.vert">
+      <Filter>shaders</Filter>
+    </None>
+    <None Include="total_f.frag">
+      <Filter>shaders</Filter>
+    </None>
   </ItemGroup>
 </Project>

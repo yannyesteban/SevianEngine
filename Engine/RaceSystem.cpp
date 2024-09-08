@@ -15,10 +15,13 @@ void SEVIAN::RaceSystem::update ( std::vector<std::shared_ptr<Entity>>& entities
 
 		auto input = entity->getComponent<InputComponent> ();
 		auto position = entity->getComponent<PositionComponent> ();
+		auto rotation = entity->getComponent<RotationComponent> ();
 
 		auto camera = entity->getComponent<CameraComponent> ();
 		bool active = false;
 
+
+		
 
 		if (camera) {
 			
@@ -30,14 +33,23 @@ void SEVIAN::RaceSystem::update ( std::vector<std::shared_ptr<Entity>>& entities
 				auto camera = Tools::getCamera ();
 				camera->position.z = camera->position.z + 0.1f;
 			}
+			if (Tools::isKeyPressed ( Key::B )) {
+				std::cout << Tools::isKeyPressed ( Key::N1 ) << " ... ... ... .. ..\n";
+				//auto camera = Tools::getCamera ();
+
+				auto camera = Tools::getCamera ();
+				camera->position.z = camera->position.z - 0.1f;
+			}
 
 			//camera->position =  glm::vec3 ( 0.0f, 0.0f, -8.0f );
 		}
 
 		if (name) {
 
-			if (Tools::isKeyPressed ( Key::N1 ) || Tools::isKeyPressed ( Key::N2 )
-				|| Tools::isKeyPressed ( Key::N3 ) || Tools::isKeyPressed ( Key::N4 ) || Tools::isKeyPressed ( Key::N5 )) {
+			if (Tools::isKeyPressed ( Key::N0 ) || Tools::isKeyPressed ( Key::N1 ) || Tools::isKeyPressed ( Key::N2 )
+				|| Tools::isKeyPressed ( Key::N3 ) || Tools::isKeyPressed ( Key::N4 ) || Tools::isKeyPressed ( Key::N5 )
+				|| Tools::isKeyPressed ( Key::N6 ) || Tools::isKeyPressed ( Key::N7 ) || Tools::isKeyPressed ( Key::N8 ) || Tools::isKeyPressed ( Key::N9 )
+				) {
 
 
 
@@ -63,7 +75,21 @@ void SEVIAN::RaceSystem::update ( std::vector<std::shared_ptr<Entity>>& entities
 			continue;// return;
 		}
 
-		
+		if (rotation) {
+			if (Tools::isKeyPressed ( Key::Y )) {
+				
+				rotation->rotation.y += 0.001;
+			}
+			if (Tools::isKeyPressed ( Key::U )) {
+				
+				rotation->rotation.z += 0.001;
+			}
+			if (Tools::isKeyPressed ( Key::T )) {
+				
+
+				rotation->rotation.x += 0.001;
+			}
+		}
 
 		if (/*input && */  position) {
 

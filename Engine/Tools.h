@@ -17,7 +17,7 @@ namespace SEVIAN {
         RIGHT,
         UP,
         DOWN,
-        N1, N2, N3, N4, N5,
+        N0, N1, N2, N3, N4, N5, N6, N7, N8, N9,
         MAX_KEYS // Esto asegura que tengamos un tamaño correcto para el bitset
     };
     

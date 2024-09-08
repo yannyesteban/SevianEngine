@@ -47,7 +47,9 @@ VkShaderModule Device::createShaderModule ( const std::vector<char>& code ) {
 }
 
 VkDescriptorSetLayout Device::createDescriptorSetLayout () {
+
 	VkDescriptorSetLayout descriptorSetLayout1;
+
 	VkDescriptorSetLayoutBinding uboLayoutBinding {};
 	uboLayoutBinding.binding = 0;
 	uboLayoutBinding.descriptorCount = 1;
@@ -55,15 +57,44 @@ VkDescriptorSetLayout Device::createDescriptorSetLayout () {
 	uboLayoutBinding.pImmutableSamplers = nullptr;
 	uboLayoutBinding.stageFlags = VK_SHADER_STAGE_VERTEX_BIT;
 
+
+	VkDescriptorSetLayoutBinding uboLayoutBinding2 {};
+	uboLayoutBinding2.binding = 1;
+	uboLayoutBinding2.descriptorCount = 1;
+	uboLayoutBinding2.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+	uboLayoutBinding2.pImmutableSamplers = nullptr;
+	uboLayoutBinding2.stageFlags = VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT;
+
+
 	VkDescriptorSetLayoutBinding samplerLayoutBinding {};
-	samplerLayoutBinding.binding = 1;
+	samplerLayoutBinding.binding = 2;
 	samplerLayoutBinding.descriptorCount = 1;
 	samplerLayoutBinding.descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
 	samplerLayoutBinding.pImmutableSamplers = nullptr;
 	samplerLayoutBinding.stageFlags = VK_SHADER_STAGE_FRAGMENT_BIT;
 
-	std::array<VkDescriptorSetLayoutBinding, 2> bindings = { uboLayoutBinding, samplerLayoutBinding };
+	VkDescriptorSetLayoutBinding uboLayoutBinding3 {};
+	uboLayoutBinding3.binding = 3;
+	uboLayoutBinding3.descriptorCount = 1;
+	uboLayoutBinding3.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+	uboLayoutBinding3.pImmutableSamplers = nullptr;
+	uboLayoutBinding3.stageFlags = VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT;
+
+	//std::array<VkDescriptorSetLayoutBinding, 2> bindings = { uboLayoutBinding2, samplerLayoutBinding };
+	//VkDescriptorSetLayoutCreateInfo layoutInfo {};
+	/*
+	VkDescriptorSetLayoutBinding uboLayoutBinding3 {};
+	uboLayoutBinding3.binding = 3;
+	uboLayoutBinding3.descriptorCount = 1;
+	uboLayoutBinding3.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+	uboLayoutBinding3.pImmutableSamplers = nullptr;
+	uboLayoutBinding3.stageFlags = VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT;
+	*/
+
+	std::array<VkDescriptorSetLayoutBinding, 4> bindings = { uboLayoutBinding, uboLayoutBinding2, samplerLayoutBinding,uboLayoutBinding3 };
 	VkDescriptorSetLayoutCreateInfo layoutInfo {};
+
+
 	layoutInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;
 	layoutInfo.bindingCount = static_cast<uint32_t>(bindings.size ());
 	layoutInfo.pBindings = bindings.data ();
@@ -122,15 +153,17 @@ VkDescriptorPool Device::createDescriptorPool () {
 	uint32_t MAX_FRAMES_IN_FLIGHT = 2;
 	std::array<VkDescriptorPoolSize, 2> poolSizes {};
 	poolSizes[0].type = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
-	poolSizes[0].descriptorCount = 1000;// static_cast<uint32_t>(MAX_FRAMES_IN_FLIGHT);
+	poolSizes[0].descriptorCount = 100;// static_cast<uint32_t>(MAX_FRAMES_IN_FLIGHT); //1000;// static_cast<uint32_t>(MAX_FRAMES_IN_FLIGHT);
 	poolSizes[1].type = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
-	poolSizes[1].descriptorCount = 1000;// static_cast<uint32_t>(MAX_FRAMES_IN_FLIGHT);
+	poolSizes[1].descriptorCount = 100;// static_cast<uint32_t>(MAX_FRAMES_IN_FLIGHT); //1000;// static_cast<uint32_t>(MAX_FRAMES_IN_FLIGHT);
+	//poolSizes[2].type = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+	//poolSizes[2].descriptorCount = static_cast<uint32_t>(MAX_FRAMES_IN_FLIGHT); //1000;// static_cast<uint32_t>(MAX_FRAMES_IN_FLIGHT);
 
 	VkDescriptorPoolCreateInfo poolInfo {};
 	poolInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO;
 	poolInfo.poolSizeCount = static_cast<uint32_t>(poolSizes.size ());
 	poolInfo.pPoolSizes = poolSizes.data ();
-	poolInfo.maxSets = 1000;// static_cast<uint32_t>(MAX_FRAMES_IN_FLIGHT);
+	poolInfo.maxSets = 200;// static_cast<uint32_t>(MAX_FRAMES_IN_FLIGHT); //1000;// static_cast<uint32_t>(MAX_FRAMES_IN_FLIGHT);
 
 	if (vkCreateDescriptorPool ( device, &poolInfo, nullptr, &descriptorPool ) != VK_SUCCESS) {
 		throw std::runtime_error ( "failed to create descriptor pool!" );
@@ -344,7 +377,7 @@ VkPipeline Device::createGraphicsPipeline ( VkVertexInputBindingDescription bind
 	return pipeline;
 }
 
-void Device:: createTextureImage () {
+void Device::createTextureImage () {
 	int texWidth, texHeight, texChannels;
 	stbi_uc* pixels = stbi_load ( "textures/a.jpg", &texWidth, &texHeight, &texChannels, STBI_rgb_alpha );
 	VkDeviceSize imageSize = texWidth * texHeight * 4;
@@ -403,12 +436,10 @@ void Device::createBuffer ( VkDeviceSize size, VkBufferUsageFlags usage, VkMemor
 
 
 std::vector<VkDescriptorSet> Device::createDescriptorSets ( std::vector<VulkanUBuffer>& buffers, VkImageView textureImageView, VkSampler textureSampler, VkDeviceSize range ) {
-	auto framesCount = buffers.size ();
+	auto framesCount = MAX_FRAMES_IN_FLIGHT;
 
 	std::vector<VkDescriptorSet> descriptorSets;
 	descriptorSets.resize ( framesCount );
-
-	
 
 	std::vector<VkDescriptorSetLayout> layouts ( framesCount, descriptorSetLayout );
 
@@ -419,7 +450,6 @@ std::vector<VkDescriptorSet> Device::createDescriptorSets ( std::vector<VulkanUB
 	//static_cast<uint32_t>(MAX_FRAMES_IN_FLIGHT);
 	allocInfo.pSetLayouts = layouts.data ();
 
-	
 	if (vkAllocateDescriptorSets ( device, &allocInfo, descriptorSets.data () ) != VK_SUCCESS) {
 		throw std::runtime_error ( "failed to allocate descriptor sets!" );
 	}
@@ -456,7 +486,6 @@ std::vector<VkDescriptorSet> Device::createDescriptorSets ( std::vector<VulkanUB
 		descriptorWrites[1].pImageInfo = &imageInfo;
 
 		vkUpdateDescriptorSets ( device, static_cast<uint32_t>(descriptorWrites.size ()), descriptorWrites.data (), 0, nullptr );
-
 
 	}
 
@@ -524,6 +553,70 @@ std::vector<VkDescriptorSet> Device::createDescriptorSets ( std::vector<Frame>& 
 	return descriptorSets;
 }
 
+std::vector<VkDescriptorSet> Device::createDescriptorSets ( std::vector <BufferInfo> info ) {
+	auto framesCount = MAX_FRAMES_IN_FLIGHT;
+
+	std::vector<VkDescriptorSet> descriptorSets;
+	descriptorSets.resize ( framesCount );
+
+	std::vector<VkDescriptorSetLayout> layouts ( framesCount, descriptorSetLayout );
+
+	VkDescriptorSetAllocateInfo allocInfo {};
+	allocInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO;
+	allocInfo.descriptorPool = descriptorPool;
+	allocInfo.descriptorSetCount = static_cast<uint32_t>(framesCount);
+	allocInfo.pSetLayouts = layouts.data ();
+
+	if (vkAllocateDescriptorSets ( device, &allocInfo, descriptorSets.data () ) != VK_SUCCESS) {
+		throw std::runtime_error ( "failed to allocate descriptor sets!" );
+	}
+
+	for (size_t i = 0; i < framesCount; i++) {
+
+		std::vector<VkWriteDescriptorSet> descriptorWrites;
+
+		std::vector<VkDescriptorBufferInfo> bufferInfo ( info.size () );
+		std::vector<VkDescriptorImageInfo> imageInfo ( info.size () );
+
+		size_t j = 0, k = 0;
+
+		for (const auto& _info : info) {
+
+			VkWriteDescriptorSet write {};
+
+			write.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+			write.dstSet = descriptorSets[i];
+			write.dstBinding = _info.binding;
+			write.dstArrayElement = 0;
+			write.descriptorCount = 1;
+			write.descriptorType = _info.descriptorType;
+			if (_info.descriptorType == VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER) {
+
+				bufferInfo[j].buffer = _info.buffers[i].buffers;
+				bufferInfo[j].offset = 0;
+				bufferInfo[j].range = _info.range;
+				write.pBufferInfo = &bufferInfo[j];
+				j++;
+
+			}
+			else if (_info.descriptorType == VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER) {
+
+				imageInfo[k].imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+				imageInfo[k].imageView = _info.imageView;
+				imageInfo[k].sampler = _info.sampler;
+				write.pImageInfo = &imageInfo[k];
+				k++;
+
+			}
+			descriptorWrites.push_back ( write );
+
+		}
+		vkUpdateDescriptorSets ( device, static_cast<uint32_t>(descriptorWrites.size ()), descriptorWrites.data (), 0, nullptr );
+	}
+	
+	return descriptorSets;
+}
+
 
 
 
@@ -574,6 +667,7 @@ Pipeline Device::createGraphPipeline (
 	VkDescriptorSetLayout& descriptorSetLayout, std::string vertSource, std::string fragSource ) {
 
 	Pipeline pipe {};
+
 	auto vertShaderCode = readFile ( vertSource );
 	auto fragShaderCode = readFile ( fragSource );
 

@@ -53,6 +53,7 @@ namespace SEVIAN {
         virtual void endFrame () = 0;
 
         virtual void draw ( std::shared_ptr<PropertyRender>, glm::vec3, Camera ) = 0;
+        virtual void draw ( std::shared_ptr<PropertyRender>, UniformBufferObject ubo ) = 0;
         virtual void drawText ( std::string text, glm::vec3 position, Camera camera ) = 0;
 
         virtual void initEntity ( Info3D info ) = 0;
@@ -60,7 +61,6 @@ namespace SEVIAN {
 
         virtual void initEntity ( PropertyRender unit ) = 0;
         virtual void drawEntity ( PropertyRender unit, glm::vec3 position, Camera ) = 0;
-
 
         virtual std::unique_ptr<PropertyRender> createEntity ( Info3D info ) = 0;
         virtual std::unique_ptr<PropertyRender> createSprite ( Sprite3D info ) = 0;

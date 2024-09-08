@@ -57,7 +57,7 @@ public:
 
 	std::vector<VkDescriptorSet> createDescriptorSets ( std::vector<VulkanUBuffer>& buffers, VkImageView textureImageView, VkSampler textureSampler, VkDeviceSize range );
 	std::vector<VkDescriptorSet> createDescriptorSets ( std::vector<Frame>& frames, VkDescriptorPool descriptorPool, VkImageView textureImageView, VkSampler textureSampler, VkDeviceSize range );
-
+	std::vector<VkDescriptorSet> createDescriptorSets ( std::vector <BufferInfo> info );
 	VkFormat findSupportedFormat ( const std::vector<VkFormat>& candidates, VkImageTiling tiling, VkFormatFeatureFlags features );
 	VkFormat findDepthFormat ();
 

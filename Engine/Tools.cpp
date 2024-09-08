@@ -172,6 +172,10 @@ namespace SEVIAN {
 				keyStates[static_cast<size_t>(Key::UP)] = true;
 				break;
 
+			case GLFW_KEY_KP_0:
+
+				keyStates[static_cast<size_t>(Key::N0)] = true;
+				break;
 
 			case GLFW_KEY_KP_1:
 				
@@ -192,8 +196,24 @@ namespace SEVIAN {
 			case GLFW_KEY_KP_5:
 				keyStates[static_cast<size_t>(Key::N5)] = true;
 				break;
-			}
+			case GLFW_KEY_KP_6:
 
+				keyStates[static_cast<size_t>(Key::N6)] = true;
+				break;
+			case GLFW_KEY_KP_7:
+
+				keyStates[static_cast<size_t>(Key::N7)] = true;
+				break;
+			case GLFW_KEY_KP_8:
+
+				keyStates[static_cast<size_t>(Key::N8)] = true;
+				break;
+			case GLFW_KEY_KP_9:
+
+				keyStates[static_cast<size_t>(Key::N9)] = true;
+				break;
+			}
+			
 
 
 		}
@@ -298,7 +318,9 @@ namespace SEVIAN {
 			case GLFW_KEY_UP:
 				keyStates[static_cast<size_t>(Key::UP)] = false;
 				break;
-
+			case GLFW_KEY_KP_0:
+				keyStates[static_cast<size_t>(Key::N0)] = false;
+				break;
 			case GLFW_KEY_KP_1:
 				keyStates[static_cast<size_t>(Key::N1)] = false;
 				break;
@@ -313,6 +335,18 @@ namespace SEVIAN {
 				break;
 			case GLFW_KEY_KP_5:
 				keyStates[static_cast<size_t>(Key::N5)] = false;
+				break;
+			case GLFW_KEY_KP_6:
+				keyStates[static_cast<size_t>(Key::N6)] = false;
+				break;
+			case GLFW_KEY_KP_7:
+				keyStates[static_cast<size_t>(Key::N7)] = false;
+				break;
+			case GLFW_KEY_KP_8:
+				keyStates[static_cast<size_t>(Key::N8)] = false;
+				break;
+			case GLFW_KEY_KP_9:
+				keyStates[static_cast<size_t>(Key::N9)] = false;
 				break;
 			}
 		}

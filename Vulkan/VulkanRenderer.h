@@ -64,6 +64,10 @@ namespace SEVIAN {
         VkDeviceMemory vertexBufferMemory = VK_NULL_HANDLE;
         VkDeviceMemory indexBufferMemory = VK_NULL_HANDLE;
         std::vector<VulkanUBuffer> ubo;
+        std::vector<VulkanUBuffer> ubo2;
+        std::vector<VulkanUBuffer> light;
+        std::vector<VulkanUBuffer> me;
+
     };
 
     const int MAX_FRAMES_IN_FLIGHT = 2;
@@ -234,6 +238,7 @@ namespace SEVIAN {
         std::unique_ptr<PropertyRender> createModel ( Model3D info ) override;
 
         void draw ( std::shared_ptr<PropertyRender>, glm::vec3 position, Camera ) override;
+        void draw ( std::shared_ptr<PropertyRender>, UniformBufferObject ubo ) override;
         void drawText ( std::string text, glm::vec3 position, Camera camera ) override;
         static void keyCallback ( GLFWwindow* window, int key, int scancode, int action, int mods ) {
             VulkanRenderer* app = reinterpret_cast<VulkanRenderer*>(glfwGetWindowUserPointer ( window ));

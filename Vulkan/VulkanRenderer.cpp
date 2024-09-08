@@ -638,7 +638,7 @@ namespace SEVIAN {
 		*/
 
 		std::array<VkClearValue, 2> clearValues {};
-		clearValues[0].color = { {0.0f, 0.3f, 0.0f, 1.0f} };
+		clearValues[0].color = { {0.0f, 0.1f, 0.0f, 1.0f} };
 		clearValues[1].depthStencil = { 1.0f, 0 };
 
 		renderPassInfo.clearValueCount = static_cast<uint32_t>(clearValues.size ());
@@ -695,8 +695,6 @@ namespace SEVIAN {
 			Frame frame = frames[currentFrame];
 			updateUniformBuffer ( entity->ubo[currentFrame].buffersMapped, position, camera );
 
-
-
 			VkBuffer vertexBuffers[] = { entity->vertex.buffer };
 			VkDeviceSize offsets[] = { 0 };
 
@@ -738,6 +736,86 @@ namespace SEVIAN {
 			std::cerr << "Error: PropertyRender no es una instancia de VulkanProperty" << std::endl;
 		}
 		*/
+	}
+
+	void VulkanRenderer::draw ( std::shared_ptr<PropertyRender> prop, UniformBufferObject ubo ) {
+		auto entity = std::dynamic_pointer_cast<Entity3D>(prop);
+
+		//auto vulkanProp = std::dynamic_pointer_cast<VulkanProperty>(prop);
+
+		if (entity) {
+
+			Frame frame = frames[currentFrame];
+			
+			MeUBO me = {};
+			me.color = glm::vec3 (  0.99f, 0.026f, 0.011f );
+			me.color2 = glm::vec3 ( 0.5f, 0.0f, 1.0f );
+			me.intensity = 2.1f - 0.11f;
+
+			ubo.proj[1][1] *= -1;
+			ubo.zoom = 4.5;
+			ubo.color = glm::vec3 ( 0.9f, 0.12f, 0.10f );
+			ubo.position = glm::vec3 ( 1.0, 0.0, 0.0 );
+			LightUBO l = { };
+			
+			l.position = glm::vec3 ( 0.6f, 0.05f, 0.1f );
+			l.color = glm::vec3 ( 0.6f, 0.3f, 0.0f );
+			l.intensity = 0.5f;
+
+
+			UniformBufferObject ubo2 {};
+
+			
+			glm::mat4 translation = glm::translate ( glm::mat4 ( 1.0f ), l.position );
+			//glm::mat4 rotation = glm::rotate ( glm::mat4 ( 1.0f ), time * 0.1f * glm::radians ( 90.0f ), glm::vec3 ( 0.0f, 0.0f, 1.0f ) );
+
+			glm::mat4 rotationMat = glm::rotate ( glm::mat4 ( 1.0f ), l.color.z, glm::vec3 ( 0.0f, 0.0f, 1.0f ) ) *
+				glm::rotate ( glm::mat4 ( 1.0f ), l.color.y, glm::vec3 ( 0.0f, 1.0f, 0.0f ) ) *
+				glm::rotate ( glm::mat4 ( 1.0f ), l.color.x, glm::vec3 ( 1.0f, 0.0f, 0.0f ) );
+			ubo2.model = translation * rotationMat;
+
+
+			//ubo.model = /* rotation * */  translation;
+
+
+			// Posición de la cámara arriba en el eje Z
+			glm::vec3 cameraPos = glm::vec3 ( 0.0f, 0.0f, -5.0f );
+
+			//glm::vec3 cameraPos = glm::vec3 ( 0.0f, 0.0f, 5.0f );
+
+			// Punto al que está mirando la cámara (el origen en este caso)
+			glm::vec3 target = glm::vec3 ( 0.0f, 0.0f, 0.0f );
+			// Dirección "up" (hacia el eje Y)
+			//glm::vec3 up = camera.up; // glm::vec3 ( 0.0f, 1.0f, 0.0f );
+			glm::vec3 up = glm::vec3 ( 0.0f, -25.0f, 0.0f );
+
+			ubo2.view = glm::lookAt ( cameraPos, target, up );
+
+			//ubo.view = glm::lookAt ( glm::vec3 ( 2.0f, 2.0f, 2.0f ), glm::vec3 ( 0.0f, 0.0f, 0.0f ), glm::vec3 ( 0.0f, 0.0f, 1.0f ) );
+			ubo2.proj = glm::perspective ( glm::radians ( 45.0f ), 1300 / (float) 600, 0.1f, 100.0f );
+
+			
+			memcpy ( entity->light[currentFrame].buffersMapped, &l, sizeof ( l ) );
+			memcpy ( entity->me[currentFrame].buffersMapped, &me, sizeof(me) );
+			memcpy ( entity->ubo[currentFrame].buffersMapped, &ubo, sizeof ( ubo ) );
+			//memcpy ( entity->ubo2[currentFrame].buffersMapped, &ubo2, sizeof ( ubo2 ) );
+			
+
+			VkBuffer vertexBuffers[] = { entity->vertex.buffer };
+			VkDeviceSize offsets[] = { 0 };
+
+			vkCmdBindPipeline ( commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, entity->pipeline );
+			vkCmdBindVertexBuffers ( commandBuffer, 0, 1, vertexBuffers, offsets );
+			//vkCmdBindIndexBuffer(commandBuffer, indices.buffer, 0, VK_INDEX_TYPE_UINT16);
+			vkCmdBindIndexBuffer ( commandBuffer, entity->indices.buffer, 0, VK_INDEX_TYPE_UINT32 );
+
+			vkCmdBindDescriptorSets ( commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, entity->pipelineLayout, 0, 1, &entity->descriptorSets[currentFrame], 0, nullptr );
+			vkCmdDrawIndexed ( commandBuffer, static_cast<uint32_t>(entity->indicesSizes), 1, 0, 0, 0 );
+		}
+		else {
+			std::cerr << "Error: PropertyRender no es una instancia de VulkanProperty" << std::endl;
+		}
+
 	}
 
 	void VulkanRenderer::drawText ( std::string text, glm::vec3 position, Camera camera ) {
@@ -811,18 +889,34 @@ namespace SEVIAN {
 		auto entity = std::make_unique<Entity3D> ();
 		
 
-		std::vector<VulkanUBuffer> ubo = device->createUniformBuffer ( frames, sizeof ( UniformBufferObject2 ) );
+		std::vector<VulkanUBuffer> ubo = device->createUniformBuffer ( frames, sizeof ( UniformBufferObject ) );
+		std::vector<VulkanUBuffer> ubo2 = device->createUniformBuffer ( frames, sizeof ( UniformBufferObject ) );
+		std::vector<VulkanUBuffer> lightUBO = device->createUniformBuffer ( frames, sizeof ( MeUBO ) );
+		std::vector<VulkanUBuffer> meUBO = device->createUniformBuffer ( frames, sizeof ( MeUBO ) );
 
 		auto texture = mTextures[info.texture].get ();
 		//auto texture = mTextures[info.texture.c_str ()];
-		entity->descriptorSets = device->createDescriptorSets ( ubo, texture->imageView, texture->sampler, sizeof ( UniformBufferObject2 ) );
+		std::vector<BufferInfo> buffersInfo;
+		
+		buffersInfo.push_back ( { VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, ubo, sizeof ( UniformBufferObject ), VK_NULL_HANDLE, VK_NULL_HANDLE, 0 } );
+		//buffersInfo.push_back ( { VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, ubo2, sizeof ( UniformBufferObject ),  VK_NULL_HANDLE, VK_NULL_HANDLE, 1 } );
+		buffersInfo.push_back ( { VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, lightUBO, sizeof ( LightUBO ),  VK_NULL_HANDLE, VK_NULL_HANDLE, 1 } );
+		//
+		buffersInfo.push_back ( { VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, ubo, sizeof ( UniformBufferObject ), texture->imageView, texture->sampler, 2 } );
+		buffersInfo.push_back ( { VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, meUBO, sizeof ( MeUBO ),  VK_NULL_HANDLE, VK_NULL_HANDLE, 3 } );
+
+		entity->descriptorSets = device->createDescriptorSets ( buffersInfo );
+		//entity->descriptorSets = device->createDescriptorSets ( ubo, texture->imageView, texture->sampler, sizeof ( UniformBufferObject ) );
+		
+		
 		auto attributeDescriptions = getAttributeDescriptions ();
 		//auto pipeline = createGraphicsPipeline ( getBindingDescription (), attributeDescriptions, device->descriptorSetLayout );
 
 		if (pipeline.pipeline == VK_NULL_HANDLE) {
 
-			auto fragShaderCode = device->readFile ( "shaders/solid_f.spv" );
-			pipeline = device->createGraphPipeline ( getBindingDescription (), attributeDescriptions, device->descriptorSetLayout, "shaders/solid_v.spv", "shaders/solid_f.spv" );
+			//auto fragShaderCode = device->readFile ( "shaders/solid_f.spv" );
+			pipeline = device->createGraphPipeline ( getBindingDescription (), attributeDescriptions, device->descriptorSetLayout, "shaders/total_v.spv", "shaders/total_f.spv" );
+			//pipeline = device->createGraphPipeline ( getBindingDescription (), attributeDescriptions, device->descriptorSetLayout, "shaders/lights_v.spv", "shaders/lights_f.spv" );
 		}
 
 		entity->vertex = device->createDataBuffer ( (void*) info.vertices.data (), sizeof ( info.vertices[0] ) * info.vertices.size (), VK_BUFFER_USAGE_VERTEX_BUFFER_BIT );
@@ -833,6 +927,9 @@ namespace SEVIAN {
 		entity->pipeline = pipeline.pipeline;
 		entity->pipelineLayout = pipeline.pipelineLayout;
 		entity->ubo = ubo;
+		entity->ubo2 = ubo2;
+		entity->light = lightUBO;
+		entity->me = meUBO;
 
 		//entities[info.entityId] = std::move ( entity );
 
