@@ -85,14 +85,14 @@ namespace SEVIAN {
 
     struct TextureComponent : public Component
     {
-        std::string type;
+        std::string name;
         std::string path;
         //VkImage textureImage = VK_NULL_HANDLE;
         //VkDeviceMemory textureImageMemory = VK_NULL_HANDLE;
         //VkImageView textureImageView = VK_NULL_HANDLE;
         //VkSampler textureSampler = VK_NULL_HANDLE;
         TextureComponent ( const std::string& type, const std::string& path )
-            : type ( type ), path ( path ) {
+            : name ( type ), path ( path ) {
         }
         void update ( float deltaTime ) override;
     };

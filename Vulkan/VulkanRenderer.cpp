@@ -62,8 +62,6 @@ namespace SEVIAN {
 
 		physicalDevices = getPhysicalDevices ();
 
-
-
 		int position = 0;
 
 		device = physicalDevices.at ( position ).createDevice ();
@@ -73,7 +71,7 @@ namespace SEVIAN {
 		presentQueue = physicalDevices.at ( position ).presentQueue;
 
 		device->commandPool = commandPool;
-
+		device->createCommandBuffers ( device->frames, commandPool );
 
 		swapChain = physicalDevices.at ( position ).createSwapChain ( window );
 		extent = swapChain.extent;
@@ -89,6 +87,8 @@ namespace SEVIAN {
 		descriptorSetLayout = device->createDescriptorSetLayout ();
 		descriptorPool = device->createDescriptorPool ();
 		device->descriptorSetLayout = descriptorSetLayout;
+
+		textureManager = std::make_shared<TextureManager> ( device );
 
 		std::map<std::string, VulkanTexture> mTextures;
 
@@ -460,10 +460,10 @@ namespace SEVIAN {
 		}
 	}
 
-	void VulkanRenderer::initEntity ( PropertyRender unit ) {
+	void VulkanRenderer::initEntity ( PropertyRender * unit ) {
 	}
 
-	void VulkanRenderer::drawEntity ( PropertyRender unit, glm::vec3 position, Camera ) {
+	void VulkanRenderer::drawEntity ( PropertyRender * unit, glm::vec3 position, Camera ) {
 	}
 
 
@@ -528,6 +528,11 @@ namespace SEVIAN {
 		swapChain = physicalDevices.at ( position ).createSwapChain ( window );
 		depthResources = device->createDepthResources ( swapChain.extent );
 		swapChain.framebuffers = physicalDevices.at ( position ).createFramebuffers ( swapChain, renderPass, { depthResources.imageView } );
+	}
+
+	void VulkanRenderer::addTexture ( TextureInfo info ) {
+
+		textureManager->add ( info );
 	}
 
 	void VulkanRenderer::addTexture ( std::string name, std::string path ) {
@@ -597,7 +602,7 @@ namespace SEVIAN {
 
 	void VulkanRenderer::beginFrame () {
 
-		Frame frame = frames[currentFrame];
+		Frame frame = device->frames[device->currentFrame];
 
 		vkWaitForFences ( device->device, 1, &frame.inFlightFences, VK_TRUE, UINT64_MAX );
 
@@ -742,10 +747,13 @@ namespace SEVIAN {
 		auto entity = std::dynamic_pointer_cast<Entity3D>(prop);
 
 		//auto vulkanProp = std::dynamic_pointer_cast<VulkanProperty>(prop);
+		ve;
+		ve->render ( ubo );
+		return;
 
 		if (entity) {
 
-			Frame frame = frames[currentFrame];
+			Frame frame = device->frames[currentFrame];
 			
 			MeUBO me = {};
 			me.color = glm::vec3 (  0.99f, 0.026f, 0.011f );
@@ -811,6 +819,8 @@ namespace SEVIAN {
 
 			vkCmdBindDescriptorSets ( commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, entity->pipelineLayout, 0, 1, &entity->descriptorSets[currentFrame], 0, nullptr );
 			vkCmdDrawIndexed ( commandBuffer, static_cast<uint32_t>(entity->indicesSizes), 1, 0, 0, 0 );
+
+			entity->render (ubo);
 		}
 		else {
 			std::cerr << "Error: PropertyRender no es una instancia de VulkanProperty" << std::endl;
@@ -827,8 +837,8 @@ namespace SEVIAN {
 
 		
 
-		Frame frame = frames[currentFrame];
-
+		Frame frame = device->frames[device->currentFrame];
+		auto commandBuffer = frame.commandBuffers;
 		vkCmdEndRenderPass ( commandBuffer );
 
 		if (vkEndCommandBuffer ( commandBuffer ) != VK_SUCCESS) {
@@ -886,13 +896,23 @@ namespace SEVIAN {
 
 	std::unique_ptr<PropertyRender> VulkanRenderer::createEntity ( Info3D info ) {
 
+		auto entity = std::make_unique<VulkanEntity> ( device, textureManager.get (), info );
+		//auto entity = std::make_unique<Entity3D> ();
+
+		return std::unique_ptr<PropertyRender> ( std::move ( entity ) );
+		/*
+		auto x = new VulkanEntity (
+			device, textureManager.get(), info
+		);
+
+		ve = x;
 		auto entity = std::make_unique<Entity3D> ();
 		
 
-		std::vector<VulkanUBuffer> ubo = device->createUniformBuffer ( frames, sizeof ( UniformBufferObject ) );
-		std::vector<VulkanUBuffer> ubo2 = device->createUniformBuffer ( frames, sizeof ( UniformBufferObject ) );
-		std::vector<VulkanUBuffer> lightUBO = device->createUniformBuffer ( frames, sizeof ( MeUBO ) );
-		std::vector<VulkanUBuffer> meUBO = device->createUniformBuffer ( frames, sizeof ( MeUBO ) );
+		std::vector<VulkanUBuffer> ubo = device->createUniformBuffer ( device->frames, sizeof ( UniformBufferObject ) );
+		std::vector<VulkanUBuffer> ubo2 = device->createUniformBuffer ( device->frames, sizeof ( UniformBufferObject ) );
+		std::vector<VulkanUBuffer> lightUBO = device->createUniformBuffer ( device->frames, sizeof ( MeUBO ) );
+		std::vector<VulkanUBuffer> meUBO = device->createUniformBuffer ( device->frames, sizeof ( MeUBO ) );
 
 		auto texture = mTextures[info.texture].get ();
 		//auto texture = mTextures[info.texture.c_str ()];
@@ -936,7 +956,7 @@ namespace SEVIAN {
 		//return static_cast<PropertyRender&>(*entity);
 		return std::unique_ptr<PropertyRender> ( std::move ( entity ) );
 		//return std::shared_ptr<PropertyRender> ( std::move ( entity ) );
-
+		*/
 	}
 
 	std::unique_ptr<PropertyRender> VulkanRenderer::createSprite ( Sprite3D info ) {
@@ -1294,5 +1314,9 @@ namespace SEVIAN {
 
 
 
+
+	void Entity3D::render ( UniformBufferObject ubo ) {
+		std::cout << "HOLA MUNDO RENDER()\n";
+	}
 
 }

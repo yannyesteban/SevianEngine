@@ -813,7 +813,11 @@ public:
 	Pipeline createGraphPipeline ( VkVertexInputBindingDescription bindingDescription,
 		std::vector<VkVertexInputAttributeDescription> attributeDescriptions,
 		VkDescriptorSetLayout& descriptorSetLayout, std::string vertSource, std::string fragSource );
+
+	std::vector<Frame> frames;
+	
 private:
 	VkDescriptorPool descriptorPool;
+	
 };
 

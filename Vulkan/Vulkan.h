@@ -76,6 +76,10 @@ struct VulkanTexture
     VkDeviceMemory textureImageMemory;
     VkSampler sampler;
 
+    int texWidth;
+    int texHeight;
+    int texChannels;
+
 };
 
 struct Vertex2

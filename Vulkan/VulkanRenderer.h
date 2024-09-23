@@ -4,9 +4,9 @@
 #include "RenderInterface.h"
 #include "PhysicalDevice.h"
 #include "VulkanText.h"
-
+#include "VulkanEntity.h"
 #include <stdexcept>
-#include <cstddef>
+//#include <cstddef>
 #include <iostream>
 #include <optional>
 
@@ -17,20 +17,11 @@
 #include <unordered_map>
 
 
-
-
-
-
-
-
 #ifdef NDEBUG
 const bool CenableValidationLayers = false;
 #else
 const bool CenableValidationLayers = true;
 #endif
-
-
-
 
 
 namespace SEVIAN {
@@ -67,6 +58,8 @@ namespace SEVIAN {
         std::vector<VulkanUBuffer> ubo2;
         std::vector<VulkanUBuffer> light;
         std::vector<VulkanUBuffer> me;
+
+        void render ( UniformBufferObject ubo );
 
     };
 
@@ -122,7 +115,7 @@ namespace SEVIAN {
     class VulkanRenderer : public RenderInterface
     {
     public:
-
+        VulkanEntity * ve;
         
         VulkanRenderer ( ) { }
         VulkanRenderer ( GLFWwindow* window, uint32_t width, uint32_t height ) : window ( window ), width ( width ), height ( height ) { }
@@ -220,6 +213,8 @@ namespace SEVIAN {
         
         
         std::shared_ptr<PropertyRender> init ( std::vector<Vertex>, std::vector<uint32_t> indices, std::string ) override;
+
+        void addTexture ( TextureInfo info ) override;
         void addTexture ( std::string name, std::string path) override;
         void addShaders ( std::string, std::string ) override;
 
@@ -227,8 +222,8 @@ namespace SEVIAN {
         void drawEntity ( uint32_t entityId, glm::vec3 position, Camera ) override;
 
 
-        void initEntity ( PropertyRender unit ) override;
-        void drawEntity ( PropertyRender unit, glm::vec3 position, Camera ) override;
+        void initEntity ( PropertyRender * unit ) override;
+        void drawEntity ( PropertyRender * unit, glm::vec3 position, Camera ) override;
 
         void beginFrame () override;
         void endFrame () override;
@@ -261,7 +256,7 @@ namespace SEVIAN {
         uint32_t width = 800;
         uint32_t height = 800;
         std::string title = "Vulkan 1.0";
-        
+        std::shared_ptr<TextureManager> textureManager;
         
         VkInstance instance;
         VkDebugUtilsMessengerEXT debugMessenger;

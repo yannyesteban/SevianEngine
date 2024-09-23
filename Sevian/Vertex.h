@@ -32,7 +32,11 @@
 
 namespace SEVIAN {
 
-
+	struct TextureInfo
+	{
+		std::string name;
+		std::string path;
+	};
 
 	struct Vertex
 	{
@@ -62,7 +66,7 @@ namespace SEVIAN {
 		alignas(16) glm::mat4 view;
 		alignas(16) glm::mat4 proj;
 		alignas(16) glm::vec3 color2;
-		
+
 		alignas(4) float zoom;
 		alignas(16) glm::vec3 position;
 	};
@@ -73,19 +77,19 @@ namespace SEVIAN {
 		float intensity;    // Intensidad de la luz
 
 		alignas(16) glm::vec3 color;    // Color de la luz
-		
-		
+
+
 		alignas(16) glm::vec3 color2;    // Color de la luz
-		
+
 	};
-	
+
 	struct LightUBO
 	{
-		
+
 		alignas(16) glm::vec3 color;    // Color de la luz
 		alignas(4) float intensity;    // Intensidad de la luz
 		alignas(16) glm::vec3 position; // Posición de la luz
-		
+
 	};
 
 	struct LightUBO2
@@ -126,6 +130,8 @@ namespace SEVIAN {
 
 		std::string texture;
 		std::string path;
+
+		TextureInfo text;
 	};
 
 

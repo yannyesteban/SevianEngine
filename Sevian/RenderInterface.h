@@ -28,6 +28,11 @@ namespace SEVIAN {
     {
     public:
         virtual ~PropertyRender () = default;
+        virtual void render ( UniformBufferObject ubo ) = 0;
+        
+        /*{
+            std::cout << " ...... HELLO WORLD ...\n";
+        }*/
     
     };
     
@@ -42,6 +47,9 @@ namespace SEVIAN {
         virtual void renderFrame () = 0;
         virtual void cleanup () = 0;
         virtual bool windowShouldClose () = 0;
+
+        virtual void addTexture ( TextureInfo info ) = 0;
+
         virtual void addTexture ( std::string, std::string) = 0;
         virtual void addShaders ( std::string, std::string ) = 0;
         //virtual PropertyRender elementInit (Vertex, uint32_t) = 0;
@@ -59,8 +67,8 @@ namespace SEVIAN {
         virtual void initEntity ( Info3D info ) = 0;
         virtual void drawEntity ( uint32_t entityId, glm::vec3 position, Camera ) = 0;
 
-        virtual void initEntity ( PropertyRender unit ) = 0;
-        virtual void drawEntity ( PropertyRender unit, glm::vec3 position, Camera ) = 0;
+        virtual void initEntity ( PropertyRender * unit ) = 0;
+        virtual void drawEntity ( PropertyRender * unit, glm::vec3 position, Camera ) = 0;
 
         virtual std::unique_ptr<PropertyRender> createEntity ( Info3D info ) = 0;
         virtual std::unique_ptr<PropertyRender> createSprite ( Sprite3D info ) = 0;

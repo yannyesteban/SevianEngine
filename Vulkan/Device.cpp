@@ -12,6 +12,19 @@ Device::Device ( VkPhysicalDevice pPhysicalDevice, VkDevice pDevice, VkQueue pGr
 	device = pDevice;
 	physicalDevice = pPhysicalDevice;
 	graphicsQueue = pGraphicsQueue;
+
+	frames.resize ( 2 );
+
+	uint32_t index = 0;
+	for (auto& frame : frames) {
+		db ( "creando un frame" );
+		frame.index = index;
+		
+		createSyncObjects ( frame );
+		index++;
+	}
+
+	//createCommandBuffers ( frames, commandPool );
 }
 
 std::vector<char> Device::readFile ( const std::string& filename ) {

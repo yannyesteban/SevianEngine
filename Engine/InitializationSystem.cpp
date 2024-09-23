@@ -14,10 +14,10 @@ namespace SEVIAN {
             auto texture = entity->getComponent<TextureComponent> ();
 
             if (mesh && material && texture) {
-                renderer->addTexture ( texture->type, texture->path );
+                renderer->addTexture ( texture->name, texture->path );
                 //mesh->prop = new VulkanProperty ();
                 
-                auto vulkanProp = renderer->init ( mesh->vertices, mesh->indices, texture->type );
+                auto vulkanProp = renderer->init ( mesh->vertices, mesh->indices, texture->name );
                 mesh->prop = vulkanProp;
                     
                 //auto x = renderer->init ( mesh->vertices, mesh->indices, texture->type );

@@ -23,7 +23,7 @@ namespace SEVIAN {
 		VkDeviceMemory indexBufferMemory = VK_NULL_HANDLE;
 		std::vector<VulkanUBuffer> buffers;
 		
-		
+		void render ( UniformBufferObject ubo ) override;
 
 		
 

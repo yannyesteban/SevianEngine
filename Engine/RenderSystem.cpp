@@ -14,7 +14,7 @@ namespace SEVIAN {
 
 
 			if (texture) {
-				t = texture->type;
+				t = texture->name;
 			}
 
 
@@ -22,13 +22,13 @@ namespace SEVIAN {
 			if (mesh && t == "diffuse1" && texture) {
 				Info3D info;
 				
-				renderer->addTexture ( texture->type, texture->path );
+				renderer->addTexture ( texture->name, texture->path );
 
 				info.entityId = entity->getID ();
 				info.vertices = mesh->vertices;
 				info.indices = mesh->indices;
 				
-				info.texture = texture->type;
+				info.texture = texture->name;
 				info.path = texture->path;
 				auto e = renderer->createEntity ( info );
 				std::cout << " model " << texture->path << "</n";
@@ -53,12 +53,12 @@ namespace SEVIAN {
 
 				Info3D info;
 
-				renderer->addTexture ( texture->type, texture->path );
+				renderer->addTexture ( texture->name, texture->path );
 
 				info.entityId = entity->getID ();
 				info.indices = mesh->indices;
 				info.path = texture->path;
-				info.texture = texture->type;
+				info.texture = texture->name;
 				info.vertices = mesh->vertices;
 				//renderer->initEntity ( info );
 				std::cout << "anneliesse morales 2024 \n" << texture->path << "\n\n";
@@ -147,7 +147,7 @@ namespace SEVIAN {
 			//ubo.view = glm::lookAt ( glm::vec3 ( 2.0f, 2.0f, 2.0f ), glm::vec3 ( 0.0f, 0.0f, 0.0f ), glm::vec3 ( 0.0f, 0.0f, 1.0f ) );
 			ubo.proj = glm::perspective ( glm::radians ( 45.0f ), 1300 / (float) 600, 0.1f, 100.0f );
 
-
+			//units[entity->getID ()]->render ( ubo );
 
 			if (model) {
 				
@@ -158,7 +158,8 @@ namespace SEVIAN {
 
 
 				//renderer->draw ( units[entity->getID ()], position->position, cam );
-				renderer->draw ( units[entity->getID ()], ubo );
+				units[entity->getID ()]->render ( ubo );
+				//renderer->draw ( units[entity->getID ()], ubo );
 
 				continue;
 			}
@@ -166,8 +167,9 @@ namespace SEVIAN {
 
 			if (mesh && material && texture) {
 				//auto cam = *Tools::getCamera ();
-				renderer->draw ( units[entity->getID ()], ubo );
-
+				units[entity->getID ()]->render ( ubo );
+				//renderer->draw ( units[entity->getID ()], ubo );
+				
 				// renderer->drawEntity ( entity->getID (), position->position, cam );
 				//renderer->draw ( mesh->prop, position->position, cam);
 				 //auto ee = units[entity->getID ()]; // Aquí no se usa .get() si units es std::shared_ptr<PropertyRender>
