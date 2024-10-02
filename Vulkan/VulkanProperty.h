@@ -2,8 +2,9 @@
 #include "RenderInterface.h"
 #include "Device.h"
 
-namespace SEVIAN {
-	class VulkanProperty : public PropertyRender
+using namespace SEVIAN;
+namespace VULKAN {
+	class VulkanProperty : public Entity3D
 	{
 	public:
 		

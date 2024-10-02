@@ -19,7 +19,7 @@ namespace SEVIAN {
         //int device;
         std::shared_ptr<RenderInterface> renderer;
 
-        std::unordered_map<uint32_t, std::shared_ptr<PropertyRender>> units;
+        std::unordered_map<uint32_t, std::shared_ptr<Entity3D>> units;
 
     public:
         RenderSystem ( std::shared_ptr<RenderInterface>  r ) : renderer ( r ) { }

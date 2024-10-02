@@ -20,6 +20,9 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Device.h" />
+    <ClInclude Include="MeshManager.h" />
+    <ClInclude Include="Entity.h" />
+    <ClInclude Include="MeshEntity.h" />
     <ClInclude Include="PhysicalDevice.h" />
     <ClInclude Include="SpriteManager.h" />
     <ClInclude Include="SwapChain.h" />
@@ -33,6 +36,9 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Device.cpp" />
+    <ClCompile Include="MeshManager.cpp" />
+    <ClCompile Include="Entity.cpp" />
+    <ClCompile Include="MeshEntity.cpp" />
     <ClCompile Include="PhysicalDevice.cpp" />
     <ClCompile Include="SpriteManager.cpp" />
     <ClCompile Include="SwapChain.cpp" />

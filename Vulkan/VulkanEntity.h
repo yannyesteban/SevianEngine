@@ -6,8 +6,11 @@
 
 static VkVertexInputBindingDescription getBindingDescription24 ();
 static std::vector<VkVertexInputAttributeDescription> getAttributeDescriptions24 ();
-namespace SEVIAN {
-	class VulkanEntity: public PropertyRender
+
+using namespace SEVIAN;
+
+namespace VULKAN {
+	class VulkanEntity: public Entity3D
 	{
 	private:
 		Device* device;

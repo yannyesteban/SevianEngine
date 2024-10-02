@@ -20,7 +20,7 @@
 
 
 
-namespace SEVIAN {
+namespace VULKAN {
 
 	
 
@@ -80,7 +80,7 @@ namespace SEVIAN {
 		std::vector<Frame> frames;
 		VkDescriptorPool descriptorPool;
 
-		std::vector<std::shared_ptr<PropertyRender>> tx;
+		std::vector<std::shared_ptr<Entity3D>> tx;
 		bool play = false;
 
 		Device* device;
@@ -92,7 +92,7 @@ namespace SEVIAN {
 		void createImageView ( VkImage image, VkFormat format, VkImageView& imageView );
 		void createTextureSampler ( VkSampler& sampler );
 
-		std::shared_ptr<PropertyRender> init ( std::vector<VertexText> vertices, std::vector<uint32_t> indices, /*VulkanTexture*/ Character texture);
+		std::shared_ptr<Entity3D> init ( std::vector<VertexText> vertices, std::vector<uint32_t> indices, /*VulkanTexture*/ Character texture);
 		Pipeline createGraphicsPipeline3 ( VkVertexInputBindingDescription bindingDescription, std::vector<VkVertexInputAttributeDescription> attributeDescriptions, VkDescriptorSetLayout& descriptorSetLayout );
 
 

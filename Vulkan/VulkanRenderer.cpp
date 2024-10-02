@@ -1,12 +1,13 @@
 #include "VulkanRenderer.h"
-#include "VulkanProperty.h"
+//#include "VulkanProperty.h"
 #define TINYOBJLOADER_IMPLEMENTATION
 #include <tiny_obj_loader.h>
 
 
+using namespace ::SEVIAN;
 
-namespace SEVIAN {
-
+namespace VULKAN {
+	
 	static void loadModel ( const std::string path, std::vector<Vertex> & vertices, std::vector<uint32_t> & indices ) {
 		tinyobj::attrib_t attrib;
 		std::vector<tinyobj::shape_t> shapes;
@@ -54,9 +55,7 @@ namespace SEVIAN {
 		std::cout << "Yanny esteban nuñez test 3\n";
 	}
 	void VulkanRenderer::initialize ( ) {
-		
-
-		
+				
 		createInstance ();
 		createSurface ();
 
@@ -80,7 +79,6 @@ namespace SEVIAN {
 		depthResources = device->createDepthResources ( extent );
 
 		swapChain.framebuffers = physicalDevices.at ( position ).createFramebuffers ( swapChain, renderPass, { depthResources.imageView } );
-
 
 		device->renderPass = renderPass;
 
@@ -111,7 +109,6 @@ namespace SEVIAN {
 			index++;
 		}
 
-
 		device->createCommandBuffers ( frames, device->commandPool );
 		fontText.device = device;
 		fontText.frames = frames;
@@ -119,6 +116,8 @@ namespace SEVIAN {
 		fontText.initialize ();
 
 		std::cout << "Hello";
+
+		meshManager = new MeshManager ( device, textureManager.get() );
 	}
 
 	void VulkanRenderer::initialize ( GameApp* _app ) {
@@ -406,7 +405,7 @@ namespace SEVIAN {
 
 	void VulkanRenderer::initEntity ( Info3D info ) {
 
-		auto entity = std::make_unique<Entity3D> ();
+		auto entity = std::make_unique<Entity> ();
 
 
 		std::vector<VulkanUBuffer> ubo = device->createUniformBuffer ( frames, sizeof ( UniformBufferObject2 ) );
@@ -460,15 +459,15 @@ namespace SEVIAN {
 		}
 	}
 
-	void VulkanRenderer::initEntity ( PropertyRender * unit ) {
+	void VulkanRenderer::initEntity ( Entity3D * unit ) {
 	}
 
-	void VulkanRenderer::drawEntity ( PropertyRender * unit, glm::vec3 position, Camera ) {
+	void VulkanRenderer::drawEntity ( Entity3D * unit, glm::vec3 position, Camera ) {
 	}
 
 
-	std::shared_ptr<PropertyRender> VulkanRenderer::init ( std::vector<Vertex> vertices, std::vector<uint32_t> indices, std::string name ) {
-		auto vulkanProp = std::make_shared<SEVIAN::VulkanProperty> ();
+	std::shared_ptr<Entity3D> VulkanRenderer::init ( std::vector<Vertex> vertices, std::vector<uint32_t> indices, std::string name ) {
+		auto vulkanProp = std::make_shared<VulkanProperty> ();
 
 		std::vector<VulkanUBuffer>  x = device->createUniformBuffer( frames, sizeof ( UniformBufferObject2 ) );
 
@@ -689,9 +688,9 @@ namespace SEVIAN {
 
 
 	}
-	void VulkanRenderer::draw ( std::shared_ptr<PropertyRender> prop, glm::vec3 position, Camera camera ) {
+	void VulkanRenderer::draw ( std::shared_ptr<Entity3D> prop, glm::vec3 position, Camera camera ) {
 
-		auto entity = std::dynamic_pointer_cast<Entity3D>(prop);
+		auto entity = std::dynamic_pointer_cast<Entity>(prop);
 
 		//auto vulkanProp = std::dynamic_pointer_cast<VulkanProperty>(prop);
 
@@ -743,8 +742,8 @@ namespace SEVIAN {
 		*/
 	}
 
-	void VulkanRenderer::draw ( std::shared_ptr<PropertyRender> prop, UniformBufferObject ubo ) {
-		auto entity = std::dynamic_pointer_cast<Entity3D>(prop);
+	void VulkanRenderer::draw ( std::shared_ptr<Entity3D> prop, UniformBufferObject ubo ) {
+		auto entity = std::dynamic_pointer_cast<Entity>(prop);
 
 		//auto vulkanProp = std::dynamic_pointer_cast<VulkanProperty>(prop);
 		ve;
@@ -894,12 +893,22 @@ namespace SEVIAN {
 		currentFrame = (currentFrame + 1) % MAX_FRAMES_IN_FLIGHT;
 	}
 
-	std::unique_ptr<PropertyRender> VulkanRenderer::createEntity ( Info3D info ) {
+	std::unique_ptr<Entity3D> VulkanRenderer::createEntity ( Info3D info ) {
+		
+		if (0 == 0) {
+			auto entity = meshManager->create ( info );
+			return std::unique_ptr<Entity3D> ( std::move ( entity ) );
+		}
+		
+		if (1 == 1) {
+			auto entity = std::make_unique<MeshEntity> ( device, textureManager.get (), info );
+			return std::unique_ptr<Entity3D> ( std::move ( entity ) );
+		}
 
 		auto entity = std::make_unique<VulkanEntity> ( device, textureManager.get (), info );
 		//auto entity = std::make_unique<Entity3D> ();
 
-		return std::unique_ptr<PropertyRender> ( std::move ( entity ) );
+		return std::unique_ptr<Entity3D> ( std::move ( entity ) );
 		/*
 		auto x = new VulkanEntity (
 			device, textureManager.get(), info
@@ -959,7 +968,7 @@ namespace SEVIAN {
 		*/
 	}
 
-	std::unique_ptr<PropertyRender> VulkanRenderer::createSprite ( Sprite3D info ) {
+	std::unique_ptr<Entity3D> VulkanRenderer::createSprite ( Sprite3D info ) {
 
 		
 		std::vector<Vertex> vertices = {
@@ -973,7 +982,7 @@ namespace SEVIAN {
 			0, 1, 2, 2, 3, 0 // Two triangles forming a square
 		};
 
-		auto entity = std::make_unique<Entity3D> ();
+		auto entity = std::make_unique<Entity> ();
 
 
 		std::vector<VulkanUBuffer> ubo = device->createUniformBuffer ( frames, sizeof ( UniformBufferObject2 ) );
@@ -1002,16 +1011,16 @@ namespace SEVIAN {
 		//entities[info.entityId] = std::move ( entity );
 
 		//return static_cast<PropertyRender&>(*entity);
-		return std::unique_ptr<PropertyRender> ( std::move ( entity ) );
+		return std::unique_ptr<Entity3D> ( std::move ( entity ) );
 	}
 
-	std::unique_ptr<PropertyRender> VulkanRenderer::createModel ( Model3D info ) {
+	std::unique_ptr<Entity3D> VulkanRenderer::createModel ( Model3D info ) {
 		std::vector<Vertex> vertices;
 		std::vector<uint32_t> indices;
 
 		loadModel ( info.model, vertices, indices );
 
-		auto entity = std::make_unique<Entity3D> ();
+		auto entity = std::make_unique<Entity> ();
 
 
 		std::vector<VulkanUBuffer> ubo = device->createUniformBuffer ( frames, sizeof ( UniformBufferObject2 ) );
@@ -1040,7 +1049,7 @@ namespace SEVIAN {
 		//entities[info.entityId] = std::move ( entity );
 
 		//return static_cast<PropertyRender&>(*entity);
-		return std::unique_ptr<PropertyRender> ( std::move ( entity ) );
+		return std::unique_ptr<Entity3D> ( std::move ( entity ) );
 		//return std::unique_ptr<PropertyRender> ();
 	}
 
@@ -1304,7 +1313,7 @@ namespace SEVIAN {
 	}
 
 
-	void VulkanTexture::load ( const std::string& path ) {
+	void VulkanTextureNO::load ( const std::string& path ) {
 		// Inicialización específica de Vulkan
 	}
 
@@ -1315,8 +1324,6 @@ namespace SEVIAN {
 
 
 
-	void Entity3D::render ( UniformBufferObject ubo ) {
-		std::cout << "HOLA MUNDO RENDER()\n";
-	}
+	
 
 }

@@ -2,7 +2,9 @@
 
 #include "RendererFactory.h"
 #include "VulkanRenderer.h"
-namespace SEVIAN {
+
+using namespace SEVIAN;
+namespace VULKAN {
     class VulkanFactory : public RendererFactory
     {
     public:
@@ -11,7 +13,7 @@ namespace SEVIAN {
         }
 
         std::shared_ptr<TextureInterface> createTexture () override {
-            return std::make_unique<VulkanTexture> ();
+            return std::make_unique<VulkanTextureNO> ();
         }
 
         std::shared_ptr<ShaderInterface> createShader () override {

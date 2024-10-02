@@ -172,5 +172,11 @@
     <None Include="total_f.frag">
       <Filter>shaders</Filter>
     </None>
+    <None Include="MeshEntity.vert">
+      <Filter>shaders</Filter>
+    </None>
+    <None Include="MeshEntity.frag">
+      <Filter>shaders</Filter>
+    </None>
   </ItemGroup>
 </Project>

@@ -15,8 +15,8 @@ int SEVIAN::Game::play () {
 
     glfwSetKeyCallback ( window, Tools::keyCallback );
 
-    if (info.engine == VULKAN) {
-        render = std::make_unique<SEVIAN::VulkanRenderer> ( window, info.width, info.height );
+    if (info.engine == SEVIAN::VK) {
+        render = std::make_unique<VULKAN::VulkanRenderer> ( window, info.width, info.height );
     }
     
     render->initialize ();
@@ -34,7 +34,7 @@ int SEVIAN::Game::play () {
     //auto squareEntity5 = createSpriteEntity ( Key::N2,  * scene, "a", "textures/c.jpg", 0.1, 0.0, 0.0f, 1.0, 1.0, glm::vec3 ( 1.0f, 1.0f, 1.0f ) );
     //auto squareEntity6 = createSpriteEntity ( Key::N3, *scene, "a1", "textures/a1.jpeg", 0.1, 0.3, 0.0f, 1.0, 1.0, glm::vec3 ( 1.0f, 1.0f, 1.0f ) );
     
-    auto cubo = createCubeEntity ( Key::N5, * scene, 0.5, 0.5, 0.0 );
+    auto cubo = createCubeEntity ( Key::N5, * scene, 0.0, 0.0, 0.0 );
     //auto cubo2 = createCubeEntity ( Key::N7, *scene, 0.0, 0.0, 0.0 );
     auto movementSystem = std::make_shared<RaceSystem> ( );
     auto renderSystem = std::make_shared<RenderSystem> ( render );

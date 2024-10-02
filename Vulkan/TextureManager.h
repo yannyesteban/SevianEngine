@@ -5,7 +5,7 @@
 #include <string>
 #include <map>
 
-namespace SEVIAN {
+namespace VULKAN {
 	class TextureManager
 	{
 	private:
@@ -15,7 +15,7 @@ namespace SEVIAN {
 	public:
 		TextureManager( Device* device ): device(device){ }
 		void add ( std::string name, std::string path );
-		void add ( TextureInfo info );
+		void add ( ::SEVIAN::TextureInfo info );
 		std::shared_ptr<VulkanTexture> get ( std::string name );
 	};
 }

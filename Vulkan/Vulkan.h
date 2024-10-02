@@ -6,105 +6,112 @@
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 #include <optional>
-struct Pipeline
-{
-    VkPipelineLayout pipelineLayout = VK_NULL_HANDLE;
-    VkPipeline pipeline = VK_NULL_HANDLE;
-};
-
-struct QueueFamilyIndices
-{
-    std::optional<uint32_t> graphicsFamily;
-    std::optional<uint32_t> presentFamily;
-
-    bool isComplete () {
-        return graphicsFamily.has_value () && presentFamily.has_value ();
-    }
-};
-
-enum TypeLayout { UNIFORM_BUFFER, IMAGE_SAMPLER };
-struct Frame
-{
-    VkDescriptorSet descriptorSet;
-    VkFence inFlightFences;
-    VkSemaphore imageAvailableSemaphores;
-    VkSemaphore renderFinishedSemaphores;
-    VkCommandBuffer commandBuffers;
-
-    VkBuffer uniformBuffers;
-    VkDeviceMemory uniformBuffersMemory;
-    void* uniformBuffersMapped;
-    const char* name;
-
-    uint32_t index;
-};
 
 
-struct VulkanDepthResources
-{
-    const char* id;
-    VkImageView imageView;
-    VkImage image;
-    VkDeviceMemory imageMemory;
+
+namespace VULKAN {
+    struct Pipeline
+    {
+        VkPipelineLayout pipelineLayout = VK_NULL_HANDLE;
+        VkPipeline pipeline = VK_NULL_HANDLE;
+    };
+
+    struct QueueFamilyIndices
+    {
+        std::optional<uint32_t> graphicsFamily;
+        std::optional<uint32_t> presentFamily;
+
+        bool isComplete () {
+            return graphicsFamily.has_value () && presentFamily.has_value ();
+        }
+    };
+
+    enum TypeLayout { UNIFORM_BUFFER, IMAGE_SAMPLER };
+    struct Frame
+    {
+        VkDescriptorSet descriptorSet;
+        VkFence inFlightFences;
+        VkSemaphore imageAvailableSemaphores;
+        VkSemaphore renderFinishedSemaphores;
+        VkCommandBuffer commandBuffers;
+
+        VkBuffer uniformBuffers;
+        VkDeviceMemory uniformBuffersMemory;
+        void* uniformBuffersMapped;
+        const char* name;
+
+        uint32_t index;
+    };
 
 
-};
-
-struct VulkanUBuffer
-{
-    VkBuffer buffers;
-    VkDeviceMemory buffersMemory;
-    void* buffersMapped;
-};
-
-struct BufferInfo
-{
-    VkDescriptorType descriptorType; // Tipo de descriptor
-    std::vector<VulkanUBuffer>& buffers; 
-    VkDeviceSize range = 0;             // Tamaño del rango del buffer
-   
-    VkImageView imageView = VK_NULL_HANDLE;
-    VkSampler sampler = VK_NULL_HANDLE;
-    uint32_t binding;               // Índice de binding
-};
-
-struct VulkanTexture
-{
-    const char* id;
-    VkImageView imageView;
-    VkImage textureImage;
-    VkDeviceMemory textureImageMemory;
-    VkSampler sampler;
-
-    int texWidth;
-    int texHeight;
-    int texChannels;
-
-};
-
-struct Vertex2
-{
-    glm::vec2 pos;
-    glm::vec3 color;
-    glm::vec2 texCoord;
-
-};
+    struct VulkanDepthResources
+    {
+        const char* id;
+        VkImageView imageView;
+        VkImage image;
+        VkDeviceMemory imageMemory;
 
 
-struct VertexBuffer
-{
+    };
 
-    VkBuffer buffer;
-    VkDeviceMemory memory;
-};
+    struct VulkanUBuffer
+    {
+        VkBuffer buffers;
+        VkDeviceMemory buffersMemory;
+        void* buffersMapped;
+    };
 
-struct DataPipeline
-{
+    struct BufferInfo
+    {
+        VkDescriptorType descriptorType; // Tipo de descriptor
+        std::vector<VulkanUBuffer>& buffers;
+        VkDeviceSize range = 0;             // Tamaño del rango del buffer
 
-    VkPipelineLayout layout;
+        VkImageView imageView = VK_NULL_HANDLE;
+        VkSampler sampler = VK_NULL_HANDLE;
+        uint32_t binding;               // Índice de binding
+    };
 
-    VkPipeline pipeline;
-};
+    struct VulkanTexture
+    {
+        const char* id;
+        VkImageView imageView;
+        VkImage textureImage;
+        VkDeviceMemory textureImageMemory;
+        VkSampler sampler;
+
+        int texWidth;
+        int texHeight;
+        int texChannels;
+
+    };
+
+    struct Vertex2
+    {
+        glm::vec2 pos;
+        glm::vec3 color;
+        glm::vec2 texCoord;
+
+    };
+
+
+    struct VertexBuffer
+    {
+
+        VkBuffer buffer;
+        VkDeviceMemory memory;
+    };
+
+    struct DataPipeline
+    {
+
+        VkPipelineLayout layout;
+
+        VkPipeline pipeline;
+    };
+
+    
+}
 
 namespace SEVIAN {
     struct UniformBufferObject2
@@ -150,5 +157,5 @@ namespace SEVIAN {
         std::vector<VkPresentModeKHR> presentModes;
     };
 
-   
+
 }

@@ -1,6 +1,6 @@
-#include "VulkanEntity.h"
+#include "MeshEntity.h"
 
-static VkVertexInputBindingDescription getBindingDescription24 () {
+static VkVertexInputBindingDescription getBindingDescriptionGeneric () {
 	VkVertexInputBindingDescription bindingDescription {};
 	bindingDescription.binding = 0;
 	bindingDescription.stride = sizeof ( SEVIAN::Vertex );
@@ -8,7 +8,7 @@ static VkVertexInputBindingDescription getBindingDescription24 () {
 
 	return bindingDescription;
 }
-static std::vector<VkVertexInputAttributeDescription> getAttributeDescriptions24 () {
+static std::vector<VkVertexInputAttributeDescription> getAttributeDescriptionsGeneric () {
 	std::vector<VkVertexInputAttributeDescription> attributeDescriptions ( 4, {} );
 	/*    glm::vec3 position;
 	glm::vec3 normal;
@@ -36,51 +36,46 @@ static std::vector<VkVertexInputAttributeDescription> getAttributeDescriptions24
 
 	return attributeDescriptions;
 }
-using namespace SEVIAN;
+
 namespace VULKAN {
-	VulkanEntity::VulkanEntity ( Device* device, TextureManager* textureManager, Info3D info ) : device ( device ), textureManager ( textureManager ), info ( info ) {
+
+
+	MeshEntity::MeshEntity ( Device* device, TextureManager* textureManager, Info3D info, std::vector<VkDescriptorSet> descriptorSets, Pipeline pipeline, VkDescriptorSetLayout descriptorSetLayout ):
+		device(device), textureManager ( textureManager ), info ( info ), descriptorSets( descriptorSets ), pipeline( pipeline ), descriptorSetLayout( descriptorSetLayout ) {
+		
+		
+		
+		auto attributeDescriptions = getAttributeDescriptionsGeneric ();
+
 		textureManager->add ( info.texture, info.path );
 		auto texture = textureManager->get ( info.texture );
-
-
-		std::vector<VulkanUBuffer> ubo = device->createUniformBuffer ( device->frames, sizeof ( UniformBufferObject ) );
-		std::vector<VulkanUBuffer> ubo2 = device->createUniformBuffer ( device->frames, sizeof ( UniformBufferObject ) );
-		std::vector<VulkanUBuffer> lightUBO = device->createUniformBuffer ( device->frames, sizeof ( MeUBO ) );
-		std::vector<VulkanUBuffer> meUBO = device->createUniformBuffer ( device->frames, sizeof ( MeUBO ) );
-
-
+		
 		std::vector<BufferInfo> buffersInfo;
+		buffersInfo.push_back ( { VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, ubo, sizeof ( UniformBufferObject ), texture->imageView, texture->sampler, 0 } );
+		
+		auto descriptorSetLayout2 = device->createDescriptorSetLayout ( buffersInfo );
 
-		buffersInfo.push_back ( { VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, ubo, sizeof ( UniformBufferObject ), VK_NULL_HANDLE, VK_NULL_HANDLE, 0 } );
-		//buffersInfo.push_back ( { VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, ubo2, sizeof ( UniformBufferObject ),  VK_NULL_HANDLE, VK_NULL_HANDLE, 1 } );
-		buffersInfo.push_back ( { VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, lightUBO, sizeof ( LightUBO ),  VK_NULL_HANDLE, VK_NULL_HANDLE, 1 } );
-		//
-		buffersInfo.push_back ( { VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, ubo, sizeof ( UniformBufferObject ), texture->imageView, texture->sampler, 2 } );
-		buffersInfo.push_back ( { VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, meUBO, sizeof ( MeUBO ),  VK_NULL_HANDLE, VK_NULL_HANDLE, 3 } );
+		
+		texDescriptorSets = device->createDescriptorSets ( descriptorSetLayout2, buffersInfo );
 
+		std::vector <VkDescriptorSetLayout> descriptorSetLayouts = { descriptorSetLayout , descriptorSetLayout2 };
 
-		descriptorSets = device->createDescriptorSets ( buffersInfo );
-		auto attributeDescriptions = getAttributeDescriptions24 ();
-
-		pipe = device->createGraphPipeline ( getBindingDescription24 (), attributeDescriptions, device->descriptorSetLayout, "shaders/total_v.spv", "shaders/total_f.spv" );
-
+		this->pipeline = device->createGraphPipeline ( getBindingDescriptionGeneric (), attributeDescriptions, descriptorSetLayouts, "shaders/MeshEntityVert.spv", "shaders/MeshEntityFrag.spv" );
 
 		vertex = device->createDataBuffer ( (void*) info.vertices.data (), sizeof ( info.vertices[0] ) * info.vertices.size (), VK_BUFFER_USAGE_VERTEX_BUFFER_BIT );
 		indices = device->createDataBuffer ( (void*) info.indices.data (), sizeof ( info.indices[0] ) * info.indices.size (), VK_BUFFER_USAGE_INDEX_BUFFER_BIT );
 		indicesSizes = info.indices.size ();
-		//device->createDataBuffer ( (void*) vertices.data (), sizeof ( vertices[0] ) * vertices.size (), VK_BUFFER_USAGE_VERTEX_BUFFER_BIT );
-		this->ubo = ubo;
-		this->ubo2 = ubo2;
-		this->light = lightUBO;
-		this->me = meUBO;
 
-		pipeline = pipe.pipeline;
-		pipelineLayout = pipe.pipelineLayout;
 
-	};
+		
+	}
+	
+	MeshEntity::MeshEntity ( Device* device, TextureManager* textureManager, Info3D info ) : MeshEntity ( device, textureManager, info, { }, { }, VK_NULL_HANDLE ) {
+	}
 
-	void VulkanEntity::render ( UniformBufferObject ubo ) {
-
+	MeshEntity::MeshEntity ( Device* device, TextureManager* textureManager, VkDescriptorSetLayout descriptorSetLayout, std::vector<VkDescriptorSet> descriptorSet, Pipeline pipeline, Info3D info ) : MeshEntity ( device, textureManager, info, descriptorSet, pipeline, descriptorSetLayout ) {
+	}
+	void MeshEntity::render ( UniformBufferObject ubo ) {
 		auto currentFrame = device->currentFrame;
 
 
@@ -143,17 +138,13 @@ namespace VULKAN {
 		VkBuffer vertexBuffers[] = { vertex.buffer };
 		VkDeviceSize offsets[] = { 0 };
 
-		vkCmdBindPipeline ( commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline );
+		vkCmdBindPipeline ( commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline.pipeline );
 		vkCmdBindVertexBuffers ( commandBuffer, 0, 1, vertexBuffers, offsets );
 		//vkCmdBindIndexBuffer(commandBuffer, indices.buffer, 0, VK_INDEX_TYPE_UINT16);
 		vkCmdBindIndexBuffer ( commandBuffer, indices.buffer, 0, VK_INDEX_TYPE_UINT32 );
 
-		vkCmdBindDescriptorSets ( commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipelineLayout, 0, 1, &descriptorSets[currentFrame], 0, nullptr );
+		vkCmdBindDescriptorSets ( commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline.pipelineLayout, 0, 1, &descriptorSets[currentFrame], 0, nullptr );
+		vkCmdBindDescriptorSets ( commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline.pipelineLayout, 1, 1, &texDescriptorSets[currentFrame], 0, nullptr );
 		vkCmdDrawIndexed ( commandBuffer, static_cast<uint32_t>(indicesSizes), 1, 0, 0, 0 );
-
-		//entity->render ( ubo );
-
 	}
 }
-
-

@@ -3,8 +3,14 @@
 #include "VulkanProperty.h"
 #include "RenderInterface.h"
 #include "PhysicalDevice.h"
+#include "Entity.h"
 #include "VulkanText.h"
 #include "VulkanEntity.h"
+#include "MeshManager.h"
+
+
+#include "MeshEntity.h"
+
 #include <stdexcept>
 //#include <cstddef>
 #include <iostream>
@@ -23,8 +29,9 @@ const bool CenableValidationLayers = false;
 const bool CenableValidationLayers = true;
 #endif
 
-
-namespace SEVIAN {
+//using ::SEVIAN::Vertex;
+using namespace ::SEVIAN;
+namespace VULKAN {
     /*namespace std {
         template<> struct hash<Vertex>
         {
@@ -37,31 +44,7 @@ namespace SEVIAN {
     static void loadModel ( const std::string path, std::vector<Vertex>& vertices, std::vector<uint32_t>& indices );
    
 
-    struct Entity3D: PropertyRender
-    {
-
-        VertexBuffer vertex;
-        VertexBuffer indices;
-
-        VkPipeline pipeline = VK_NULL_HANDLE;
-        VkPipelineLayout pipelineLayout = VK_NULL_HANDLE;
-
-        std::vector<VkDescriptorSet> descriptorSets;
-
-        size_t indicesSizes;
-
-        VkBuffer vertexBuffer = VK_NULL_HANDLE;
-        VkBuffer indexBuffer = VK_NULL_HANDLE;
-        VkDeviceMemory vertexBufferMemory = VK_NULL_HANDLE;
-        VkDeviceMemory indexBufferMemory = VK_NULL_HANDLE;
-        std::vector<VulkanUBuffer> ubo;
-        std::vector<VulkanUBuffer> ubo2;
-        std::vector<VulkanUBuffer> light;
-        std::vector<VulkanUBuffer> me;
-
-        void render ( UniformBufferObject ubo );
-
-    };
+    
 
     const int MAX_FRAMES_IN_FLIGHT = 2;
     static VKAPI_ATTR VkBool32 VKAPI_CALL debugCallback ( VkDebugUtilsMessageSeverityFlagBitsEXT messageSeverity, VkDebugUtilsMessageTypeFlagsEXT messageType, const VkDebugUtilsMessengerCallbackDataEXT* pCallbackData, void* pUserData ) {
@@ -212,7 +195,7 @@ namespace SEVIAN {
         std::vector<VkDescriptorSet> createDescriptorSets ( std::vector<Frame>& frames, VkDescriptorPool descriptorPool, VkImageView textureImageView, VkSampler textureSampler, VkDeviceSize range );
         
         
-        std::shared_ptr<PropertyRender> init ( std::vector<Vertex>, std::vector<uint32_t> indices, std::string ) override;
+        std::shared_ptr<Entity3D> init ( std::vector<Vertex>, std::vector<uint32_t> indices, std::string ) override;
 
         void addTexture ( TextureInfo info ) override;
         void addTexture ( std::string name, std::string path) override;
@@ -222,18 +205,18 @@ namespace SEVIAN {
         void drawEntity ( uint32_t entityId, glm::vec3 position, Camera ) override;
 
 
-        void initEntity ( PropertyRender * unit ) override;
-        void drawEntity ( PropertyRender * unit, glm::vec3 position, Camera ) override;
+        void initEntity ( Entity3D * unit ) override;
+        void drawEntity ( Entity3D * unit, glm::vec3 position, Camera ) override;
 
         void beginFrame () override;
         void endFrame () override;
 
-        std::unique_ptr<PropertyRender> createEntity ( Info3D info ) override;
-        std::unique_ptr<PropertyRender> createSprite ( Sprite3D info ) override;
-        std::unique_ptr<PropertyRender> createModel ( Model3D info ) override;
+        std::unique_ptr<Entity3D> createEntity ( Info3D info ) override;
+        std::unique_ptr<Entity3D> createSprite ( Sprite3D info ) override;
+        std::unique_ptr<Entity3D> createModel ( Model3D info ) override;
 
-        void draw ( std::shared_ptr<PropertyRender>, glm::vec3 position, Camera ) override;
-        void draw ( std::shared_ptr<PropertyRender>, UniformBufferObject ubo ) override;
+        void draw ( std::shared_ptr<Entity3D>, glm::vec3 position, Camera ) override;
+        void draw ( std::shared_ptr<Entity3D>, UniformBufferObject ubo ) override;
         void drawText ( std::string text, glm::vec3 position, Camera camera ) override;
         static void keyCallback ( GLFWwindow* window, int key, int scancode, int action, int mods ) {
             VulkanRenderer* app = reinterpret_cast<VulkanRenderer*>(glfwGetWindowUserPointer ( window ));
@@ -286,7 +269,7 @@ namespace SEVIAN {
         bool framebufferResized = false;
         VulkanText fontText;
 
-        std::unordered_map<uint32_t, std::unique_ptr<Entity3D>> entities;
+        std::unordered_map<uint32_t, std::unique_ptr<Entity>> entities;
 
         // methods
         void initWindow ();
@@ -315,12 +298,21 @@ namespace SEVIAN {
             std::vector<VkVertexInputAttributeDescription> attributeDescriptions,
             VkDescriptorSetLayout& descriptorSetLayout );
         //std::map<std::string, VulkanTexture> mTextures;
+        
+        
+        
         std::map<std::string, std::shared_ptr<VulkanTexture>> mTextures;
         
+        
+        
+        
         Pipeline pipeline;
+
+        MeshManager * meshManager;
+        //std::unique_ptr<MeshManager> meshManager;
     };
 
-    class VulkanTexture : public TextureInterface
+    class VulkanTextureNO : public TextureInterface
     {
     public:
         const char* id;

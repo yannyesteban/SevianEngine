@@ -1,4 +1,9 @@
 #include "VulkanProperty.h"
 
-void SEVIAN::VulkanProperty::render ( UniformBufferObject ubo ) {
+using namespace SEVIAN;
+namespace VULKAN {
+	void VulkanProperty::render ( UniformBufferObject ubo ) {
+	}
 }
+
+

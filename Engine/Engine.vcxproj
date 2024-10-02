@@ -181,6 +181,8 @@
   <ItemGroup>
     <None Include="lights.frag" />
     <None Include="lights.vert" />
+    <None Include="MeshEntity.frag" />
+    <None Include="MeshEntity.vert" />
     <None Include="model.frag" />
     <None Include="model.vert" />
     <None Include="sdf.frag" />

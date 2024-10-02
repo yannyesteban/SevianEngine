@@ -9,7 +9,7 @@
 namespace SEVIAN { 
 	enum RenderEngine
 	{
-		VULKAN,
+		VK,
 		OPENGL,
 		DIRECTX,
 		METAL

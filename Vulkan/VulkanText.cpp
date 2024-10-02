@@ -65,7 +65,7 @@ std::vector<float> loadGlyphAndGenerateSDF ( FT_Face face, char character ) {
 	return generateSDF ( face->glyph );
 }
 
-namespace SEVIAN {
+namespace VULKAN {
 
 	void updateUniformBuffer5 ( void* uniformBuffersMapped, glm::vec3 position, 
 		Camera camera, uint32_t width, uint32_t height) {
@@ -278,7 +278,7 @@ namespace SEVIAN {
 		}
 	}
 
-	void SEVIAN::VulkanText::createTextureImage ( FT_Face face, char c, Character& character ) {
+	void VulkanText::createTextureImage ( FT_Face face, char c, Character& character ) {
 		if (FT_Load_Char (face, c, FT_LOAD_RENDER)) {
 			std::cerr << "No se pudo cargar el glifo" << std::endl;
 			return;
@@ -379,8 +379,8 @@ namespace SEVIAN {
 		}
 	}
 
-	std::shared_ptr<PropertyRender> VulkanText::init ( std::vector<VertexText> vertices, std::vector<uint32_t> indices, Character texture ) {
-		auto vulkanProp = std::make_shared<SEVIAN::VulkanProperty> ();
+	std::shared_ptr<Entity3D> VulkanText::init ( std::vector<VertexText> vertices, std::vector<uint32_t> indices, Character texture ) {
+		auto vulkanProp = std::make_shared<VulkanProperty> ();
 		
 		std::vector<VulkanUBuffer>  x = device->createUniformBuffer ( frames, sizeof ( UniformBufferObject2 ) );
 

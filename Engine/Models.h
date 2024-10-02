@@ -59,7 +59,7 @@ namespace SEVIAN {
         VkPipelineLayout pipelineLayout = VK_NULL_HANDLE;
 
         //PropertyRender* prop = nullptr;
-        std::shared_ptr<PropertyRender> prop;
+        std::shared_ptr<Entity3D> prop;
 
         MeshComponent ( const std::vector<Vertex>& verts, const std::vector<uint32_t>& inds )
             : vertices ( verts ), indices ( inds ) {
