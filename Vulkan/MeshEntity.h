@@ -5,8 +5,8 @@
 //#include "VulkanRenderer.h"
 using namespace SEVIAN;
 
-static VkVertexInputBindingDescription getBindingDescriptionGeneric ();
-static std::vector<VkVertexInputAttributeDescription> getAttributeDescriptionsGeneric ();
+VkVertexInputBindingDescription getBindingDescriptionGeneric ();
+std::vector<VkVertexInputAttributeDescription> getAttributeDescriptionsGeneric ();
 
 namespace VULKAN {
     class MeshEntity : public Entity3D {
@@ -20,34 +20,35 @@ namespace VULKAN {
 		VertexBuffer vertex;
 		VertexBuffer indices;
 
-		//VkPipeline pipeline = VK_NULL_HANDLE;
-		//VkPipelineLayout pipelineLayout = VK_NULL_HANDLE;
-		VkDescriptorSetLayout descriptorSetLayout;
-		std::vector<VkDescriptorSet> descriptorSets;
+		VkDescriptorSetLayout bufDescriptorSetLayout = VK_NULL_HANDLE;
+		VkDescriptorSetLayout texDescriptorSetLayout = VK_NULL_HANDLE;
+
+		std::vector<VkDescriptorSet> bufDescriptorSets;
         std::vector<VkDescriptorSet> texDescriptorSets;
 
 		size_t indicesSizes;
 
-		VkBuffer vertexBuffer = VK_NULL_HANDLE;
-		VkBuffer indexBuffer = VK_NULL_HANDLE;
-		VkDeviceMemory vertexBufferMemory = VK_NULL_HANDLE;
-		VkDeviceMemory indexBufferMemory = VK_NULL_HANDLE;
-		
+		//VkPipeline pipeline = VK_NULL_HANDLE;
+		//VkPipelineLayout pipelineLayout = VK_NULL_HANDLE;
+		//VkBuffer vertexBuffer = VK_NULL_HANDLE;
+		//VkBuffer indexBuffer = VK_NULL_HANDLE;
+		//VkDeviceMemory vertexBufferMemory = VK_NULL_HANDLE;
+		//VkDeviceMemory indexBufferMemory = VK_NULL_HANDLE;
+		std::vector<VulkanUBuffer> ubo;
 
-		Pipeline pipeline;
+		//Pipeline pipeline;
+		VkPipelineLayout pipelineLayout;
+;		VkPipeline pipeline;
 
-		MeshEntity ( Device* device, TextureManager* textureManager, Info3D info, std::vector<VkDescriptorSet> _descriptorSetLayout, Pipeline _pipeline, VkDescriptorSetLayout descriptorSetLayout );
 
 
     public: 
-        MeshEntity ( Device* device, TextureManager* textureManager, Info3D info );
-        MeshEntity ( Device* device, TextureManager* textureManager, VkDescriptorSetLayout descriptorSetLayout, std::vector<VkDescriptorSet> descriptorSet, Pipeline pipeline, Info3D info );
+		MeshEntity ( Device* device, TextureManager* textureManager, Info3D info, VkPipelineLayout pipelineLayout, VkPipeline pipeline, VkDescriptorSetLayout descriptorSetLayout, VkDescriptorSetLayout texDescriptorSetLayout );
+
         void render ( UniformBufferObject ubo ) override;
 
-        std::vector<VulkanUBuffer> ubo;
-        std::vector<VulkanUBuffer> ubo2;
-        std::vector<VulkanUBuffer> light;
-        std::vector<VulkanUBuffer> me;
+       
+       
     };
 
     

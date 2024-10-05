@@ -18,7 +18,7 @@ namespace SEVIAN {
 
     std::shared_ptr<Entity> createSquareEntity ( Scene& scene, float deltaX, float deltaY, float deltaZ );
 
-    std::shared_ptr<Entity> createCubeEntity ( const Key& name, Scene& scene, float deltaX, float deltaY, float deltaZ );
+    std::shared_ptr<Entity> createCubeEntity ( const std::string& textureName, const std::string& textureFile, const Key& name, Scene& scene, float deltaX, float deltaY, float deltaZ );
 
 
 }

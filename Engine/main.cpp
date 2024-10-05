@@ -1,5 +1,5 @@
 #include <iostream>
-#include "VulkanRenderer.h"
+#include "Renderer.h"
 #include "VulkanFactory.h"
 #include "Game.h"
 using namespace SEVIAN;

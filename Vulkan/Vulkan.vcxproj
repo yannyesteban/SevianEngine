@@ -31,7 +31,7 @@
     <ClInclude Include="VulkanEntity.h" />
     <ClInclude Include="VulkanFactory.h" />
     <ClInclude Include="VulkanProperty.h" />
-    <ClInclude Include="VulkanRenderer.h" />
+    <ClInclude Include="Renderer.h" />
     <ClInclude Include="VulkanText.h" />
   </ItemGroup>
   <ItemGroup>
@@ -46,7 +46,7 @@
     <ClCompile Include="VulkanEntity.cpp" />
     <ClCompile Include="VulkanFactory.cpp" />
     <ClCompile Include="VulkanProperty.cpp" />
-    <ClCompile Include="VulkanRenderer.cpp" />
+    <ClCompile Include="Renderer.cpp" />
     <ClCompile Include="VulkanText.cpp" />
   </ItemGroup>
   <PropertyGroup Label="Globals">

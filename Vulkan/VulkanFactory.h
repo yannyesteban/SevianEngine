@@ -1,7 +1,7 @@
 #pragma once
 
 #include "RendererFactory.h"
-#include "VulkanRenderer.h"
+#include "Renderer.h"
 
 using namespace SEVIAN;
 namespace VULKAN {

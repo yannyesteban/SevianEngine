@@ -1,9 +1,17 @@
 #include "renderSystem.h"
 
+const int it = 1;
 namespace SEVIAN {
 	void RenderSystem::init ( std::vector<std::shared_ptr<Entity>>& entities ) {
 
 		for (auto& entity : entities) {
+
+			auto index = entity->getID ();
+
+			if (index != it) {
+				//continue;
+			}
+
 			auto mesh = entity->getComponent<MeshComponent> ();
 			auto material = entity->getComponent<MaterialComponent> ();
 			auto texture = entity->getComponent<TextureComponent> ();
@@ -19,12 +27,12 @@ namespace SEVIAN {
 
 
 
-			if (mesh && t == "diffuse1" && texture) {
+			if (mesh /* && t == "diffuse1"*/ && texture) {
 				Info3D info;
 				
 				renderer->addTexture ( texture->name, texture->path );
 
-				info.entityId = entity->getID ();
+				info.entityId = index;
 				info.vertices = mesh->vertices;
 				info.indices = mesh->indices;
 				
@@ -32,7 +40,8 @@ namespace SEVIAN {
 				info.path = texture->path;
 				auto e = renderer->createEntity ( info );
 				std::cout << " model " << texture->path << "</n";
-				units[info.entityId] = std::move ( e );
+				mesh->prop = std::move ( e );
+				//units[index] = std::move ( e );
 				continue;
 			}
 			if (model) {
@@ -87,6 +96,12 @@ namespace SEVIAN {
 		renderer->beginFrame ();
 		for (auto& entity : entities) {
 			
+			auto index = entity->getID ();
+
+			if (index > 0 && index != it) {
+				//continue;
+			}
+
 
 			auto mesh = entity->getComponent<MeshComponent> ();
 			auto position = entity->getComponent<PositionComponent> ();
@@ -106,11 +121,15 @@ namespace SEVIAN {
 			if (camera) {
 				std::cout << "... PRE SET " << camera->position.z << "\n";
 				Tools::setCamera ( camera );
+				continue;
 
 			}
-			if (!units[entity->getID ()]) {
-				continue;
+			if (!units[index]) {
+				//continue;
 			}
+
+			
+
 			if (!model && !(mesh && material && texture)) {
 				continue;
 			}
@@ -146,20 +165,43 @@ namespace SEVIAN {
 
 			//ubo.view = glm::lookAt ( glm::vec3 ( 2.0f, 2.0f, 2.0f ), glm::vec3 ( 0.0f, 0.0f, 0.0f ), glm::vec3 ( 0.0f, 0.0f, 1.0f ) );
 			ubo.proj = glm::perspective ( glm::radians ( 45.0f ), 1300 / (float) 600, 0.1f, 100.0f );
+			ubo.proj[1][1] *= -1;
+			//units[index]->render ( ubo );
 
-			//units[entity->getID ()]->render ( ubo );
+			mesh->prop->render ( ubo );
 
-			if (model) {
+			if (units[index]) {
+
+				mesh->prop->render ( ubo );
 				
+				std::cout << " index -> " << index;
+
+
+
 				//std::cout << "..." << cam.position.z << "\n";
 				// renderer->drawEntity ( entity->getID (), position->position, cam );
 				//renderer->draw ( mesh->prop, position->position, cam);
-				 //auto ee = units[entity->getID ()]; // Aquí no se usa .get() si units es std::shared_ptr<PropertyRender>
+				 //auto ee = units[index]; // Aquí no se usa .get() si units es std::shared_ptr<PropertyRender>
 
 
 				//renderer->draw ( units[entity->getID ()], position->position, cam );
-				units[entity->getID ()]->render ( ubo );
-				//renderer->draw ( units[entity->getID ()], ubo );
+				//units[index]->render ( ubo );
+				//renderer->draw ( units[index], ubo );
+
+				continue;
+			}
+			/*
+			if (model) {
+				
+				//std::cout << "..." << cam.position.z << "\n";
+				// renderer->drawEntity ( index, position->position, cam );
+				//renderer->draw ( mesh->prop, position->position, cam);
+				 //auto ee = units[index]; // Aquí no se usa .get() si units es std::shared_ptr<PropertyRender>
+
+
+				//renderer->draw ( units[index], position->position, cam );
+				units[index]->render ( ubo );
+				//renderer->draw ( units[index], ubo );
 
 				continue;
 			}
@@ -183,6 +225,7 @@ namespace SEVIAN {
 				//renderer->drawText ( "YANNY", position->position, cam );
 
 			}
+			*/
 		}
 
 		renderer->endFrame ();

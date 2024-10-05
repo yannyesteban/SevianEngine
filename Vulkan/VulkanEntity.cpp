@@ -91,10 +91,7 @@ namespace VULKAN {
 		me.color2 = glm::vec3 ( 0.5f, 0.0f, 1.0f );
 		me.intensity = 2.1f - 0.11f;
 
-		ubo.proj[1][1] *= -1;
-		ubo.zoom = 4.5;
-		ubo.color = glm::vec3 ( 0.9f, 0.12f, 0.10f );
-		ubo.position = glm::vec3 ( 1.0, 0.0, 0.0 );
+		
 		LightUBO l = { };
 
 		l.position = glm::vec3 ( 0.6f, 0.05f, 0.1f );

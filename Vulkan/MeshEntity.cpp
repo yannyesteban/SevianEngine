@@ -1,6 +1,6 @@
 #include "MeshEntity.h"
 
-static VkVertexInputBindingDescription getBindingDescriptionGeneric () {
+VkVertexInputBindingDescription getBindingDescriptionGeneric () {
 	VkVertexInputBindingDescription bindingDescription {};
 	bindingDescription.binding = 0;
 	bindingDescription.stride = sizeof ( SEVIAN::Vertex );
@@ -8,7 +8,7 @@ static VkVertexInputBindingDescription getBindingDescriptionGeneric () {
 
 	return bindingDescription;
 }
-static std::vector<VkVertexInputAttributeDescription> getAttributeDescriptionsGeneric () {
+std::vector<VkVertexInputAttributeDescription> getAttributeDescriptionsGeneric () {
 	std::vector<VkVertexInputAttributeDescription> attributeDescriptions ( 4, {} );
 	/*    glm::vec3 position;
 	glm::vec3 normal;
@@ -40,27 +40,36 @@ static std::vector<VkVertexInputAttributeDescription> getAttributeDescriptionsGe
 namespace VULKAN {
 
 
-	MeshEntity::MeshEntity ( Device* device, TextureManager* textureManager, Info3D info, std::vector<VkDescriptorSet> descriptorSets, Pipeline pipeline, VkDescriptorSetLayout descriptorSetLayout ):
-		device(device), textureManager ( textureManager ), info ( info ), descriptorSets( descriptorSets ), pipeline( pipeline ), descriptorSetLayout( descriptorSetLayout ) {
+	MeshEntity::MeshEntity ( Device* device, TextureManager* textureManager, Info3D info, VkPipelineLayout pipelineLayout, VkPipeline pipeline, VkDescriptorSetLayout bufDescriptorSetLayout, VkDescriptorSetLayout texDescriptorSetLayout )
+			:device(device), textureManager ( textureManager ), info ( info ), pipelineLayout( pipelineLayout ), pipeline( pipeline ), bufDescriptorSetLayout( bufDescriptorSetLayout ), texDescriptorSetLayout ( texDescriptorSetLayout ) {
 		
+		//ubo = device->createUniformBuffer ( device->frames, sizeof ( UniformBufferObject ) );
 		
-		
-		auto attributeDescriptions = getAttributeDescriptionsGeneric ();
+		//auto attributeDescriptions = getAttributeDescriptionsGeneric ();
+
+
+		this->ubo = device->createUniformBuffer ( device->frames, sizeof ( UniformBufferObject ) );
+
+		std::vector<BufferInfo> buffersInfo1;
+		buffersInfo1.push_back ( { VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, ubo, sizeof ( UniformBufferObject ), VK_NULL_HANDLE, VK_NULL_HANDLE, 0 } );
+
+		//bufDescriptorSetLayout = device->createDescriptorSetLayout ( buffersInfo1 );
+		this->bufDescriptorSets = device->createDescriptorSets ( bufDescriptorSetLayout, buffersInfo1 );
 
 		textureManager->add ( info.texture, info.path );
 		auto texture = textureManager->get ( info.texture );
-		
+		//ubo = device->createUniformBuffer ( device->frames, sizeof ( UniformBufferObject ) );
 		std::vector<BufferInfo> buffersInfo;
 		buffersInfo.push_back ( { VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, ubo, sizeof ( UniformBufferObject ), texture->imageView, texture->sampler, 0 } );
 		
-		auto descriptorSetLayout2 = device->createDescriptorSetLayout ( buffersInfo );
+		//auto descriptorSetLayout2 = device->createDescriptorSetLayout ( buffersInfo );
 
 		
-		texDescriptorSets = device->createDescriptorSets ( descriptorSetLayout2, buffersInfo );
+		this->texDescriptorSets = device->createDescriptorSets ( texDescriptorSetLayout, buffersInfo );
 
-		std::vector <VkDescriptorSetLayout> descriptorSetLayouts = { descriptorSetLayout , descriptorSetLayout2 };
+		//std::vector <VkDescriptorSetLayout> descriptorSetLayouts = { descriptorSetLayout , descriptorSetLayout2 };
 
-		this->pipeline = device->createGraphPipeline ( getBindingDescriptionGeneric (), attributeDescriptions, descriptorSetLayouts, "shaders/MeshEntityVert.spv", "shaders/MeshEntityFrag.spv" );
+		//this->pipeline = device->createGraphPipeline ( getBindingDescriptionGeneric (), attributeDescriptions, descriptorSetLayouts, "shaders/MeshEntityVert.spv", "shaders/MeshEntityFrag.spv" );
 
 		vertex = device->createDataBuffer ( (void*) info.vertices.data (), sizeof ( info.vertices[0] ) * info.vertices.size (), VK_BUFFER_USAGE_VERTEX_BUFFER_BIT );
 		indices = device->createDataBuffer ( (void*) info.indices.data (), sizeof ( info.indices[0] ) * info.indices.size (), VK_BUFFER_USAGE_INDEX_BUFFER_BIT );
@@ -70,81 +79,25 @@ namespace VULKAN {
 		
 	}
 	
-	MeshEntity::MeshEntity ( Device* device, TextureManager* textureManager, Info3D info ) : MeshEntity ( device, textureManager, info, { }, { }, VK_NULL_HANDLE ) {
-	}
-
-	MeshEntity::MeshEntity ( Device* device, TextureManager* textureManager, VkDescriptorSetLayout descriptorSetLayout, std::vector<VkDescriptorSet> descriptorSet, Pipeline pipeline, Info3D info ) : MeshEntity ( device, textureManager, info, descriptorSet, pipeline, descriptorSetLayout ) {
-	}
+	
 	void MeshEntity::render ( UniformBufferObject ubo ) {
 		auto currentFrame = device->currentFrame;
 
-
 		Frame frame = device->frames[currentFrame];
 		auto commandBuffer = frame.commandBuffers;
-		MeUBO me = {};
-		me.color = glm::vec3 ( 0.99f, 0.026f, 0.011f );
-		me.color2 = glm::vec3 ( 0.5f, 0.0f, 1.0f );
-		me.intensity = 2.1f - 0.11f;
-
-		ubo.proj[1][1] *= -1;
-		ubo.zoom = 4.5;
-		ubo.color = glm::vec3 ( 0.9f, 0.12f, 0.10f );
-		ubo.position = glm::vec3 ( 1.0, 0.0, 0.0 );
-		LightUBO l = { };
-
-		l.position = glm::vec3 ( 0.6f, 0.05f, 0.1f );
-		l.color = glm::vec3 ( 0.6f, 0.3f, 0.0f );
-		l.intensity = 0.5f;
-
-
-		UniformBufferObject ubo2 {};
-
-
-		glm::mat4 translation = glm::translate ( glm::mat4 ( 1.0f ), l.position );
-		//glm::mat4 rotation = glm::rotate ( glm::mat4 ( 1.0f ), time * 0.1f * glm::radians ( 90.0f ), glm::vec3 ( 0.0f, 0.0f, 1.0f ) );
-
-		glm::mat4 rotationMat = glm::rotate ( glm::mat4 ( 1.0f ), l.color.z, glm::vec3 ( 0.0f, 0.0f, 1.0f ) ) *
-			glm::rotate ( glm::mat4 ( 1.0f ), l.color.y, glm::vec3 ( 0.0f, 1.0f, 0.0f ) ) *
-			glm::rotate ( glm::mat4 ( 1.0f ), l.color.x, glm::vec3 ( 1.0f, 0.0f, 0.0f ) );
-		ubo2.model = translation * rotationMat;
-
-
-		//ubo.model = /* rotation * */  translation;
-
-
-		// Posición de la cámara arriba en el eje Z
-		glm::vec3 cameraPos = glm::vec3 ( 0.0f, 0.0f, -5.0f );
-
-		//glm::vec3 cameraPos = glm::vec3 ( 0.0f, 0.0f, 5.0f );
-
-		// Punto al que está mirando la cámara (el origen en este caso)
-		glm::vec3 target = glm::vec3 ( 0.0f, 0.0f, 0.0f );
-		// Dirección "up" (hacia el eje Y)
-		//glm::vec3 up = camera.up; // glm::vec3 ( 0.0f, 1.0f, 0.0f );
-		glm::vec3 up = glm::vec3 ( 0.0f, -25.0f, 0.0f );
-
-		ubo2.view = glm::lookAt ( cameraPos, target, up );
-
-		//ubo.view = glm::lookAt ( glm::vec3 ( 2.0f, 2.0f, 2.0f ), glm::vec3 ( 0.0f, 0.0f, 0.0f ), glm::vec3 ( 0.0f, 0.0f, 1.0f ) );
-		ubo2.proj = glm::perspective ( glm::radians ( 45.0f ), 1300 / (float) 600, 0.1f, 100.0f );
-
-
-		memcpy ( this->light[currentFrame].buffersMapped, &l, sizeof ( l ) );
-		memcpy ( this->me[currentFrame].buffersMapped, &me, sizeof ( me ) );
+		
 		memcpy ( this->ubo[currentFrame].buffersMapped, &ubo, sizeof ( ubo ) );
-		//memcpy ( entity->ubo2[currentFrame].buffersMapped, &ubo2, sizeof ( ubo2 ) );
-
-
+		
 		VkBuffer vertexBuffers[] = { vertex.buffer };
 		VkDeviceSize offsets[] = { 0 };
-
-		vkCmdBindPipeline ( commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline.pipeline );
+		std::cout << " vertex.buffer -> " << vertex.buffer << "\n";
+		vkCmdBindPipeline ( commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline );
 		vkCmdBindVertexBuffers ( commandBuffer, 0, 1, vertexBuffers, offsets );
 		//vkCmdBindIndexBuffer(commandBuffer, indices.buffer, 0, VK_INDEX_TYPE_UINT16);
 		vkCmdBindIndexBuffer ( commandBuffer, indices.buffer, 0, VK_INDEX_TYPE_UINT32 );
 
-		vkCmdBindDescriptorSets ( commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline.pipelineLayout, 0, 1, &descriptorSets[currentFrame], 0, nullptr );
-		vkCmdBindDescriptorSets ( commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline.pipelineLayout, 1, 1, &texDescriptorSets[currentFrame], 0, nullptr );
+		vkCmdBindDescriptorSets ( commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipelineLayout, 0, 1, &bufDescriptorSets[currentFrame], 0, nullptr );
+		vkCmdBindDescriptorSets ( commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipelineLayout, 1, 1, &texDescriptorSets[currentFrame], 0, nullptr );
 		vkCmdDrawIndexed ( commandBuffer, static_cast<uint32_t>(indicesSizes), 1, 0, 0, 0 );
 	}
 }

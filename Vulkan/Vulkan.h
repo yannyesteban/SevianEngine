@@ -61,6 +61,12 @@ namespace VULKAN {
         void* buffersMapped;
     };
 
+    struct DSLInfo
+    {
+        VkDescriptorType descriptorType; // Tipo de descriptor
+        uint32_t binding;               // Índice de binding
+    };
+
     struct BufferInfo
     {
         VkDescriptorType descriptorType; // Tipo de descriptor

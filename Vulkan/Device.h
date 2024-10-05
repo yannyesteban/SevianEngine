@@ -49,7 +49,7 @@ namespace VULKAN {
 
 		Device ( VkPhysicalDevice pPhysicalDevice, VkDevice pDevice, VkQueue pGraphicsQueue );
 		VkDescriptorSetLayout createDescriptorSetLayout ();
-		VkDescriptorSetLayout createDescriptorSetLayout ( std::vector <BufferInfo> info );
+		VkDescriptorSetLayout createDescriptorSetLayout ( std::vector <DSLInfo> info );
 
 		VkDescriptorPool createDescriptorPool ();
 		void createUniformBuffers ( Frame& frame, VkDeviceSize bufferSize );
@@ -67,6 +67,8 @@ namespace VULKAN {
 
 		VulkanDepthResources createDepthResources ( VkExtent2D extent );
 
+
+		VkPipelineLayout createPipelineLayout ( std::vector<VkDescriptorSetLayout> descriptorSetLayouts );
 
 		VkPipeline createGraphicsPipeline ( VkVertexInputBindingDescription bindingDescription,
 			std::vector < VkVertexInputAttributeDescription> attributeDescriptions, VkDescriptorSetLayout& descriptorSetLayout );

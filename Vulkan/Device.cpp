@@ -119,7 +119,7 @@ namespace VULKAN {
 
 		return descriptorSetLayout1;
 	}
-	VkDescriptorSetLayout Device::createDescriptorSetLayout ( std::vector<BufferInfo> info ) {
+	VkDescriptorSetLayout Device::createDescriptorSetLayout ( std::vector<DSLInfo> info ) {
 		VkDescriptorSetLayout descriptorSetLayout1;
 
 		std::vector<VkDescriptorSetLayoutBinding> bindings = {  };
@@ -310,6 +310,21 @@ namespace VULKAN {
 			throw std::runtime_error ( "failed to create synchronization objects for a frame!" );
 		}
 
+	}
+
+	VkPipelineLayout Device::createPipelineLayout ( std::vector<VkDescriptorSetLayout> descriptorSetLayouts ) {
+
+		VkPipelineLayout pipelineLayout = VK_NULL_HANDLE;
+		
+		VkPipelineLayoutCreateInfo pipelineLayoutInfo {};
+		pipelineLayoutInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
+		pipelineLayoutInfo.setLayoutCount = descriptorSetLayouts.size ();
+		pipelineLayoutInfo.pSetLayouts = descriptorSetLayouts.data ();
+
+		if (vkCreatePipelineLayout ( device, &pipelineLayoutInfo, nullptr, &pipelineLayout ) != VK_SUCCESS) {
+			throw std::runtime_error ( "failed to create pipeline layout!" );
+		}
+		return pipelineLayout;
 	}
 
 	VkPipeline Device::createGraphicsPipeline ( VkVertexInputBindingDescription bindingDescription,

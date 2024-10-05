@@ -2,7 +2,7 @@
 #include <cstdint>
 #include <string>
 #include <memory>
-#include <VulkanRenderer.h>
+#include <Renderer.h>
 #include "World.h"
 #include "createSquareEntity.h"
 

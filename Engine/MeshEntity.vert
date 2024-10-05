@@ -9,13 +9,11 @@ layout(location = 0) out vec3 fragColor;
 layout(location = 1) out vec2 fragTexCoord;
 
 layout(set = 0, binding = 0) uniform UniformBufferObject {
-    vec3 color;
+    
     mat4 model;
     mat4 view;
     mat4 proj;
-    vec3 color2;
-    float zoom;
-    vec3 position;
+    
 } ubo;
 
 void main() {
