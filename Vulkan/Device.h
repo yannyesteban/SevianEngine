@@ -59,8 +59,8 @@ namespace VULKAN {
 
 		std::vector<VkDescriptorSet> createDescriptorSets ( std::vector<VulkanUBuffer>& buffers, VkImageView textureImageView, VkSampler textureSampler, VkDeviceSize range );
 		std::vector<VkDescriptorSet> createDescriptorSets ( std::vector<Frame>& frames, VkDescriptorPool descriptorPool, VkImageView textureImageView, VkSampler textureSampler, VkDeviceSize range );
-		std::vector<VkDescriptorSet> createDescriptorSets ( std::vector <BufferInfo> info );
-		std::vector<VkDescriptorSet> createDescriptorSets ( VkDescriptorSetLayout descriptorSetLayout, std::vector <BufferInfo> info );
+		std::vector<VkDescriptorSet> createDescriptorSets ( std::vector <DSInfo> info );
+		std::vector<VkDescriptorSet> createDescriptorSets ( VkDescriptorSetLayout descriptorSetLayout, std::vector <DSInfo> info );
 
 		VkFormat findSupportedFormat ( const std::vector<VkFormat>& candidates, VkImageTiling tiling, VkFormatFeatureFlags features );
 		VkFormat findDepthFormat ();

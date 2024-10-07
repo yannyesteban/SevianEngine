@@ -67,7 +67,7 @@ namespace VULKAN {
         uint32_t binding;               // Índice de binding
     };
 
-    struct BufferInfo
+    struct DSInfo
     {
         VkDescriptorType descriptorType; // Tipo de descriptor
         std::vector<VulkanUBuffer>& buffers;

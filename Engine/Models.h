@@ -135,20 +135,23 @@ namespace SEVIAN {
     {
         void update ( float deltaTime ) override;
         
-        glm::vec3 position;
-        glm::vec3 front;
-        glm::vec3 up;
+        glm::vec3 position = glm::vec3 ( 0.0f, 0.0f, 5.0f );
+        glm::vec3 target = glm::vec3 ( 0.0f, 0.0f, 0.0f );
+        glm::vec3 up = glm::vec3 ( 0.0f, 10.0f, 0.0f );
 
         float zoomLevel = 45.0f;
 
         float yaw = -90.0f;
         float pitch = 0.0f;
         float sensitivity = 0.1f;
+
+        alignas(16) glm::mat4 view;
+        alignas(16) glm::mat4 proj;
         
 
        
     };
-
+    
     struct NameComponent : public Component
     {
         Key name = Key::A;
@@ -156,6 +159,27 @@ namespace SEVIAN {
         NameComponent ( const Key& _name )
             : name ( _name ) {
         }
+        void update ( float deltaTime ) override;
+    };
+
+    struct LightComponent : public Component
+    {
+        enum LightType
+        {
+            Directional,
+            Point,
+            Spotlight
+        };
+
+        LightType type = Directional;
+        
+        glm::vec3 position = glm::vec3 ( 0.0, 0.0, 1.0 );  // Solo para Point/Spotlight
+        glm::vec3 direction = glm::vec3 ( 0.0f, -1.0f, 0.0f );  // Para Directional/Spotlight
+        glm::vec3 color = glm::vec3 ( 1.0f );  // Color de la luz
+        float intensity = 1.0f;  // Intensidad de la luz
+        float radius = 1.0f;  // Para Point/Spotlight
+        float cutoff = glm::radians ( 12.5f );  // Ángulo para spotlight
+
         void update ( float deltaTime ) override;
     };
 }

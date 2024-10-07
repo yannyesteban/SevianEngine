@@ -636,7 +636,7 @@ namespace VULKAN {
 		return descriptorSets;
 	}
 
-	std::vector<VkDescriptorSet> Device::createDescriptorSets ( std::vector <BufferInfo> info ) {
+	std::vector<VkDescriptorSet> Device::createDescriptorSets ( std::vector <DSInfo> info ) {
 		auto framesCount = MAX_FRAMES_IN_FLIGHT;
 
 		std::vector<VkDescriptorSet> descriptorSets;
@@ -700,7 +700,7 @@ namespace VULKAN {
 		return descriptorSets;
 	}
 
-	std::vector<VkDescriptorSet> Device::createDescriptorSets ( VkDescriptorSetLayout descriptorSetLayout, std::vector<BufferInfo> info ) {
+	std::vector<VkDescriptorSet> Device::createDescriptorSets ( VkDescriptorSetLayout descriptorSetLayout, std::vector<DSInfo> info ) {
 		auto framesCount = MAX_FRAMES_IN_FLIGHT;
 
 		std::vector<VkDescriptorSet> descriptorSets;

@@ -2,6 +2,12 @@
 #include "RenderSystem.h"
 #include "RaceSystem.h"
 
+#include "CameraEntity.h"
+#include "CameraSystem.h"
+
+#include "LightEntity.h"
+#include "LightSystem.h"
+
 
 int SEVIAN::Game::play () {
 
@@ -26,6 +32,14 @@ int SEVIAN::Game::play () {
 
     auto cameraEntity = createCamera ( *scene );
 
+    CameraComponent info = {  };
+    auto cam2 = createCamera ( *scene, info );
+
+
+    LightComponent lightInfo = {  };
+    auto light = createLight ( *scene, lightInfo );
+
+
     //auto squareEntity4 = createSpriteEntity ( *scene, "c", "textures/c.jpg", 0.0, 0.0, 0.0f );
     
     //auto modelEntity1 = createModelEntity ( *scene, "models/viking_room.obj", "textures/viking_room.png" );
@@ -40,12 +54,15 @@ int SEVIAN::Game::play () {
     auto cubo3 = createCubeEntity ( "c", "textures/c.jpg", Key::N7, * scene, 0.0, 0.0, 0.0 );
     
     auto movementSystem = std::make_shared<RaceSystem> ( );
+    auto lightSystem = std::make_shared<LightSystem> ();
+    auto cameraSystem = std::make_shared<CameraSystem> ();
     auto renderSystem = std::make_shared<RenderSystem> ( render );
 
     scene->addSystem ( movementSystem );
+    scene->addSystem ( lightSystem );
+    scene->addSystem ( cameraSystem );
     scene->addSystem ( renderSystem );
 	
-
     
     scene->init ();
 

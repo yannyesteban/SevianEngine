@@ -26,7 +26,6 @@ namespace SEVIAN {
 			}
 
 
-
 			if (mesh /* && t == "diffuse1"*/ && texture) {
 				Info3D info;
 				
@@ -94,138 +93,54 @@ namespace SEVIAN {
 	void RenderSystem::update ( std::vector<std::shared_ptr<Entity>>& entities ) {
 
 		renderer->beginFrame ();
+		
+		CameraComponent * lastCamera = nullptr;
+		LightComponent* lastLight = nullptr;
+		
 		for (auto& entity : entities) {
 			
-			auto index = entity->getID ();
-
-			if (index > 0 && index != it) {
-				//continue;
-			}
-
-
 			auto mesh = entity->getComponent<MeshComponent> ();
 			auto position = entity->getComponent<PositionComponent> ();
 			auto rotation = entity->getComponent<RotationComponent> ();
 			auto scale = entity->getComponent<ScaleComponent> ();
-
-
-			auto material = entity->getComponent<MaterialComponent> ();
-			auto texture = entity->getComponent<TextureComponent> ();
-			auto model = entity->getComponent<ModelComponent> ();
-			
-
 			auto camera = entity->getComponent<CameraComponent> ();
-
-			
+			auto light = entity->getComponent<LightComponent> ();
 
 			if (camera) {
-				std::cout << "... PRE SET " << camera->position.z << "\n";
-				Tools::setCamera ( camera );
+				lastCamera = camera;
 				continue;
-
 			}
-			if (!units[index]) {
-				//continue;
-			}
-
-			
-
-			if (!model && !(mesh && material && texture)) {
+			if (light) {
+				lastLight = light;
 				continue;
 			}
 
-			auto cam = *Tools::getCamera ();
+			if (lastCamera == nullptr || lastLight == nullptr) {
+				continue;
+			}
+
+			if (!mesh) {
+				continue;
+			}
+
 			UniformBufferObject ubo {};
 
-			std::cout << "ROTATION: " << rotation->rotation.x << ":" << rotation->rotation.y << ":" << rotation->rotation.z << "\n";
 			glm::mat4 translation = glm::translate ( glm::mat4 ( 1.0f ), position->position );
 			//glm::mat4 rotation = glm::rotate ( glm::mat4 ( 1.0f ), time * 0.1f * glm::radians ( 90.0f ), glm::vec3 ( 0.0f, 0.0f, 1.0f ) );
 
 			glm::mat4 rotationMat = glm::rotate ( glm::mat4 ( 1.0f ), rotation->rotation.z, glm::vec3 ( 0.0f, 0.0f, 1.0f ) ) *
-				glm::rotate ( glm::mat4 ( 1.0f ), rotation->rotation.y, glm::vec3 ( 0.0f, 1.0f, 0.0f ) ) *
-				glm::rotate ( glm::mat4 ( 1.0f ), rotation->rotation.x, glm::vec3 ( 1.0f, 0.0f, 0.0f ) );
-			ubo.model = translation * rotationMat;
+									glm::rotate ( glm::mat4 ( 1.0f ), rotation->rotation.y, glm::vec3 ( 0.0f, 1.0f, 0.0f ) ) *
+									glm::rotate ( glm::mat4 ( 1.0f ), rotation->rotation.x, glm::vec3 ( 1.0f, 0.0f, 0.0f ) );
+			ubo.model = translation * rotationMat;	//ubo.model = /* rotation * */  translation;
 
+			ubo.view = lastCamera->view;
+			ubo.proj = lastCamera->proj;
 
-			//ubo.model = /* rotation * */  translation;
-
-
-			// Posición de la cámara arriba en el eje Z
-			glm::vec3 cameraPos = cam.position;//glm::vec3 ( 0.0f, 0.0f, -5.0f );
-
-			//glm::vec3 cameraPos = glm::vec3 ( 0.0f, 0.0f, 5.0f );
-
-			// Punto al que está mirando la cámara (el origen en este caso)
-			glm::vec3 target = glm::vec3 ( 0.0f, 0.0f, 0.0f );
-			// Dirección "up" (hacia el eje Y)
-			//glm::vec3 up = camera.up; // glm::vec3 ( 0.0f, 1.0f, 0.0f );
-			glm::vec3 up = glm::vec3 ( 0.0f, 10.0f, 0.0f );
-
-			ubo.view = glm::lookAt ( cameraPos, target, up );
-
-			//ubo.view = glm::lookAt ( glm::vec3 ( 2.0f, 2.0f, 2.0f ), glm::vec3 ( 0.0f, 0.0f, 0.0f ), glm::vec3 ( 0.0f, 0.0f, 1.0f ) );
-			ubo.proj = glm::perspective ( glm::radians ( 45.0f ), 1300 / (float) 600, 0.1f, 100.0f );
-			ubo.proj[1][1] *= -1;
-			//units[index]->render ( ubo );
-
+			ubo.position = lastLight->position;
+			ubo.cameraPos = lastCamera->position;
 			mesh->prop->render ( ubo );
-
-			if (units[index]) {
-
-				mesh->prop->render ( ubo );
-				
-				std::cout << " index -> " << index;
-
-
-
-				//std::cout << "..." << cam.position.z << "\n";
-				// renderer->drawEntity ( entity->getID (), position->position, cam );
-				//renderer->draw ( mesh->prop, position->position, cam);
-				 //auto ee = units[index]; // Aquí no se usa .get() si units es std::shared_ptr<PropertyRender>
-
-
-				//renderer->draw ( units[entity->getID ()], position->position, cam );
-				//units[index]->render ( ubo );
-				//renderer->draw ( units[index], ubo );
-
-				continue;
-			}
-			/*
-			if (model) {
-				
-				//std::cout << "..." << cam.position.z << "\n";
-				// renderer->drawEntity ( index, position->position, cam );
-				//renderer->draw ( mesh->prop, position->position, cam);
-				 //auto ee = units[index]; // Aquí no se usa .get() si units es std::shared_ptr<PropertyRender>
-
-
-				//renderer->draw ( units[index], position->position, cam );
-				units[index]->render ( ubo );
-				//renderer->draw ( units[index], ubo );
-
-				continue;
-			}
-
-
-			if (mesh && material && texture) {
-				//auto cam = *Tools::getCamera ();
-				units[entity->getID ()]->render ( ubo );
-				//renderer->draw ( units[entity->getID ()], ubo );
-				
-				// renderer->drawEntity ( entity->getID (), position->position, cam );
-				//renderer->draw ( mesh->prop, position->position, cam);
-				 //auto ee = units[entity->getID ()]; // Aquí no se usa .get() si units es std::shared_ptr<PropertyRender>
-
-
-				//renderer->draw ( units[entity->getID ()], position->position, cam );
-
-
-				//auto e = units[entity->getID ()].get ();
-				//renderer->draw (e, position->position, cam ); <--error
-				//renderer->drawText ( "YANNY", position->position, cam );
-
-			}
-			*/
+			//renderer->drawText ( "YANNY", position->position, cam );
+			
 		}
 
 		renderer->endFrame ();

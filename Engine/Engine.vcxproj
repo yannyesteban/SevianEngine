@@ -135,12 +135,16 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="CameraEntity.cpp" />
+    <ClCompile Include="CameraSystem.cpp" />
     <ClCompile Include="Component.cpp" />
     <ClCompile Include="App1.cpp" />
     <ClCompile Include="Entity.cpp" />
     <ClCompile Include="Game.cpp" />
     <ClCompile Include="InitializationSystem.cpp" />
     <ClCompile Include="InputSystem.cpp" />
+    <ClCompile Include="LightEntity.cpp" />
+    <ClCompile Include="LightSystem.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="Models.cpp" />
     <ClCompile Include="MovementSystem.cpp" />
@@ -160,6 +164,8 @@
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="CameraEntity.h" />
+    <ClInclude Include="CameraSystem.h" />
     <ClInclude Include="Component.h" />
     <ClInclude Include="App1.h" />
     <ClInclude Include="createSquareEntity.h" />
@@ -167,6 +173,8 @@
     <ClInclude Include="Game.h" />
     <ClInclude Include="InitializationSystem.h" />
     <ClInclude Include="InputSystem.h" />
+    <ClInclude Include="LightEntity.h" />
+    <ClInclude Include="LightSystem.h" />
     <ClInclude Include="Models.h" />
     <ClInclude Include="MovementSystem.h" />
     <ClInclude Include="RaceSystem.h" />

@@ -16,7 +16,6 @@ namespace VULKAN {
 		TextureManager* textureManager;
 		Info3D info;
 
-
 		VertexBuffer vertex;
 		VertexBuffer indices;
 
@@ -28,17 +27,10 @@ namespace VULKAN {
 
 		size_t indicesSizes;
 
-		//VkPipeline pipeline = VK_NULL_HANDLE;
-		//VkPipelineLayout pipelineLayout = VK_NULL_HANDLE;
-		//VkBuffer vertexBuffer = VK_NULL_HANDLE;
-		//VkBuffer indexBuffer = VK_NULL_HANDLE;
-		//VkDeviceMemory vertexBufferMemory = VK_NULL_HANDLE;
-		//VkDeviceMemory indexBufferMemory = VK_NULL_HANDLE;
 		std::vector<VulkanUBuffer> ubo;
 
-		//Pipeline pipeline;
-		VkPipelineLayout pipelineLayout;
-;		VkPipeline pipeline;
+		VkPipelineLayout pipelineLayout = VK_NULL_HANDLE;
+;		VkPipeline pipeline = VK_NULL_HANDLE;
 
 
 

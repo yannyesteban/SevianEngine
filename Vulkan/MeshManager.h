@@ -20,7 +20,7 @@ namespace VULKAN {
 		VkPipelineLayout pipelineLayout;
 		//Pipeline pipeline;
 
-		std::vector<BufferInfo> buffersInfo = {};
+		std::vector<DSInfo> buffersInfo = {};
 		std::vector<VkDescriptorSet> descriptorSets;
 
 		std::vector<VulkanUBuffer> ubo;

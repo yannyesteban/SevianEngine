@@ -32,3 +32,6 @@ void SEVIAN::NameComponent::update ( float deltaTime ) {
 
 void SEVIAN::ModelComponent::update ( float deltaTime ) {
 }
+
+void SEVIAN::LightComponent::update ( float deltaTime ) {
+}

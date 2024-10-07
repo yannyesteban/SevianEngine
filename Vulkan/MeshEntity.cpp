@@ -43,42 +43,26 @@ namespace VULKAN {
 	MeshEntity::MeshEntity ( Device* device, TextureManager* textureManager, Info3D info, VkPipelineLayout pipelineLayout, VkPipeline pipeline, VkDescriptorSetLayout bufDescriptorSetLayout, VkDescriptorSetLayout texDescriptorSetLayout )
 			:device(device), textureManager ( textureManager ), info ( info ), pipelineLayout( pipelineLayout ), pipeline( pipeline ), bufDescriptorSetLayout( bufDescriptorSetLayout ), texDescriptorSetLayout ( texDescriptorSetLayout ) {
 		
-		//ubo = device->createUniformBuffer ( device->frames, sizeof ( UniformBufferObject ) );
-		
-		//auto attributeDescriptions = getAttributeDescriptionsGeneric ();
-
-
-		this->ubo = device->createUniformBuffer ( device->frames, sizeof ( UniformBufferObject ) );
-
-		std::vector<BufferInfo> buffersInfo1;
-		buffersInfo1.push_back ( { VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, ubo, sizeof ( UniformBufferObject ), VK_NULL_HANDLE, VK_NULL_HANDLE, 0 } );
-
-		//bufDescriptorSetLayout = device->createDescriptorSetLayout ( buffersInfo1 );
-		this->bufDescriptorSets = device->createDescriptorSets ( bufDescriptorSetLayout, buffersInfo1 );
-
 		textureManager->add ( info.texture, info.path );
 		auto texture = textureManager->get ( info.texture );
-		//ubo = device->createUniformBuffer ( device->frames, sizeof ( UniformBufferObject ) );
-		std::vector<BufferInfo> buffersInfo;
-		buffersInfo.push_back ( { VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, ubo, sizeof ( UniformBufferObject ), texture->imageView, texture->sampler, 0 } );
 		
-		//auto descriptorSetLayout2 = device->createDescriptorSetLayout ( buffersInfo );
+		this->ubo = device->createUniformBuffer ( device->frames, sizeof ( UniformBufferObject ) );
 
-		
-		this->texDescriptorSets = device->createDescriptorSets ( texDescriptorSetLayout, buffersInfo );
+		std::vector<DSInfo> bufDSInfo;
+		bufDSInfo.push_back ( { VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, ubo, sizeof ( UniformBufferObject ), VK_NULL_HANDLE, VK_NULL_HANDLE, 0 } );
 
-		//std::vector <VkDescriptorSetLayout> descriptorSetLayouts = { descriptorSetLayout , descriptorSetLayout2 };
+		std::vector<DSInfo> texDSInfo;
+		texDSInfo.push_back ( { VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, ubo, sizeof ( UniformBufferObject ), texture->imageView, texture->sampler, 0 } );
 
-		//this->pipeline = device->createGraphPipeline ( getBindingDescriptionGeneric (), attributeDescriptions, descriptorSetLayouts, "shaders/MeshEntityVert.spv", "shaders/MeshEntityFrag.spv" );
+		this->bufDescriptorSets = device->createDescriptorSets ( bufDescriptorSetLayout, bufDSInfo );
+		this->texDescriptorSets = device->createDescriptorSets ( texDescriptorSetLayout, texDSInfo );
 
 		vertex = device->createDataBuffer ( (void*) info.vertices.data (), sizeof ( info.vertices[0] ) * info.vertices.size (), VK_BUFFER_USAGE_VERTEX_BUFFER_BIT );
 		indices = device->createDataBuffer ( (void*) info.indices.data (), sizeof ( info.indices[0] ) * info.indices.size (), VK_BUFFER_USAGE_INDEX_BUFFER_BIT );
+		
 		indicesSizes = info.indices.size ();
 
-
-		
 	}
-	
 	
 	void MeshEntity::render ( UniformBufferObject ubo ) {
 		auto currentFrame = device->currentFrame;
@@ -90,7 +74,7 @@ namespace VULKAN {
 		
 		VkBuffer vertexBuffers[] = { vertex.buffer };
 		VkDeviceSize offsets[] = { 0 };
-		std::cout << " vertex.buffer -> " << vertex.buffer << "\n";
+		
 		vkCmdBindPipeline ( commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline );
 		vkCmdBindVertexBuffers ( commandBuffer, 0, 1, vertexBuffers, offsets );
 		//vkCmdBindIndexBuffer(commandBuffer, indices.buffer, 0, VK_INDEX_TYPE_UINT16);
