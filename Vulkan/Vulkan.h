@@ -76,6 +76,7 @@ namespace VULKAN {
         VkImageView imageView = VK_NULL_HANDLE;
         VkSampler sampler = VK_NULL_HANDLE;
         uint32_t binding;               // Índice de binding
+        VkImageLayout imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
     };
 
     struct VulkanTexture
@@ -114,6 +115,34 @@ namespace VULKAN {
         VkPipelineLayout layout;
 
         VkPipeline pipeline;
+    };
+
+    struct Propertys
+    {
+        VertexBuffer vertex;
+        VertexBuffer indices;
+
+        VkPipeline pipeline = VK_NULL_HANDLE;
+        VkPipelineLayout pipelineLayout = VK_NULL_HANDLE;
+
+        VkPipeline shadowPipeline = VK_NULL_HANDLE;
+        VkPipelineLayout shadowPipelineLayout = VK_NULL_HANDLE;
+
+        std::vector<VkDescriptorSet> descriptorSets;
+
+        size_t indicesSizes;
+
+        VkBuffer vertexBuffer = VK_NULL_HANDLE;
+        VkBuffer indexBuffer = VK_NULL_HANDLE;
+        VkDeviceMemory vertexBufferMemory = VK_NULL_HANDLE;
+        VkDeviceMemory indexBufferMemory = VK_NULL_HANDLE;
+        std::vector<VulkanUBuffer> buffers;
+
+
+        VkDescriptorSetLayout bufDescriptorSetLayout = VK_NULL_HANDLE;
+        VkDescriptorSetLayout texDescriptorSetLayout = VK_NULL_HANDLE;
+        VkDescriptorSetLayout shadowDescriptorSetLayout = VK_NULL_HANDLE;
+        //VkPipelineLayout shadowPipelineLayout = VK_NULL_HANDLE;
     };
 
     

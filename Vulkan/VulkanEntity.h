@@ -42,6 +42,7 @@ namespace VULKAN {
 	public:
 		VulkanEntity ( Device* device, TextureManager* textureManager, Info3D info );
 		void render ( UniformBufferObject ubo ) override;
+		void ShadowRender ( UniformBufferObject ubo ) override;
 	};
 
 

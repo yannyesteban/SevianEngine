@@ -195,6 +195,8 @@
     <None Include="model.vert" />
     <None Include="sdf.frag" />
     <None Include="sdf2.frag" />
+    <None Include="Shadow.frag" />
+    <None Include="Shadow.vert" />
     <None Include="solid.frag" />
     <None Include="solid.vert" />
     <None Include="solid_color.frag" />

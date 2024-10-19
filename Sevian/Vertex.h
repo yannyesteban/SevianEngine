@@ -67,6 +67,9 @@ namespace SEVIAN {
 		alignas(16) glm::mat4 proj;
 		alignas(16) glm::vec3 position; // Posición de la luz
 		alignas(16) glm::vec3 cameraPos;  // Añadimos la posición de la cámara
+
+		alignas(16) glm::mat4 lightView;  // Añadido: Matriz de vista desde la luz
+		alignas(16) glm::mat4 lightProj;  // Añadido: Matriz de proyección desde la luz
 		
 	};
 

@@ -173,7 +173,7 @@ namespace SEVIAN {
 
         LightType type = Directional;
         
-        glm::vec3 position = glm::vec3 ( 0.0, 0.0, 1.0 );  // Solo para Point/Spotlight
+        glm::vec3 position = glm::vec3 ( 0.0, 0.0, 3.0 );  // Solo para Point/Spotlight
         glm::vec3 direction = glm::vec3 ( 0.0f, -1.0f, 0.0f );  // Para Directional/Spotlight
         glm::vec3 color = glm::vec3 ( 1.0f );  // Color de la luz
         float intensity = 1.0f;  // Intensidad de la luz

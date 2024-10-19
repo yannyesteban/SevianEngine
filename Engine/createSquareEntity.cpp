@@ -3,6 +3,9 @@
 #include "createSquareEntity.h"
 
 
+
+
+
 namespace SEVIAN {
 
 	std::shared_ptr<Entity> createCamera ( Scene& scene ) {
@@ -307,5 +310,96 @@ namespace SEVIAN {
 		return entity;
 	}
 
+	std::shared_ptr<Entity> createSphereEntity (
+		const std::string& textureName,
+		const std::string& textureFile,
+		const Key& name,
+		Scene& scene,
+		float deltaX,
+		float deltaY,
+		float deltaZ,
+		float radius,
+		int sectorCount,
+		int stackCount ) {
+		auto entity = scene.createEntity ();
+
+		std::vector<Vertex> vertices;
+		std::vector<uint32_t> indices;
+
+		float x, y, z, xy;                           // coordenadas de los vértices
+		float nx, ny, nz, lengthInv = 1.0f / radius; // normales
+		float s, t;                                  // coordenadas de textura
+
+		float sectorStep = 2 * M_PI / sectorCount;
+		float stackStep = M_PI / stackCount;
+		float sectorAngle, stackAngle;
+
+		for (int i = 0; i <= stackCount; ++i) {
+			stackAngle = M_PI / 2 - i * stackStep;        // de pi/2 a -pi/2
+			xy = radius * cosf ( stackAngle );              // r * cos(u)
+			z = radius * sinf ( stackAngle );               // r * sin(u)
+
+			// añadir un vértice por cada sector
+			for (int j = 0; j <= sectorCount; ++j) {
+				sectorAngle = j * sectorStep;           // de 0 a 2pi
+
+				// coordenadas de vértices
+				x = xy * cosf ( sectorAngle );             // x = r * cos(u) * cos(v)
+				y = xy * sinf ( sectorAngle );             // y = r * cos(u) * sin(v)
+
+				// normales
+				nx = x * lengthInv;
+				ny = y * lengthInv;
+				nz = z * lengthInv;
+
+				// coordenadas de textura
+				s = (float) j / sectorCount;
+				t = (float) i / stackCount;
+
+				glm::vec3 color = glm::vec3 ( 1.0f, 1.0f, 1.0f ); // puedes variar esto según la posición
+
+				vertices.push_back ( { {x, y, z}, {nx, ny, nz}, {s, t}, color } );
+			}
+		}
+
+		// generar los índices
+		for (int i = 0; i < stackCount; ++i) {
+			int k1 = i * (sectorCount + 1);
+			int k2 = k1 + sectorCount + 1;
+
+			for (int j = 0; j < sectorCount; ++j, ++k1, ++k2) {
+				if (i != 0) {
+					indices.push_back ( k1 );
+					indices.push_back ( k2 );
+					indices.push_back ( k1 + 1 );
+				}
+
+				if (i != (stackCount - 1)) {
+					indices.push_back ( k1 + 1 );
+					indices.push_back ( k2 );
+					indices.push_back ( k2 + 1 );
+				}
+			}
+		}
+
+		// Añadir los componentes como en el cubo
+		entity->addComponent<MeshComponent> ( vertices, indices );
+		TextureComponent texture { textureName, textureFile };
+		entity->addComponent<TextureComponent> ( texture );
+		MaterialComponent material = MaterialComponent (
+			{ 0.1f, 0.1f, 0.1f, 1.0f },
+			{ 1.0f, 1.0f, 1.0f, 1.0f },
+			{ 0.5f, 0.5f, 0.5f, 1.0f },
+			32.0f
+		);
+		entity->addComponent<MaterialComponent> ( material );
+		entity->addComponent<PositionComponent> ( glm::vec3 ( deltaX, deltaY, deltaZ ) );
+		entity->addComponent<RotationComponent> ( glm::vec3 ( 0.0f, 0.0f, 0.0f ) );
+		entity->addComponent<ScaleComponent> ( glm::vec3 ( 1.0f, 1.0f, 1.0f ) );
+		entity->addComponent<InputComponent> ();
+		entity->addComponent<NameComponent> ( name );
+
+		return entity;
+	}
 
 }

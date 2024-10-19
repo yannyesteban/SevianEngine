@@ -211,6 +211,9 @@ namespace VULKAN {
         void beginFrame () override;
         void endFrame () override;
 
+        void beginRenderPass ( int index ) override;
+        void endRenderPass () override;
+
         std::unique_ptr<Entity3D> createEntity ( Info3D info ) override;
         std::unique_ptr<Entity3D> createSprite ( Sprite3D info ) override;
         std::unique_ptr<Entity3D> createModel ( Model3D info ) override;
@@ -256,7 +259,10 @@ namespace VULKAN {
 
         VkExtent2D extent;
         VkRenderPass renderPass;
+        VkRenderPass shadowRenderPass;
         VulkanDepthResources depthResources;
+        VulkanDepthResources depthResources2;
+        VkFramebuffer shadowFrameBuffer;
 
         VkDescriptorSetLayout descriptorSetLayout;
         VkDescriptorPool descriptorPool;

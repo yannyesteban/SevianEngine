@@ -25,6 +25,7 @@ namespace VULKAN {
 		std::vector<VulkanUBuffer> buffers;
 		
 		void render ( UniformBufferObject ubo ) override;
+		void ShadowRender ( UniformBufferObject ubo ) override;
 
 		
 

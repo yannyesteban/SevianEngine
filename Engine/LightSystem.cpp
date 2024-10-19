@@ -36,6 +36,14 @@ namespace SEVIAN {
 					light->position.x = light->position.x - 0.002f;
 				}
 
+				if (Tools::isKeyPressed ( Key::E )) {
+
+					light->position.y = light->position.y + 0.002f;
+				}
+				if (Tools::isKeyPressed ( Key::R )) {
+					light->position.y = light->position.y - 0.002f;
+				}
+
 				
 			}
 		}

@@ -96,7 +96,64 @@ namespace SEVIAN {
 		
 		CameraComponent * lastCamera = nullptr;
 		LightComponent* lastLight = nullptr;
-		
+
+		renderer->beginRenderPass ( 0 );// shadows render pass
+		for (auto& entity : entities) {
+
+			auto mesh = entity->getComponent<MeshComponent> ();
+			auto position = entity->getComponent<PositionComponent> ();
+			auto rotation = entity->getComponent<RotationComponent> ();
+			auto scale = entity->getComponent<ScaleComponent> ();
+			auto camera = entity->getComponent<CameraComponent> ();
+			auto light = entity->getComponent<LightComponent> ();
+
+			if (camera) {
+				lastCamera = camera;
+				continue;
+			}
+			if (light) {
+				lastLight = light;
+				continue;
+			}
+
+			if (lastCamera == nullptr || lastLight == nullptr) {
+				continue;
+			}
+
+			if (!mesh) {
+				continue;
+			}
+
+			UniformBufferObject ubo {};
+
+			glm::mat4 translation = glm::translate ( glm::mat4 ( 1.0f ), position->position );
+			//glm::mat4 rotation = glm::rotate ( glm::mat4 ( 1.0f ), time * 0.1f * glm::radians ( 90.0f ), glm::vec3 ( 0.0f, 0.0f, 1.0f ) );
+
+			glm::mat4 rotationMat = glm::rotate ( glm::mat4 ( 1.0f ), rotation->rotation.z, glm::vec3 ( 0.0f, 0.0f, 1.0f ) ) *
+				glm::rotate ( glm::mat4 ( 1.0f ), rotation->rotation.y, glm::vec3 ( 0.0f, 1.0f, 0.0f ) ) *
+				glm::rotate ( glm::mat4 ( 1.0f ), rotation->rotation.x, glm::vec3 ( 1.0f, 0.0f, 0.0f ) );
+			ubo.model = translation * rotationMat;	//ubo.model = /* rotation * */  translation;
+
+			// Matriz de vista desde el punto de vista de la luz
+			ubo.view = glm::lookAt ( lastLight->position, glm::vec3 ( 0.0f, 0.0f, 0.0f ), glm::vec3 ( 0.0f, 1.0f, 0.0f ) );
+
+			// Proyección ortográfica para simular las sombras de la luz (ajusta los parámetros según tu escena)
+			float near_plane = 1.0f, far_plane = 100.0f;
+			float shadowMapSize = 10.0f; // Ajusta según la distancia que quieras cubrir
+			ubo.proj = glm::ortho ( -shadowMapSize, shadowMapSize, -shadowMapSize, shadowMapSize, near_plane, far_plane );
+
+
+			ubo.position = lastLight->position;
+			//ubo.cameraPos = lastCamera->position;
+			mesh->prop->ShadowRender ( ubo );
+			//renderer->drawText ( "YANNY", position->position, cam );
+
+		}
+
+		renderer->endRenderPass ();
+
+
+		renderer->beginRenderPass ( 1 ); // draw 
 		for (auto& entity : entities) {
 			
 			auto mesh = entity->getComponent<MeshComponent> ();
@@ -136,6 +193,14 @@ namespace SEVIAN {
 			ubo.view = lastCamera->view;
 			ubo.proj = lastCamera->proj;
 
+
+			ubo.lightView = glm::lookAt ( lastLight->position, glm::vec3 ( 0.0f, 0.0f, 0.0f ), glm::vec3 ( 0.0f, 1.0f, 0.0f ) );
+
+			// Proyección ortográfica para simular las sombras de la luz (ajusta los parámetros según tu escena)
+			float near_plane = 1.0f, far_plane = 100.0f;
+			float shadowMapSize = 10.0f; // Ajusta según la distancia que quieras cubrir
+			ubo.lightProj = glm::ortho ( -shadowMapSize, shadowMapSize, -shadowMapSize, shadowMapSize, near_plane, far_plane );
+
 			ubo.position = lastLight->position;
 			ubo.cameraPos = lastCamera->position;
 			mesh->prop->render ( ubo );
@@ -143,6 +208,7 @@ namespace SEVIAN {
 			
 		}
 
+		renderer->endRenderPass ();
 		renderer->endFrame ();
 	}
 	void StaticRenderSystem::update ( std::vector<std::shared_ptr<Entity>>& entities ) {

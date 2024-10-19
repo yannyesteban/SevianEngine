@@ -16,8 +16,13 @@ namespace VULKAN {
 
 		VkDescriptorSetLayout bufDescriptorSetLayout;
 		VkDescriptorSetLayout texDescriptorSetLayout;
+		VkDescriptorSetLayout shadowDescriptorSetLayout;
+
+
 		VkPipeline pipeline;
+		VkPipeline shadowPipeline;
 		VkPipelineLayout pipelineLayout;
+		VkPipelineLayout shadowPipelineLayout;
 		//Pipeline pipeline;
 
 		std::vector<DSInfo> buffersInfo = {};
@@ -30,6 +35,7 @@ namespace VULKAN {
 		  
 		Pipeline createGraphPipeline ( VkVertexInputBindingDescription bindingDescription, std::vector<VkVertexInputAttributeDescription> attributeDescriptions, std::vector<VkDescriptorSetLayout> descriptorSetLayouts, std::string vertSource, std::string fragSource );
 		VkPipeline createGraphPipeline ( VkVertexInputBindingDescription bindingDescription, std::vector<VkVertexInputAttributeDescription> attributeDescriptions, VkPipelineLayout pipelineLayout, std::string vertSource, std::string fragSource );
+		VkPipeline createGraphShadowPipeline ( VkVertexInputBindingDescription bindingDescription, std::vector<VkVertexInputAttributeDescription> attributeDescriptions, VkPipelineLayout pipelineLayout, std::string vertSource, std::string fragSource );
 	public: 
 		MeshManager ( Device* device, TextureManager* textureManager );
 		std::unique_ptr<SEVIAN::Entity3D> create ( SEVIAN::Info3D info );

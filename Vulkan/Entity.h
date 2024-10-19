@@ -28,6 +28,7 @@ namespace VULKAN {
         std::vector<VulkanUBuffer> me;
 
         void render ( ::SEVIAN::UniformBufferObject ubo );
+        void ShadowRender ( ::SEVIAN::UniformBufferObject ubo );
 
     };
 }

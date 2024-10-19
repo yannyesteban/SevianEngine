@@ -166,7 +166,7 @@ namespace VULKAN {
 		layoutInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;
 		layoutInfo.bindingCount = static_cast<uint32_t>(bindings.size ());
 		layoutInfo.pBindings = bindings.data ();
-		printf ( "que es un device [%p]\n", device );
+		
 		if (vkCreateDescriptorSetLayout ( device, &layoutInfo, nullptr, &descriptorSetLayout1 ) != VK_SUCCESS) {
 			throw std::runtime_error ( "failed to create descriptor set layout!" );
 		}
@@ -748,7 +748,7 @@ namespace VULKAN {
 				}
 				else if (_info.descriptorType == VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER) {
 
-					imageInfo[k].imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+					imageInfo[k].imageLayout = _info.imageLayout; //VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
 					imageInfo[k].imageView = _info.imageView;
 					imageInfo[k].sampler = _info.sampler;
 					write.pImageInfo = &imageInfo[k];
@@ -796,7 +796,7 @@ namespace VULKAN {
 
 		VkFormat depthFormat = findDepthFormat ();
 
-		createImage ( extent.width, extent.height, depthFormat, VK_IMAGE_TILING_OPTIMAL, VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, depthResource.image, depthResource.imageMemory );
+		createImage ( extent.width, extent.height, depthFormat, VK_IMAGE_TILING_OPTIMAL, VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT , depthResource.image, depthResource.imageMemory );
 		depthResource.imageView = createImageView ( depthResource.image, depthFormat, VK_IMAGE_ASPECT_DEPTH_BIT );
 
 		return depthResource;

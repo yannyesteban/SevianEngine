@@ -234,7 +234,7 @@ namespace VULKAN {
 			VkFramebufferCreateInfo framebufferInfo {};
 			framebufferInfo.sType = VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO;
 			framebufferInfo.renderPass = renderPass;
-			framebufferInfo.attachmentCount = 1;// static_cast<uint32_t>(attachments.size());
+			//framebufferInfo.attachmentCount = 1;// static_cast<uint32_t>(attachments.size());
 			//framebufferInfo.pAttachments = attachments;
 
 			framebufferInfo.attachmentCount = static_cast<uint32_t>(attachments.size ());
@@ -252,6 +252,26 @@ namespace VULKAN {
 		return swapChainFramebuffers;
 	}
 
+	VkFramebuffer PhysicalDevice::createShadowFramebuffer ( VkRenderPass shadowRenderPass, VkImageView depthImageView, VkExtent2D shadowExtent ) {
+
+		// Configuración de la información del framebuffer
+		VkFramebufferCreateInfo framebufferInfo {};
+		framebufferInfo.sType = VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO;
+		framebufferInfo.renderPass = shadowRenderPass;  // Render pass específico para sombras
+		framebufferInfo.attachmentCount = 1;  // Solo 1 attachment (depth)
+		framebufferInfo.pAttachments = &depthImageView;  // El attachment es el depth image view
+
+		framebufferInfo.width = shadowExtent.width;   // Tamaño del framebuffer para sombras
+		framebufferInfo.height = shadowExtent.height; // Tamaño del framebuffer para sombras
+		framebufferInfo.layers = 1;  // Solo una capa, a menos que estés trabajando con un shadow map en 3D
+
+		VkFramebuffer shadowFramebuffer;
+		if (vkCreateFramebuffer ( device, &framebufferInfo, nullptr, &shadowFramebuffer ) != VK_SUCCESS) {
+			throw std::runtime_error ( "failed to create shadow framebuffer!" );
+		}
+
+		return shadowFramebuffer;
+	}
 
 	VkCommandPool PhysicalDevice::createCommandPool () {
 

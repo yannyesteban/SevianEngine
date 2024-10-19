@@ -29,6 +29,7 @@ namespace SEVIAN {
     public:
         virtual ~Entity3D () = default;
         virtual void render ( UniformBufferObject ubo ) = 0;
+        virtual void ShadowRender ( UniformBufferObject ubo ) = 0;
         
     
     };
@@ -56,6 +57,9 @@ namespace SEVIAN {
 
         virtual void beginFrame () = 0;
         virtual void endFrame () = 0;
+
+        virtual void beginRenderPass (int index) = 0;
+        virtual void endRenderPass () = 0;
 
         virtual void draw ( std::shared_ptr<Entity3D>, glm::vec3, Camera ) = 0;
         virtual void draw ( std::shared_ptr<Entity3D>, UniformBufferObject ubo ) = 0;

@@ -11,6 +11,8 @@ layout(location = 2) out vec3 fragNormal;  // Añadido: Normal para el fragment s
 layout(location = 3) out vec3 fragPosition;  // Añadido: Posición en espacio del mundo
 layout(location = 4) out vec3 lightPosition;
 layout(location = 5) out vec3 camPosition;
+layout(location = 6) out vec4 fragPosLightSpace;  // Añadido: Coordenadas en el espacio de la luz
+
 layout(set = 0, binding = 0) uniform UniformBufferObject {
     
     mat4 model;
@@ -18,6 +20,9 @@ layout(set = 0, binding = 0) uniform UniformBufferObject {
     mat4 proj;
     vec3 lightPosition;
     vec3 cameraPos;
+
+    mat4 lightView;  // Añadido: Matriz de vista desde la luz
+    mat4 lightProj;  // Añadido: Matriz de proyección desde la luz
     
 } ubo;
 
@@ -29,9 +34,18 @@ void main() {
 
     fragPosition = vec3(ubo.model * vec4(inPosition, 1.0));  // Posición en espacio mundial
     fragNormal = normalize(mat3(transpose(inverse(ubo.model))) * inNormal);  // Normal en espacio mundial
-    gl_Position = ubo.proj * ubo.view * ubo.model * vec4(inPosition, 1.0);
-    fragColor = inColor;
     fragTexCoord = inTexCoord;
+    fragColor = inColor;
     lightPosition = ubo.lightPosition;
     camPosition = ubo.cameraPos;
+
+    // Calculamos la posición del vértice en el espacio de la luz
+    fragPosLightSpace = ubo.lightProj * ubo.lightView * ubo.model * vec4(inPosition, 1.0);
+
+    // Posición del vértice en espacio de cámara
+    gl_Position = ubo.proj * ubo.view * ubo.model * vec4(inPosition, 1.0);
+    
+    
+    
+    
 }

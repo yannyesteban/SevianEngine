@@ -60,6 +60,8 @@ namespace VULKAN {
 		VkImageView createImageView ( VkImage image, VkFormat format );
 		SwapChain createSwapChain ( GLFWwindow* window );
 		std::vector<VkFramebuffer> createFramebuffers ( SwapChain swapChain, VkRenderPass renderPass, std::vector<VkImageView> attachments );
+		VkFramebuffer createShadowFramebuffer ( VkRenderPass shadowRenderPass, VkImageView depthImageView, VkExtent2D shadowExtent );
+		
 		VkCommandPool createCommandPool ();
 		//auto d =Device (physicalDevice, device, graphicsQueue);
 		Device* createDevice ();

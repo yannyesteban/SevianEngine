@@ -151,6 +151,8 @@ namespace VULKAN {
 		//entity->render ( ubo );
 
 	}
+	void VulkanEntity::ShadowRender ( UniformBufferObject ubo ) {
+	}
 }
 
 

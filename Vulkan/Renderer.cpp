@@ -75,48 +75,73 @@ namespace VULKAN {
 		swapChain = physicalDevices.at ( position ).createSwapChain ( window );
 		extent = swapChain.extent;
 		renderPass = device->createRenderPass ( swapChain.imageFormat );
+		shadowRenderPass = device->createShadowRenderPass ();
 
 		depthResources = device->createDepthResources ( extent );
+		// = device->createDepthResources ( extent );
 
+			VulkanDepthResources depthResource {};
+
+			VkFormat depthFormat = device->findDepthFormat ();
+
+			device->createImage ( extent.width, extent.height, depthFormat, VK_IMAGE_TILING_OPTIMAL, VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT | VK_IMAGE_USAGE_SAMPLED_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, depthResource.image, depthResource.imageMemory );
+			depthResource.imageView = device->createImageView ( depthResource.image, depthFormat, VK_IMAGE_ASPECT_DEPTH_BIT );
+
+			depthResources2 =  depthResource;
+			device->depthResource = depthResource;
 		swapChain.framebuffers = physicalDevices.at ( position ).createFramebuffers ( swapChain, renderPass, { depthResources.imageView } );
-
+		shadowFrameBuffer = physicalDevices.at ( position ).createShadowFramebuffer ( shadowRenderPass, depthResources2.imageView, extent );
+		device->shadowFrameBuffer = shadowFrameBuffer;
 		device->renderPass = renderPass;
-
+		device->shadowRenderPass = shadowRenderPass;
 		descriptorSetLayout = device->createDescriptorSetLayout ();
 		descriptorPool = device->createDescriptorPool ();
 		device->descriptorSetLayout = descriptorSetLayout;
+
+		VkSamplerCreateInfo samplerInfo {};
+		samplerInfo.sType = VK_STRUCTURE_TYPE_SAMPLER_CREATE_INFO;
+		samplerInfo.magFilter = VK_FILTER_LINEAR;
+		samplerInfo.minFilter = VK_FILTER_LINEAR;
+		samplerInfo.addressModeU = VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE;
+		samplerInfo.addressModeV = VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE;
+		samplerInfo.addressModeW = VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE;
+		samplerInfo.anisotropyEnable = VK_FALSE;
+
+		//samplerInfo.anisotropyEnable = VK_TRUE;
+
+		samplerInfo.borderColor = VK_BORDER_COLOR_INT_OPAQUE_WHITE;
+		samplerInfo.unnormalizedCoordinates = VK_FALSE;
+		samplerInfo.compareEnable = VK_TRUE;
+		samplerInfo.compareOp = VK_COMPARE_OP_LESS;  // Importante para shadow mapping
+		samplerInfo.mipmapMode = VK_SAMPLER_MIPMAP_MODE_LINEAR;
+		samplerInfo.mipLodBias = 0.0f;
+		samplerInfo.maxAnisotropy = 1.0f;
+
+		vkCreateSampler ( device->device, &samplerInfo, nullptr, &device->shadowMapSampler );
+
 
 		textureManager = std::make_shared<TextureManager> ( device );
 
 		std::map<std::string, VulkanTexture> mTextures;
 
-		for (auto& t : textures) {
-
-			auto vt = device->createTexture ( t.source );
-			vt->id = "yanny";
-			//vkTextures.push_back ( vt );
-			//mTextures[t.id] = vt;
-		}
-
 		frames.resize ( 2 );
 
 		uint32_t index = 0;
 		for (auto& frame : frames) {
-			db ( "creando un frame" );
 			frame.index = index;
-			//device->createUniformBuffers ( frame, sizeof ( UniformBufferObject2 ) );
 			device->createSyncObjects ( frame );
 			index++;
 		}
 
 		device->createCommandBuffers ( frames, device->commandPool );
-		fontText.device = device;
-		fontText.frames = frames;
-		fontText.descriptorPool = descriptorPool;
-		fontText.initialize ();
-
-		std::cout << "Hello";
-
+		
+		if (2 > 5) {
+			fontText.device = device;
+			fontText.frames = frames;
+			fontText.descriptorPool = descriptorPool;
+			fontText.initialize ();
+		}
+		
 		meshManager = new MeshManager ( device, textureManager.get() );
 	}
 
@@ -629,41 +654,7 @@ namespace VULKAN {
 			throw std::runtime_error ( "failed to begin recording command buffer!" );
 		}
 
-		VkRenderPassBeginInfo renderPassInfo {};
-		renderPassInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
-		renderPassInfo.renderPass = device->renderPass;
-		renderPassInfo.framebuffer = swapChain.framebuffers[imageIndex];
-		renderPassInfo.renderArea.offset = { 0, 0 };
-		renderPassInfo.renderArea.extent = swapChain.extent;
-
-		/*VkClearValue clearColor = { { { 0.0f, 0.0f, 0.0f, 1.0f } } };
-		renderPassInfo.clearValueCount = 1;
-		renderPassInfo.pClearValues = &clearColor;
-		*/
-
-		std::array<VkClearValue, 2> clearValues {};
-		clearValues[0].color = { {0.0f, 0.1f, 0.0f, 1.0f} };
-		clearValues[1].depthStencil = { 1.0f, 0 };
-
-		renderPassInfo.clearValueCount = static_cast<uint32_t>(clearValues.size ());
-		renderPassInfo.pClearValues = clearValues.data ();
-
-		vkCmdBeginRenderPass ( frame.commandBuffers, &renderPassInfo, VK_SUBPASS_CONTENTS_INLINE );
-
-
-		VkViewport viewport {};
-		viewport.x = 0.0f;
-		viewport.y = 0.0f;
-		viewport.width = (float) swapChain.extent.width;
-		viewport.height = (float) swapChain.extent.height;
-		viewport.minDepth = 0.0f;
-		viewport.maxDepth = 1.0f;
-		vkCmdSetViewport ( frame.commandBuffers, 0, 1, &viewport );
-
-		VkRect2D scissor {};
-		scissor.offset = { 0, 0 };
-		scissor.extent = swapChain.extent;
-		vkCmdSetScissor ( frame.commandBuffers, 0, 1, &scissor );
+		
 
 
 
@@ -688,6 +679,151 @@ namespace VULKAN {
 
 
 	}
+
+	void VulkanRenderer::endFrame () {
+
+		Frame frame = device->frames[device->currentFrame];
+		auto commandBuffer = frame.commandBuffers;
+		
+
+		if (vkEndCommandBuffer ( commandBuffer ) != VK_SUCCESS) {
+			throw std::runtime_error ( "failed to record command buffer!" );
+		}
+
+
+		VkSubmitInfo submitInfo {};
+		submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
+
+		VkSemaphore waitSemaphores[] = { frame.imageAvailableSemaphores };
+		VkPipelineStageFlags waitStages[] = { VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT };
+		submitInfo.waitSemaphoreCount = 1;
+		submitInfo.pWaitSemaphores = waitSemaphores;
+		submitInfo.pWaitDstStageMask = waitStages;
+
+		submitInfo.commandBufferCount = 1;
+		submitInfo.pCommandBuffers = &frame.commandBuffers;
+
+		VkSemaphore signalSemaphores[] = { frame.renderFinishedSemaphores };
+		submitInfo.signalSemaphoreCount = 1;
+		submitInfo.pSignalSemaphores = signalSemaphores;
+
+		if (vkQueueSubmit ( graphicsQueue, 1, &submitInfo, frame.inFlightFences ) != VK_SUCCESS) {
+			throw std::runtime_error ( "failed to submit draw command buffer!" );
+		}
+
+		VkPresentInfoKHR presentInfo {};
+		presentInfo.sType = VK_STRUCTURE_TYPE_PRESENT_INFO_KHR;
+
+		presentInfo.waitSemaphoreCount = 1;
+		presentInfo.pWaitSemaphores = signalSemaphores;
+
+		VkSwapchainKHR swapChains[] = { swapChain.swapchain };
+		presentInfo.swapchainCount = 1;
+		presentInfo.pSwapchains = swapChains;
+
+		presentInfo.pImageIndices = &imageIndex;
+
+
+		VkResult result = vkQueuePresentKHR ( presentQueue, &presentInfo );
+
+		if (result == VK_ERROR_OUT_OF_DATE_KHR || result == VK_SUBOPTIMAL_KHR || framebufferResized) {
+
+			std::cout << "error error \n";
+			framebufferResized = false;
+			recreateSwapChain ();
+		}
+		else if (result != VK_SUCCESS) {
+			throw std::runtime_error ( "failed to present swap chain image!" );
+		}
+
+		currentFrame = (currentFrame + 1) % MAX_FRAMES_IN_FLIGHT;
+	}
+
+	void VulkanRenderer::beginRenderPass ( int index ) {
+		Frame frame = device->frames[device->currentFrame];
+
+
+		if (index == 0) {
+			VkRenderPassBeginInfo renderPassInfo {};
+			renderPassInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
+			renderPassInfo.renderPass = shadowRenderPass;
+			renderPassInfo.framebuffer = shadowFrameBuffer;
+			renderPassInfo.renderArea.offset = { 0, 0 };
+			renderPassInfo.renderArea.extent = swapChain.extent;
+
+			std::array<VkClearValue, 1> clearValues {};
+			
+			clearValues[0].depthStencil = { 1.0f, 0 };
+
+			renderPassInfo.clearValueCount = static_cast<uint32_t>(clearValues.size ());
+			renderPassInfo.pClearValues = clearValues.data ();
+
+			vkCmdBeginRenderPass ( frame.commandBuffers, &renderPassInfo, VK_SUBPASS_CONTENTS_INLINE );
+
+			VkViewport viewport {};
+			viewport.x = 0.0f;
+			viewport.y = 0.0f;
+			viewport.width = (float) swapChain.extent.width;
+			viewport.height = (float) swapChain.extent.height;
+			viewport.minDepth = 0.0f;
+			viewport.maxDepth = 1.0f;
+			vkCmdSetViewport ( frame.commandBuffers, 0, 1, &viewport );
+
+			VkRect2D scissor {};
+			scissor.offset = { 0, 0 };
+			scissor.extent = swapChain.extent;
+			vkCmdSetScissor ( frame.commandBuffers, 0, 1, &scissor );
+
+			return;
+		}
+		else {
+			VkRenderPassBeginInfo renderPassInfo {};
+			renderPassInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
+			renderPassInfo.renderPass = device->renderPass;
+			renderPassInfo.framebuffer = swapChain.framebuffers[imageIndex];
+			renderPassInfo.renderArea.offset = { 0, 0 };
+			renderPassInfo.renderArea.extent = swapChain.extent;
+
+			/*VkClearValue clearColor = { { { 0.0f, 0.0f, 0.0f, 1.0f } } };
+			renderPassInfo.clearValueCount = 1;
+			renderPassInfo.pClearValues = &clearColor;
+			*/
+
+			std::array<VkClearValue, 2> clearValues {};
+			clearValues[0].color = { {0.0f, 0.1f, 0.0f, 1.0f} };
+			clearValues[1].depthStencil = { 1.0f, 0 };
+
+			renderPassInfo.clearValueCount = static_cast<uint32_t>(clearValues.size ());
+			renderPassInfo.pClearValues = clearValues.data ();
+
+			vkCmdBeginRenderPass ( frame.commandBuffers, &renderPassInfo, VK_SUBPASS_CONTENTS_INLINE );
+
+
+			VkViewport viewport {};
+			viewport.x = 0.0f;
+			viewport.y = 0.0f;
+			viewport.width = (float) swapChain.extent.width;
+			viewport.height = (float) swapChain.extent.height;
+			viewport.minDepth = 0.0f;
+			viewport.maxDepth = 1.0f;
+			vkCmdSetViewport ( frame.commandBuffers, 0, 1, &viewport );
+
+			VkRect2D scissor {};
+			scissor.offset = { 0, 0 };
+			scissor.extent = swapChain.extent;
+			vkCmdSetScissor ( frame.commandBuffers, 0, 1, &scissor );
+		}
+
+		
+
+	}
+
+	void VulkanRenderer::endRenderPass () {
+		Frame frame = device->frames[device->currentFrame];
+		auto commandBuffer = frame.commandBuffers;
+		vkCmdEndRenderPass ( commandBuffer );
+	}
+
 	void VulkanRenderer::draw ( std::shared_ptr<Entity3D> prop, glm::vec3 position, Camera camera ) {
 
 		auto entity = std::dynamic_pointer_cast<Entity>(prop);
@@ -829,66 +965,7 @@ namespace VULKAN {
 		fontText.draw (
 			text, currentFrame, commandBuffer, position, camera, extent.width, extent.height );
 	}
-	void VulkanRenderer::endFrame () {
-
-		
-
-		Frame frame = device->frames[device->currentFrame];
-		auto commandBuffer = frame.commandBuffers;
-		vkCmdEndRenderPass ( commandBuffer );
-
-		if (vkEndCommandBuffer ( commandBuffer ) != VK_SUCCESS) {
-			throw std::runtime_error ( "failed to record command buffer!" );
-		}
-
-
-		VkSubmitInfo submitInfo {};
-		submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
-
-		VkSemaphore waitSemaphores[] = { frame.imageAvailableSemaphores };
-		VkPipelineStageFlags waitStages[] = { VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT };
-		submitInfo.waitSemaphoreCount = 1;
-		submitInfo.pWaitSemaphores = waitSemaphores;
-		submitInfo.pWaitDstStageMask = waitStages;
-
-		submitInfo.commandBufferCount = 1;
-		submitInfo.pCommandBuffers = &frame.commandBuffers;
-
-		VkSemaphore signalSemaphores[] = { frame.renderFinishedSemaphores };
-		submitInfo.signalSemaphoreCount = 1;
-		submitInfo.pSignalSemaphores = signalSemaphores;
-
-		if (vkQueueSubmit ( graphicsQueue, 1, &submitInfo, frame.inFlightFences ) != VK_SUCCESS) {
-			throw std::runtime_error ( "failed to submit draw command buffer!" );
-		}
-
-		VkPresentInfoKHR presentInfo {};
-		presentInfo.sType = VK_STRUCTURE_TYPE_PRESENT_INFO_KHR;
-
-		presentInfo.waitSemaphoreCount = 1;
-		presentInfo.pWaitSemaphores = signalSemaphores;
-
-		VkSwapchainKHR swapChains[] = { swapChain.swapchain };
-		presentInfo.swapchainCount = 1;
-		presentInfo.pSwapchains = swapChains;
-
-		presentInfo.pImageIndices = &imageIndex;
-
-
-		VkResult result = vkQueuePresentKHR ( presentQueue, &presentInfo );
-
-		if (result == VK_ERROR_OUT_OF_DATE_KHR || result == VK_SUBOPTIMAL_KHR || framebufferResized) {
-
-			std::cout << "error error \n";
-			framebufferResized = false;
-			recreateSwapChain ();
-		}
-		else if (result != VK_SUCCESS) {
-			throw std::runtime_error ( "failed to present swap chain image!" );
-		}
-
-		currentFrame = (currentFrame + 1) % MAX_FRAMES_IN_FLIGHT;
-	}
+	
 
 	std::unique_ptr<Entity3D> VulkanRenderer::createEntity ( Info3D info ) {
 		

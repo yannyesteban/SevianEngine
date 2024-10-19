@@ -202,5 +202,11 @@
     <None Include="MeshEntity.frag">
       <Filter>shaders</Filter>
     </None>
+    <None Include="Shadow.vert">
+      <Filter>shaders</Filter>
+    </None>
+    <None Include="Shadow.frag">
+      <Filter>shaders</Filter>
+    </None>
   </ItemGroup>
 </Project>

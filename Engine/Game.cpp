@@ -49,9 +49,10 @@ int SEVIAN::Game::play () {
     //auto squareEntity6 = createSpriteEntity ( Key::N3, *scene, "a1", "textures/a1.jpeg", 0.1, 0.3, 0.0f, 1.0, 1.0, glm::vec3 ( 1.0f, 1.0f, 1.0f ) );
     
 
-    auto cubo1 = createCubeEntity ( "a", "textures/a1.jpeg", Key::N1, *scene, 1.0, 1.0, 0.0 );
+    auto cubo1 = createCubeEntity ( "a", "textures/a1.jpeg", Key::N1, *scene, 1.0, 1.0, -3.0 );
     auto cubo2 = createCubeEntity ( "b", "textures/texture.jpg", Key::N5, *scene, 0.0, 1.0, 1.0 );
-    auto cubo3 = createCubeEntity ( "c", "textures/c.jpg", Key::N7, * scene, 0.0, 0.0, 0.0 );
+    auto cubo3 = createCubeEntity ( "c", "textures/c.jpg", Key::N7, * scene, 0.0, 0.0, -2.0 );
+    auto sphere1 = createSphereEntity ( "a", "textures/c.jpg", Key::N2, *scene, 0.0, 0.0, 0.3, 0.2, 64, 64 );
     
     auto movementSystem = std::make_shared<RaceSystem> ( );
     auto lightSystem = std::make_shared<LightSystem> ();
