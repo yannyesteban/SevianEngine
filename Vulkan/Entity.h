@@ -29,6 +29,7 @@ namespace VULKAN {
 
         void render ( ::SEVIAN::UniformBufferObject ubo );
         void ShadowRender ( ::SEVIAN::UniformBufferObject ubo );
+        void ShadowRender ( ::SEVIAN::UniformDataDept ubo );
 
     };
 }

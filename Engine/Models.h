@@ -131,26 +131,7 @@ namespace SEVIAN {
     };
 
 
-    struct CameraComponent : public Camera, public Component
-    {
-        void update ( float deltaTime ) override;
-        
-        glm::vec3 position = glm::vec3 ( 0.0f, 0.0f, 5.0f );
-        glm::vec3 target = glm::vec3 ( 0.0f, 0.0f, 0.0f );
-        glm::vec3 up = glm::vec3 ( 0.0f, 10.0f, 0.0f );
-
-        float zoomLevel = 45.0f;
-
-        float yaw = -90.0f;
-        float pitch = 0.0f;
-        float sensitivity = 0.1f;
-
-        alignas(16) glm::mat4 view;
-        alignas(16) glm::mat4 proj;
-        
-
-       
-    };
+    
     
     struct NameComponent : public Component
     {
@@ -160,6 +141,37 @@ namespace SEVIAN {
             : name ( _name ) {
         }
         void update ( float deltaTime ) override;
+    };
+
+    struct CameraComponent : public Camera, public Component
+    {
+        void update ( float deltaTime ) override;
+
+        //glm::vec3 position = glm::vec3 ( 0.5f, 3.0f, 5.0f );
+        glm::vec3 target = glm::vec3 ( 0.0f, 0.0f, 0.0f );
+        glm::vec3 up = glm::vec3 ( 0.0f, 1.0f, 0.0f );
+
+        glm::vec3 position = glm::vec3 ( -2.312f, 0.358f, 5.0f );
+
+        float zoomLevel = 45.0f;
+        float fov = 45.0f;
+        float width = 0.0f;
+        float height = 0.0f;
+        float yaw = -90.0f;
+        float pitch = 0.0f;
+        float sensitivity = 0.1f;
+        float distanceFromOrigin = 9.0f; // Distancia fija desde el origen
+        float angle = 0.0f; // 聲gulo de rotaci鏮
+
+        float angleX = 0.0f; // 聲gulo en el eje X
+        float angleY = 0.0f; // 聲gulo en el eje Y
+        float distance = 5.0f; // Distancia desde el origen (zoom)
+
+        alignas(16) glm::mat4 view;
+        alignas(16) glm::mat4 proj;
+
+
+
     };
 
     struct LightComponent : public Component
@@ -173,13 +185,19 @@ namespace SEVIAN {
 
         LightType type = Directional;
         
-        glm::vec3 position = glm::vec3 ( 0.0, 0.0, 3.0 );  // Solo para Point/Spotlight
-        glm::vec3 direction = glm::vec3 ( 0.0f, -1.0f, 0.0f );  // Para Directional/Spotlight
+        glm::vec3 position = glm::vec3 ( 0.0, 0.0, 5.0 );  // Solo para Point/Spotlight
+        glm::vec3 direction = glm::vec3 ( 0.0f, 0.0f, -3.0f );  // Para Directional/Spotlight
+        glm::vec3 up = glm::vec3 ( 0.0f, 1.0f, 0.0f );
         glm::vec3 color = glm::vec3 ( 1.0f );  // Color de la luz
         float intensity = 1.0f;  // Intensidad de la luz
         float radius = 1.0f;  // Para Point/Spotlight
         float cutoff = glm::radians ( 12.5f );  // 聲gulo para spotlight
+        glm::mat4 view;
+        glm::mat4 proj;
 
+        float near_plane = 1.0f;// 0.1f;
+        float far_plane = 96.0f;// 50.0f;
+        float shadowMapSize = 10.0;// 5.0f; // Ajusta seg�n la distancia que quieras cubrir
         void update ( float deltaTime ) override;
     };
 }

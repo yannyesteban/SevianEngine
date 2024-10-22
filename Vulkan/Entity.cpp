@@ -9,4 +9,6 @@ namespace VULKAN {
 	}
 	void Entity::ShadowRender ( ::SEVIAN::UniformBufferObject ubo ) {
 	}
+	void Entity::ShadowRender ( ::SEVIAN::UniformDataDept ubo ) {
+	}
 }

@@ -81,6 +81,15 @@ void SEVIAN::RaceSystem::update ( std::vector<std::shared_ptr<Entity>>& entities
 				position->position.y -= 0.001;
 			}
 
+
+			if (Tools::isKeyPressed ( Key::N )) {
+				position->position.z -= 0.001;
+			}
+
+			if (Tools::isKeyPressed ( Key::M )) {
+				position->position.z += 0.001;
+			}
+
 		}
 	}
 }

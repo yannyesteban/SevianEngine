@@ -199,13 +199,28 @@
     <None Include="MeshEntity.vert">
       <Filter>shaders</Filter>
     </None>
-    <None Include="MeshEntity.frag">
+    <None Include="MeshEntity1.frag">
       <Filter>shaders</Filter>
     </None>
     <None Include="Shadow.vert">
       <Filter>shaders</Filter>
     </None>
     <None Include="Shadow.frag">
+      <Filter>shaders</Filter>
+    </None>
+    <None Include="MeshEntity.frag">
+      <Filter>shaders</Filter>
+    </None>
+    <None Include="offscreen.vert">
+      <Filter>shaders</Filter>
+    </None>
+    <None Include="scene.vert">
+      <Filter>shaders</Filter>
+    </None>
+    <None Include="scene0.frag">
+      <Filter>shaders</Filter>
+    </None>
+    <None Include="scene.frag">
       <Filter>shaders</Filter>
     </None>
   </ItemGroup>

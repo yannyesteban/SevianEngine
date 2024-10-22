@@ -6,7 +6,7 @@ using namespace SEVIAN;
 
 int main () {
 
-    GameInfo info = { VK, "Race", 1800 ,800 };
+    GameInfo info = { VK, "Race", 1200 ,600 };
 
     std::unique_ptr<Game> race = std::make_unique<Game> ( info );
 

@@ -76,7 +76,44 @@ namespace SEVIAN {
 
 
 		if (action == GLFW_PRESS) {
+			bool value = true;
 			switch (key) {
+
+
+			case GLFW_KEY_0:
+				keyStates[static_cast<size_t>(Key::K0)] = value;
+				break;
+			case GLFW_KEY_1:
+				keyStates[static_cast<size_t>(Key::K1)] = value;
+				break;
+			case GLFW_KEY_2:
+				keyStates[static_cast<size_t>(Key::K2)] = value;
+				break;
+			case GLFW_KEY_3:
+				keyStates[static_cast<size_t>(Key::K3)] = value;
+				break;
+			case GLFW_KEY_4:
+				keyStates[static_cast<size_t>(Key::K4)] = value;
+				break;
+			case GLFW_KEY_5:
+				keyStates[static_cast<size_t>(Key::K5)] = value;
+				break;
+			case GLFW_KEY_6:
+				keyStates[static_cast<size_t>(Key::K6)] = value;
+				break;
+			case GLFW_KEY_7:
+				keyStates[static_cast<size_t>(Key::K7)] = value;
+				break;
+			case GLFW_KEY_8:
+				keyStates[static_cast<size_t>(Key::K8)] = value;
+				break;
+			case GLFW_KEY_9:
+				keyStates[static_cast<size_t>(Key::K9)] = value;
+				break;
+
+
+
+
 			case GLFW_KEY_A:
 				keyStates[static_cast<size_t>(Key::A)] = true;
 				break;
@@ -157,7 +194,13 @@ namespace SEVIAN {
 				break;
 
 
+			case GLFW_KEY_KP_SUBTRACT:
+				keyStates[static_cast<size_t>(Key::MINUS)] = true;
+				break;
 
+			case GLFW_KEY_KP_ADD:
+				keyStates[static_cast<size_t>(Key::PLUS)] = true;
+				break;
 			case GLFW_KEY_RIGHT:
 				keyStates[static_cast<size_t>(Key::RIGHT)] = true;
 				
@@ -221,9 +264,41 @@ namespace SEVIAN {
 
 		else if (action == GLFW_RELEASE) {
 			
+			bool value = false ;
 
 
 			switch (key) {
+			case GLFW_KEY_0:
+				keyStates[static_cast<size_t>(Key::K0)] = value;
+				break;
+			case GLFW_KEY_1:
+				keyStates[static_cast<size_t>(Key::K1)] = value;
+				break;
+			case GLFW_KEY_2:
+				keyStates[static_cast<size_t>(Key::K2)] = value;
+				break;
+			case GLFW_KEY_3:
+				keyStates[static_cast<size_t>(Key::K3)] = value;
+				break;
+			case GLFW_KEY_4:
+				keyStates[static_cast<size_t>(Key::K4)] = value;
+				break;
+			case GLFW_KEY_5:
+				keyStates[static_cast<size_t>(Key::K5)] = value;
+				break;
+			case GLFW_KEY_6:
+				keyStates[static_cast<size_t>(Key::K6)] = value;
+				break;
+			case GLFW_KEY_7:
+				keyStates[static_cast<size_t>(Key::K7)] = value;
+				break;
+			case GLFW_KEY_8:
+				keyStates[static_cast<size_t>(Key::K8)] = value;
+				break;
+			case GLFW_KEY_9:
+				keyStates[static_cast<size_t>(Key::K9)] = value;
+				break;
+
 			case GLFW_KEY_A:
 				keyStates[static_cast<size_t>(Key::A)] = false;
 				break;
@@ -303,7 +378,13 @@ namespace SEVIAN {
 				keyStates[static_cast<size_t>(Key::Z)] = false;
 				break;
 
+			case GLFW_KEY_KP_SUBTRACT:
+				keyStates[static_cast<size_t>(Key::MINUS)] = false;
+				break;
 
+			case GLFW_KEY_KP_ADD:
+				keyStates[static_cast<size_t>(Key::PLUS)] = false;
+				break;
 
 			case GLFW_KEY_RIGHT:
 				keyStates[static_cast<size_t>(Key::RIGHT)] = false;

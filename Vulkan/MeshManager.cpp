@@ -20,8 +20,10 @@ namespace VULKAN {
 			getBindingDescriptionGeneric (),
 			getAttributeDescriptionsGeneric (),
 			pipelineLayout,
-			"shaders/MeshEntityVert.spv",
-			"shaders/MeshEntityFrag.spv"
+			"shaders/sceneVert.spv",
+			"shaders/sceneFrag.spv"
+			//"shaders/MeshEntityVert.spv",
+			//"shaders/MeshEntityFrag.spv"
 		);
 
 		std::vector<DSLInfo> bufDSLInfo2;
@@ -353,8 +355,8 @@ namespace VULKAN {
 		rasterizer.rasterizerDiscardEnable = VK_FALSE;
 		rasterizer.polygonMode = VK_POLYGON_MODE_FILL;
 		rasterizer.lineWidth = 1.0f;
-		rasterizer.cullMode = VK_CULL_MODE_BACK_BIT;
-		//rasterizer.cullMode = VK_CULL_MODE_NONE;
+		//rasterizer.cullMode = VK_CULL_MODE_BACK_BIT;
+		rasterizer.cullMode = VK_CULL_MODE_NONE;
 
 		rasterizer.frontFace = VK_FRONT_FACE_COUNTER_CLOCKWISE;// VK_FRONT_FACE_CLOCKWISE;//VK_FRONT_FACE_COUNTER_CLOCKWISE;
 		rasterizer.depthBiasEnable = VK_TRUE;
@@ -377,7 +379,7 @@ namespace VULKAN {
 		depthStencil.stencilTestEnable = VK_FALSE;
 
 		VkPipelineColorBlendAttachmentState colorBlendAttachment {};
-		colorBlendAttachment.colorWriteMask = 0xf;// VK_COLOR_COMPONENT_R_BIT | VK_COLOR_COMPONENT_G_BIT | VK_COLOR_COMPONENT_B_BIT | VK_COLOR_COMPONENT_A_BIT;
+		colorBlendAttachment.colorWriteMask = /*0xf;*/ VK_COLOR_COMPONENT_R_BIT | VK_COLOR_COMPONENT_G_BIT | VK_COLOR_COMPONENT_B_BIT | VK_COLOR_COMPONENT_A_BIT;
 		colorBlendAttachment.blendEnable = VK_FALSE;
 
 		VkPipelineColorBlendStateCreateInfo colorBlending {};
@@ -393,7 +395,8 @@ namespace VULKAN {
 
 		std::vector<VkDynamicState> dynamicStates = {
 			VK_DYNAMIC_STATE_VIEWPORT,
-			VK_DYNAMIC_STATE_SCISSOR
+			VK_DYNAMIC_STATE_SCISSOR,
+			VK_DYNAMIC_STATE_DEPTH_BIAS
 		};
 
 		VkPipelineDynamicStateCreateInfo dynamicState {};

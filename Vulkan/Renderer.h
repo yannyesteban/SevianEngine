@@ -274,7 +274,7 @@ namespace VULKAN {
         uint32_t imageIndex;
         bool framebufferResized = false;
         VulkanText fontText;
-
+        VkExtent2D shadowExtent = { 2096, 2096 };
         std::unordered_map<uint32_t, std::unique_ptr<Entity>> entities;
 
         // methods

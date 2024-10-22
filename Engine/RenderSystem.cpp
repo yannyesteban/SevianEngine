@@ -1,6 +1,5 @@
 #include "renderSystem.h"
 
-const int it = 1;
 namespace SEVIAN {
 	void RenderSystem::init ( std::vector<std::shared_ptr<Entity>>& entities ) {
 
@@ -8,23 +7,11 @@ namespace SEVIAN {
 
 			auto index = entity->getID ();
 
-			if (index != it) {
-				//continue;
-			}
-
 			auto mesh = entity->getComponent<MeshComponent> ();
 			auto material = entity->getComponent<MaterialComponent> ();
 			auto texture = entity->getComponent<TextureComponent> ();
 			auto sprite = entity->getComponent<SpriteComponent> ();
 			auto model = entity->getComponent<ModelComponent> ();
-
-			std::string t = "";
-
-
-			if (texture) {
-				t = texture->name;
-			}
-
 
 			if (mesh /* && t == "diffuse1"*/ && texture) {
 				Info3D info;
@@ -106,7 +93,11 @@ namespace SEVIAN {
 			auto scale = entity->getComponent<ScaleComponent> ();
 			auto camera = entity->getComponent<CameraComponent> ();
 			auto light = entity->getComponent<LightComponent> ();
+			auto name = entity->getComponent<NameComponent> ();
 
+			if (name && (name->name != Key::N5 && name->name != Key::N0 && name->name != Key::N1)) {
+				//continue;
+			}
 			if (camera) {
 				lastCamera = camera;
 				continue;
@@ -115,43 +106,35 @@ namespace SEVIAN {
 				lastLight = light;
 				continue;
 			}
-
 			if (lastCamera == nullptr || lastLight == nullptr) {
 				continue;
 			}
-
 			if (!mesh) {
 				continue;
 			}
 
-			UniformBufferObject ubo {};
-
+			UniformBufferObject shadowUBO {};
+			UniformDataDept shadowMVP;
 			glm::mat4 translation = glm::translate ( glm::mat4 ( 1.0f ), position->position );
 			//glm::mat4 rotation = glm::rotate ( glm::mat4 ( 1.0f ), time * 0.1f * glm::radians ( 90.0f ), glm::vec3 ( 0.0f, 0.0f, 1.0f ) );
 
 			glm::mat4 rotationMat = glm::rotate ( glm::mat4 ( 1.0f ), rotation->rotation.z, glm::vec3 ( 0.0f, 0.0f, 1.0f ) ) *
 				glm::rotate ( glm::mat4 ( 1.0f ), rotation->rotation.y, glm::vec3 ( 0.0f, 1.0f, 0.0f ) ) *
 				glm::rotate ( glm::mat4 ( 1.0f ), rotation->rotation.x, glm::vec3 ( 1.0f, 0.0f, 0.0f ) );
-			ubo.model = translation * rotationMat;	//ubo.model = /* rotation * */  translation;
+			shadowUBO.model = translation * rotationMat;	//ubo.model = /* rotation * */  translation;
 
 			// Matriz de vista desde el punto de vista de la luz
-			ubo.view = glm::lookAt ( lastLight->position, glm::vec3 ( 0.0f, 0.0f, 0.0f ), glm::vec3 ( 0.0f, 1.0f, 0.0f ) );
-
-			// Proyección ortográfica para simular las sombras de la luz (ajusta los parámetros según tu escena)
-			float near_plane = 1.0f, far_plane = 100.0f;
-			float shadowMapSize = 10.0f; // Ajusta según la distancia que quieras cubrir
-			ubo.proj = glm::ortho ( -shadowMapSize, shadowMapSize, -shadowMapSize, shadowMapSize, near_plane, far_plane );
-
-
-			ubo.position = lastLight->position;
-			//ubo.cameraPos = lastCamera->position;
-			mesh->prop->ShadowRender ( ubo );
+			shadowUBO.lightView = lastLight->view;
+			shadowUBO.lightProj = lastLight->proj;
+			//shadowUBO.lightPos = lastLight->position;
+			//shadowUBO.cameraPos = lastCamera->position;
+			shadowMVP.MVP = lastLight->proj * lastLight->view * shadowUBO.model;
+			mesh->prop->ShadowRender ( shadowUBO );
 			//renderer->drawText ( "YANNY", position->position, cam );
 
 		}
 
 		renderer->endRenderPass ();
-
 
 		renderer->beginRenderPass ( 1 ); // draw 
 		for (auto& entity : entities) {
@@ -171,11 +154,9 @@ namespace SEVIAN {
 				lastLight = light;
 				continue;
 			}
-
 			if (lastCamera == nullptr || lastLight == nullptr) {
 				continue;
 			}
-
 			if (!mesh) {
 				continue;
 			}
@@ -192,17 +173,16 @@ namespace SEVIAN {
 
 			ubo.view = lastCamera->view;
 			ubo.proj = lastCamera->proj;
+			
+			ubo.lightView = lastLight->view;
+			ubo.lightProj = lastLight->proj;
 
-
-			ubo.lightView = glm::lookAt ( lastLight->position, glm::vec3 ( 0.0f, 0.0f, 0.0f ), glm::vec3 ( 0.0f, 1.0f, 0.0f ) );
-
-			// Proyección ortográfica para simular las sombras de la luz (ajusta los parámetros según tu escena)
-			float near_plane = 1.0f, far_plane = 100.0f;
-			float shadowMapSize = 10.0f; // Ajusta según la distancia que quieras cubrir
-			ubo.lightProj = glm::ortho ( -shadowMapSize, shadowMapSize, -shadowMapSize, shadowMapSize, near_plane, far_plane );
-
-			ubo.position = lastLight->position;
+			ubo.lightColor = lastLight->color;
+			ubo.lightIntensity = lastLight->intensity;
+			
+			ubo.lightPos = lastLight->position;
 			ubo.cameraPos = lastCamera->position;
+
 			mesh->prop->render ( ubo );
 			//renderer->drawText ( "YANNY", position->position, cam );
 			

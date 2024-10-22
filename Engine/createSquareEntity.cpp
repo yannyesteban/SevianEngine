@@ -13,7 +13,7 @@ namespace SEVIAN {
 		// entity->addComponent<MaterialComponent> ( material );
 
 		CameraComponent camera { };
-		camera.position = glm::vec3 ( 0.1f, 0.0f, 5.0f );
+		camera.position = glm::vec3 ( 0.0f, 0.0f, 5.0f );
 		camera.front = glm::vec3 ( 0.0f, 0.0f, 0.0f );
 		camera.up = glm::vec3 ( 0.0f, 1.0f, 0.0f );
 
@@ -209,6 +209,93 @@ namespace SEVIAN {
 		return entity;
 	}
 
+	std::shared_ptr<Entity> createCubeEntity2 ( const std::string& textureName, const std::string& textureFile, const Key& name, Scene& scene, float deltaX, float deltaY, float deltaZ ) {
+		auto entity = scene.createEntity ();
+
+		glm::vec3 color1 = { (float) 5 / 255, (float) 51 / 255, (float) 255 / 255 };
+		glm::vec3 color2 = { (float) 255 / 255, (float) 255 / 255, (float) 51 / 255 };
+		glm::vec3 color3 = { (float) 96 / 255, (float) 96 / 255, (float) 96 / 255 };
+		glm::vec3 color4 = { (float) 204 / 255, (float) 0 / 255, (float) 0 / 255 };
+		glm::vec3 color5 = { (float) 0 / 255, (float) 255 / 255, (float) 0 / 255 };
+		glm::vec3 color6 = { (float) 32 / 255, (float) 32 / 255, (float) 32 / 255 };
+
+		// Define vertices and indices for a cube with corrected UVs
+		std::vector<Vertex> vertices = {
+			// Frente //{-0.5f, -0.5f,  0.5f}
+			{{-0.5f, -0.5f,  0.5f}, { 0.0f,  0.0f,  1.0f }, { 0.0f, 1.0f }, color1 }, // Abajo-izquierda
+			{{ 0.5f, -0.5f,  0.5f}, { 0.0f,  0.0f,  1.0f}, {1.0f, 1.0f}, color1},    // Abajo-derecha
+			{{ 0.5f,  0.5f,  0.5f}, { 0.0f,  0.0f,  1.0f}, {1.0f, 0.0f}, color1},    // Arriba-derecha
+			{{-0.5f,  0.5f,  0.5f}, { 0.0f,  0.0f,  1.0f}, {0.0f, 0.0f}, color1},    // Arriba-izquierda
+
+			// Atrás
+			{{-0.5f, -0.5f, -0.5f}, { 0.0f,  0.0f, -1.0f}, {0.0f, 1.0f}, color2},    // Abajo-izquierda
+			{{ 0.5f, -0.5f, -0.5f}, { 0.0f,  0.0f, -1.0f}, {1.0f, 1.0f}, color2},    // Abajo-derecha
+			{{ 0.5f,  0.5f, -0.5f}, { 0.0f,  0.0f, -1.0f}, {1.0f, 0.0f}, color2},    // Arriba-derecha
+			{{-0.5f,  0.5f, -0.5f}, { 0.0f,  0.0f, -1.0f}, {0.0f, 0.0f}, color2},    // Arriba-izquierda
+
+			// Izquierda
+			{{-0.5f, -0.5f, -0.5f}, {-1.0f,  0.0f,  0.0f}, {0.0f, 1.0f}, color3},    // Abajo-izquierda
+			{{-0.5f, -0.5f,  0.5f}, {-1.0f,  0.0f,  0.0f}, {1.0f, 1.0f}, color3},    // Abajo-derecha
+			{{-0.5f,  0.5f,  0.5f}, {-1.0f,  0.0f,  0.0f}, {1.0f, 0.0f}, color3},    // Arriba-derecha
+			{{-0.5f,  0.5f, -0.5f}, {-1.0f,  0.0f,  0.0f}, {0.0f, 0.0f}, color3},    // Arriba-izquierda
+
+			// Derecha
+			{{ 0.5f, -0.5f, -0.5f}, { 1.0f,  0.0f,  0.0f}, {0.0f, 1.0f}, color4},    // Abajo-izquierda
+			{{ 0.5f, -0.5f,  0.5f}, { 1.0f,  0.0f,  0.0f}, {1.0f, 1.0f}, color4},    // Abajo-derecha
+			{{ 0.5f,  0.5f,  0.5f}, { 1.0f,  0.0f,  0.0f}, {1.0f, 0.0f}, color4},    // Arriba-derecha
+			{{ 0.5f,  0.5f, -0.5f}, { 1.0f,  0.0f,  0.0f}, {0.0f, 0.0f}, color4},    // Arriba-izquierda
+
+			// Arriba
+			{{-0.5f,  0.5f,  0.5f}, { 0.0f,  1.0f,  0.0f}, {0.0f, 1.0f}, color5},    // Abajo-izquierda
+			{{ 0.5f,  0.5f,  0.5f}, { 0.0f,  1.0f,  0.0f}, {1.0f, 1.0f}, color5},    // Abajo-derecha
+			{{ 0.5f,  0.5f, -0.5f}, { 0.0f,  1.0f,  0.0f}, {1.0f, 0.0f}, color5},    // Arriba-derecha
+			{{-0.5f,  0.5f, -0.5f}, { 0.0f,  1.0f,  0.0f}, {0.0f, 0.0f}, color5},    // Arriba-izquierda
+
+			// Abajo
+			{{-0.5f, -0.5f,  0.5f}, { 0.0f, -1.0f,  0.0f}, {0.0f, 1.0f}, color6},    // Abajo-izquierda
+			{{ 0.5f, -0.5f,  0.5f}, { 0.0f, -1.0f,  0.0f}, {1.0f, 1.0f}, color6},    // Abajo-derecha
+			{{ 0.5f, -0.5f, -0.5f}, { 0.0f, -1.0f,  0.0f}, {1.0f, 0.0f}, color6},    // Arriba-derecha
+			{{-0.5f, -0.5f, -0.5f}, { 0.0f, -1.0f,  0.0f}, {0.0f, 0.0f}, color6}     // Arriba-izquierda
+		};
+
+		std::vector<uint32_t> indices = {
+			// Front face
+			0, 1, 2, 2, 3, 0,
+			// Back face
+			6, 5, 4, 4, 7, 6,
+			// Left face
+			8, 9, 10, 10, 11, 8,
+			// Right face
+			14, 13, 12, 12, 15, 14,
+			// Top face
+			18, 17, 16, 16, 19, 18,
+			// Bottom face
+			20, 21, 22, 22, 23, 20
+		};
+
+		// Add components to the entity
+		entity->addComponent<MeshComponent> ( vertices, indices );
+
+		//TextureComponent texture { "diffuse1", "textures/a1.jpeg" };
+		TextureComponent texture { textureName, textureFile };
+		entity->addComponent<TextureComponent> ( texture );
+
+		MaterialComponent material = MaterialComponent (
+			{ 0.1f, 0.1f, 0.1f, 1.0f },
+			{ 1.0f, 1.0f, 1.0f, 1.0f },
+			{ 0.5f, 0.5f, 0.5f, 1.0f },
+			32.0f
+		);
+		entity->addComponent<MaterialComponent> ( material );
+
+		entity->addComponent<PositionComponent> ( glm::vec3 ( 0.0f + deltaX, 0.0f + deltaY, 0.0f + deltaZ ) );
+		entity->addComponent<RotationComponent> ( glm::vec3 ( 0.0f, 0.0f, 0.0f ) );
+		entity->addComponent<ScaleComponent> ( glm::vec3 ( 1.0f, 2.0f, 1.0f ) );
+		entity->addComponent<InputComponent> ();
+		entity->addComponent<NameComponent> ( name );
+		return entity;
+	}
+
 
 	std::shared_ptr<Entity> createCubeEntity ( const std::string& textureName, const std::string& textureFile, const Key& name, Scene& scene, float deltaX, float deltaY, float deltaZ ) {
 		auto entity = scene.createEntity ();
@@ -304,7 +391,7 @@ namespace SEVIAN {
 
 		entity->addComponent<PositionComponent> ( glm::vec3 ( 0.0f + deltaX, 0.0f + deltaY, 0.0f + deltaZ ) );
 		entity->addComponent<RotationComponent> ( glm::vec3 ( 0.0f, 0.0f, 0.0f ) );
-		entity->addComponent<ScaleComponent> ( glm::vec3 ( 1.0f, 1.0f, 1.0f ) );
+		entity->addComponent<ScaleComponent> ( glm::vec3 ( 1.0f, 2.0f, 1.0f ) );
 		entity->addComponent<InputComponent> ();
 		entity->addComponent<NameComponent> ( name );
 		return entity;

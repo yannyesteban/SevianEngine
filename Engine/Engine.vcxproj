@@ -190,9 +190,14 @@
     <None Include="lights.frag" />
     <None Include="lights.vert" />
     <None Include="MeshEntity.frag" />
+    <None Include="MeshEntity1.frag" />
     <None Include="MeshEntity.vert" />
     <None Include="model.frag" />
     <None Include="model.vert" />
+    <None Include="offscreen.vert" />
+    <None Include="scene.frag" />
+    <None Include="scene0.frag" />
+    <None Include="scene.vert" />
     <None Include="sdf.frag" />
     <None Include="sdf2.frag" />
     <None Include="Shadow.frag" />

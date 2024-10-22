@@ -76,7 +76,7 @@ namespace VULKAN {
 		extent = swapChain.extent;
 		renderPass = device->createRenderPass ( swapChain.imageFormat );
 		shadowRenderPass = device->createShadowRenderPass ();
-
+		
 		depthResources = device->createDepthResources ( extent );
 		// = device->createDepthResources ( extent );
 
@@ -84,20 +84,22 @@ namespace VULKAN {
 
 			VkFormat depthFormat = device->findDepthFormat ();
 
-			device->createImage ( extent.width, extent.height, depthFormat, VK_IMAGE_TILING_OPTIMAL, VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT | VK_IMAGE_USAGE_SAMPLED_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, depthResource.image, depthResource.imageMemory );
+			device->createImage ( shadowExtent.width, shadowExtent.height, depthFormat, VK_IMAGE_TILING_OPTIMAL, VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT | VK_IMAGE_USAGE_SAMPLED_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, depthResource.image, depthResource.imageMemory );
 			depthResource.imageView = device->createImageView ( depthResource.image, depthFormat, VK_IMAGE_ASPECT_DEPTH_BIT );
 
 			depthResources2 =  depthResource;
 			device->depthResource = depthResource;
 		swapChain.framebuffers = physicalDevices.at ( position ).createFramebuffers ( swapChain, renderPass, { depthResources.imageView } );
-		shadowFrameBuffer = physicalDevices.at ( position ).createShadowFramebuffer ( shadowRenderPass, depthResources2.imageView, extent );
+		shadowFrameBuffer = physicalDevices.at ( position ).createShadowFramebuffer ( shadowRenderPass, depthResources2.imageView, shadowExtent );
 		device->shadowFrameBuffer = shadowFrameBuffer;
 		device->renderPass = renderPass;
 		device->shadowRenderPass = shadowRenderPass;
-		descriptorSetLayout = device->createDescriptorSetLayout ();
+		//descriptorSetLayout = device->createDescriptorSetLayout ();
 		descriptorPool = device->createDescriptorPool ();
-		device->descriptorSetLayout = descriptorSetLayout;
+		//device->descriptorSetLayout = descriptorSetLayout;
 
+
+		//VkFilter shadowmap_filter = vks::tools::formatIsFilterable(physicalDevice, offscreenDepthFormat, VK_IMAGE_TILING_OPTIMAL) ? VK_FILTER_LINEAR : VK_FILTER_NEAREST;
 		VkSamplerCreateInfo samplerInfo {};
 		samplerInfo.sType = VK_STRUCTURE_TYPE_SAMPLER_CREATE_INFO;
 		samplerInfo.magFilter = VK_FILTER_LINEAR;
@@ -109,13 +111,15 @@ namespace VULKAN {
 
 		//samplerInfo.anisotropyEnable = VK_TRUE;
 
-		samplerInfo.borderColor = VK_BORDER_COLOR_INT_OPAQUE_WHITE;
+		samplerInfo.borderColor = VK_BORDER_COLOR_FLOAT_OPAQUE_WHITE;
 		samplerInfo.unnormalizedCoordinates = VK_FALSE;
 		samplerInfo.compareEnable = VK_TRUE;
 		samplerInfo.compareOp = VK_COMPARE_OP_LESS;  // Importante para shadow mapping
 		samplerInfo.mipmapMode = VK_SAMPLER_MIPMAP_MODE_LINEAR;
 		samplerInfo.mipLodBias = 0.0f;
 		samplerInfo.maxAnisotropy = 1.0f;
+		samplerInfo.minLod = 0.0f;
+		samplerInfo.maxLod = 1.0f;
 
 		vkCreateSampler ( device->device, &samplerInfo, nullptr, &device->shadowMapSampler );
 
@@ -749,13 +753,13 @@ namespace VULKAN {
 			renderPassInfo.renderPass = shadowRenderPass;
 			renderPassInfo.framebuffer = shadowFrameBuffer;
 			renderPassInfo.renderArea.offset = { 0, 0 };
-			renderPassInfo.renderArea.extent = swapChain.extent;
+			renderPassInfo.renderArea.extent = shadowExtent;
 
 			std::array<VkClearValue, 1> clearValues {};
 			
 			clearValues[0].depthStencil = { 1.0f, 0 };
 
-			renderPassInfo.clearValueCount = static_cast<uint32_t>(clearValues.size ());
+			renderPassInfo.clearValueCount = 1;// static_cast<uint32_t>(clearValues.size ());
 			renderPassInfo.pClearValues = clearValues.data ();
 
 			vkCmdBeginRenderPass ( frame.commandBuffers, &renderPassInfo, VK_SUBPASS_CONTENTS_INLINE );
@@ -763,16 +767,23 @@ namespace VULKAN {
 			VkViewport viewport {};
 			viewport.x = 0.0f;
 			viewport.y = 0.0f;
-			viewport.width = (float) swapChain.extent.width;
-			viewport.height = (float) swapChain.extent.height;
+			viewport.width = (float) shadowExtent.width;
+			viewport.height = (float) shadowExtent.height;
 			viewport.minDepth = 0.0f;
 			viewport.maxDepth = 1.0f;
 			vkCmdSetViewport ( frame.commandBuffers, 0, 1, &viewport );
 
 			VkRect2D scissor {};
 			scissor.offset = { 0, 0 };
-			scissor.extent = swapChain.extent;
+			scissor.extent = shadowExtent;
 			vkCmdSetScissor ( frame.commandBuffers, 0, 1, &scissor );
+
+			// Establecer el depth bias dinámico
+			float depthBiasConstantFactor = 1.0f; // Cambia según tu necesidad
+			float depthBiasClamp = 0.0f;
+			float depthBiasSlopeFactor = 1.0f; // Cambia según tu necesidad
+
+			vkCmdSetDepthBias ( commandBuffer, depthBiasConstantFactor, depthBiasClamp, depthBiasSlopeFactor );
 
 			return;
 		}

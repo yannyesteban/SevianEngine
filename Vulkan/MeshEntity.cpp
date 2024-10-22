@@ -102,6 +102,27 @@ namespace VULKAN {
 		shadowPipelineLayout = propertys.shadowPipelineLayout;
 		shadowPipeline = propertys.shadowPipeline;
 	}
+	void MeshEntity::ShadowRender ( UniformBufferObject ubo ) {
+		auto currentFrame = device->currentFrame;
+
+		Frame frame = device->frames[currentFrame];
+		auto commandBuffer = frame.commandBuffers;
+
+		memcpy ( this->ubo1[currentFrame].buffersMapped, &ubo, sizeof ( ubo ) );
+
+		VkBuffer vertexBuffers[] = { vertex.buffer };
+		VkDeviceSize offsets[] = { 0 };
+
+
+
+		vkCmdBindPipeline ( commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, shadowPipeline );
+		vkCmdBindVertexBuffers ( commandBuffer, 0, 1, vertexBuffers, offsets );
+		vkCmdBindIndexBuffer ( commandBuffer, indices.buffer, 0, VK_INDEX_TYPE_UINT32 );
+		vkCmdBindDescriptorSets ( commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, shadowPipelineLayout, 0, 1, &shadowDescriptorSets[currentFrame], 0, nullptr );
+		
+		vkCmdDrawIndexed ( commandBuffer, static_cast<uint32_t>(indicesSizes), 1, 0, 0, 0 );
+	}
+
 	
 	void MeshEntity::render ( UniformBufferObject ubo ) {
 		auto currentFrame = device->currentFrame;
@@ -123,22 +144,5 @@ namespace VULKAN {
 		vkCmdBindDescriptorSets ( commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipelineLayout, 1, 1, &texDescriptorSets[currentFrame], 0, nullptr );
 		vkCmdDrawIndexed ( commandBuffer, static_cast<uint32_t>(indicesSizes), 1, 0, 0, 0 );
 	}
-	void MeshEntity::ShadowRender ( UniformBufferObject ubo ) {
-		auto currentFrame = device->currentFrame;
-
-		Frame frame = device->frames[currentFrame];
-		auto commandBuffer = frame.commandBuffers;
-
-		memcpy ( this->ubo1[currentFrame].buffersMapped, &ubo, sizeof ( ubo ) );
-
-		VkBuffer vertexBuffers[] = { vertex.buffer };
-		VkDeviceSize offsets[] = { 0 };
-
-		vkCmdBindPipeline ( commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, shadowPipeline );
-		vkCmdBindVertexBuffers ( commandBuffer, 0, 1, vertexBuffers, offsets );
-		vkCmdBindIndexBuffer ( commandBuffer, indices.buffer, 0, VK_INDEX_TYPE_UINT32 );
-		vkCmdBindDescriptorSets ( commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, shadowPipelineLayout, 0, 1, &shadowDescriptorSets[currentFrame], 0, nullptr );
-		
-		vkCmdDrawIndexed ( commandBuffer, static_cast<uint32_t>(indicesSizes), 1, 0, 0, 0 );
-	}
+	
 }
