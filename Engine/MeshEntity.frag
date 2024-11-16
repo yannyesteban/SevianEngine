@@ -15,6 +15,7 @@ layout(location = 8) in float lightIntensity;
 layout(location = 0) out vec4 outColor;
 
 layout(set = 1, binding = 0) uniform sampler2D texSampler;
+//layout(set = 1, binding = 1) uniform sampler2D shadowMap2;
 layout(set = 1, binding = 1) uniform sampler2DShadow shadowMap;
 
 const vec3 ambientMaterial = vec3(0.1, 0.1, 0.1);
@@ -25,7 +26,48 @@ const vec3 specularMaterial = vec3(0.5, 0.5, 0.5);
 const float ambientIntensity = 0.9;//1.0
 const float diffuseIntensity = 1.0;//1.0
 const float specularIntensity = 0.2;//0.2
-const float shininess = 32.0f;
+const float shininess = 64.0f;
+
+#define EPSILON 0.00001
+
+
+float ShadowCalculation(vec4 fragPosLightSpace)
+{
+    // perform perspective divide
+    vec3 projCoords = fragPosLightSpace.xyz / fragPosLightSpace.w;
+    // transform to [0,1] range
+    projCoords = projCoords * 0.5 + 0.5;
+    // get closest depth value from light’s perspective (using
+    // [0,1] range fragPosLight as coords)
+    float closestDepth = texture(shadowMap, projCoords.xyz).r;
+    // get depth of current fragment from light’s perspective
+    float currentDepth = projCoords.z;
+    // check whether current frag pos is in shadow
+    float shadow = currentDepth > closestDepth ? 1.0 : 1.0;
+    return shadow;
+}
+
+void main10 () {
+    vec3 color = texture(texSampler, fragTexCoord).rgb;
+    vec3 normal = normalize(fragNormal);
+    vec3 lightColor = vec3(1.0);
+    // ambient
+    vec3 ambient = 0.15 * color;
+    // diffuse
+    vec3 lightDir = normalize(lightPosition - fragPosition);
+    float diff = max(dot(lightDir, normal), 0.0);
+    vec3 diffuse = diff * lightColor;
+    // specular
+    vec3 viewDir = normalize(camPosition - fragPosition);
+    float spec = 0.0;
+    vec3 halfwayDir = normalize(lightDir + camPosition);
+    spec = pow(max(dot(normal, halfwayDir), 0.0), 64.0);
+    vec3 specular = spec * lightColor;
+    // calculate shadow
+    float shadow = ShadowCalculation(fragPosLightSpace);
+    vec3 lighting = (ambient + (1.0 - shadow) * (diffuse + specular)) * color * lightIntensity;
+    outColor = vec4(lighting, 1.0);
+}
 
 float calculateShadow(vec4 fragPosLightSpace) {
     // Coordenadas normalizadas de la luz
@@ -45,6 +87,9 @@ float calculateShadow(vec4 fragPosLightSpace) {
 
     return shadow;
 }
+
+
+
 
 void main() {
     // Normalizar vectores

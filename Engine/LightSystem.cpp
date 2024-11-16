@@ -50,11 +50,11 @@ namespace SEVIAN {
 
 
 				if (Tools::isKeyPressed ( Key::K1 )) {
-					light->near_plane = light->near_plane - 0.001f;
+					light->near_plane = light->near_plane - 0.01f;
 					keyPressed = true;
 				}
 				if (Tools::isKeyPressed ( Key::K2 )) {
-					light->near_plane = light->near_plane + 0.001f;
+					light->near_plane = light->near_plane + 0.01f;
 					keyPressed = true;
 				}
 

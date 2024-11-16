@@ -151,7 +151,7 @@ namespace SEVIAN {
         glm::vec3 target = glm::vec3 ( 0.0f, 0.0f, 0.0f );
         glm::vec3 up = glm::vec3 ( 0.0f, 1.0f, 0.0f );
 
-        glm::vec3 position = glm::vec3 ( -2.312f, 0.358f, 5.0f );
+        glm::vec3 position = glm::vec3 ( -2.312f, 0.358f, 28.0f );
 
         float zoomLevel = 45.0f;
         float fov = 45.0f;
@@ -196,7 +196,7 @@ namespace SEVIAN {
         glm::mat4 proj;
 
         float near_plane = 1.0f;// 0.1f;
-        float far_plane = 96.0f;// 50.0f;
+        float far_plane = 45.0f;// 50.0f;
         float shadowMapSize = 10.0;// 5.0f; // Ajusta según la distancia que quieras cubrir
         void update ( float deltaTime ) override;
     };

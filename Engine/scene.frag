@@ -4,17 +4,17 @@
 layout (set = 1, binding = 0) uniform sampler2D texSampler;   // Textura del objeto
 layout (set = 1, binding = 1) uniform sampler2DShadow shadowMap;    // Mapa de sombras
 
-layout (location = 0) in vec3 outNormal;
-layout (location = 1) in vec3 outColor;
+layout (location = 0) in vec3 inNormal;
+layout (location = 1) in vec3 inColor;
 layout (location = 2) in vec3 outViewVec;
 layout (location = 3) in vec3 outLightVec;
 layout (location = 4) in vec4 outShadowCoord;
 layout (location = 5) in vec2 inUV; // Coordenadas UV para la textura
 layout (location = 6) in float lightIntensity;
 
-layout (constant_id = 0) const int enablePCF = 1;
+layout (constant_id = 0) const int enablePCF = 0;
 
-layout (location = 0) out vec4 outFragColor;
+layout (location = 0) out vec4 outColor;
 
 #define ambient 0.1
 
@@ -58,7 +58,7 @@ void main()
     // Aplicar el filtro PCF si está habilitado, o solo proyectar sombra
     float shadow = (enablePCF == 1) ? filterPCF(outShadowCoord / outShadowCoord.w) : textureProj(outShadowCoord / outShadowCoord.w, vec2(0.0));
 
-    vec3 N = normalize(outNormal);
+    vec3 N = normalize(inNormal);
     vec3 L = normalize(outLightVec);
 
     // Calcula la intensidad de la luz sin utilizar el color del objeto
@@ -68,7 +68,8 @@ void main()
     vec4 texColor = texture(texSampler, inUV);
 
     // Calcular el color final, multiplicando la intensidad de la luz y las sombras por el color de la textura
-    outFragColor = vec4(texColor.rgb * lightFactor * shadow, texColor.a);
+    outColor = vec4(texColor.rgb * lightFactor * shadow, texColor.a);
+    //outColor = vec4(inColor, 1.0);
 }
 
 void main2() 
@@ -80,7 +81,7 @@ void main2()
     vec4 texColor = texture(texSampler, inUV);
 
     // Calcular el color final, multiplicando por el factor de sombra
-    outFragColor = vec4(texColor.rgb * shadow, texColor.a);
+    outColor = vec4(texColor.rgb * shadow, texColor.a);
 }
 
 void main1() 
@@ -88,15 +89,15 @@ void main1()
     // Aplicar el filtro PCF si está habilitado, o solo proyectar sombra
     float shadow = (enablePCF == 1) ? filterPCF(outShadowCoord / outShadowCoord.w) : textureProj(outShadowCoord / outShadowCoord.w, vec2(0.0));
 
-    vec3 N = normalize(outNormal);
+    vec3 N = normalize(inNormal);
     vec3 L = normalize(outLightVec);
     vec3 V = normalize(outViewVec);
     //vec3 diffuse = max(dot(N, L), ambient) * outColor * lightIntensity;
-    vec3 diffuse = max(dot(N, L), ambient) * outColor * lightIntensity;
+    vec3 diffuse = max(dot(N, L), ambient) * inColor * lightIntensity;
     // Aplicar la textura al color difuso
     vec4 texColor = texture(texSampler, inUV);
 
     // Calcular el color final, multiplicando por el factor de sombra
-    outFragColor = vec4(diffuse * shadow, 1.0) * texColor;
+    outColor = vec4(diffuse * shadow, 1.0) * texColor;
     // outFragColor = vec4(diffuse, 1.0) * texColor;
 }

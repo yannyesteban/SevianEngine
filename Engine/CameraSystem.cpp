@@ -54,7 +54,7 @@ void SEVIAN::CameraSystem::update ( std::vector<std::shared_ptr<Entity>>& entiti
 
 			// Actualizar matrices de vista y proyección
 			camera->view = glm::lookAt ( camera->position, camera->target, camera->up );
-			camera->proj = glm::perspective ( glm::radians ( camera->fov ), camera->width / camera->height, 0.1f, 100.0f );
+			camera->proj = glm::perspective ( glm::radians ( camera->fov ), camera->width / camera->height, 1.0f, 100.0f);
 			camera->proj[1][1] *= -1; // Invertir el eje Y en proyección si es necesario
 		}
 

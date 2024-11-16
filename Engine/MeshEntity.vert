@@ -20,6 +20,7 @@ layout(set = 0, binding = 0) uniform UniformBufferObject {
     mat4 model;
     mat4 view;
     mat4 proj;
+    mat4 MVP;
     mat4 lightView;  // Añadido: Matriz de vista desde la luz
     mat4 lightProj;  // Añadido: Matriz de proyección desde la luz
     vec3 lightPos;
@@ -34,11 +35,15 @@ void main() {
     vec4 worldPosition = ubo.model * vec4(inPosition, 1.0);
     fragPosition = worldPosition.xyz;
 
+
+   // fragPosition = (ubo.model * vec4(inPosition, 1.0)).xyz;
+
+
     // Transformación al espacio de la cámara
     gl_Position = ubo.proj * ubo.view * worldPosition;
 
     // Normal transformada
-    fragNormal = mat3(transpose(inverse(ubo.model))) * inNormal;
+    fragNormal = transpose(inverse(mat3(ubo.model))) * inNormal;
 
     // Pasar otras variables
     fragColor = inColor;

@@ -54,6 +54,13 @@ namespace VULKAN {
 		viewInfo.subresourceRange.baseArrayLayer = 0;
 		viewInfo.subresourceRange.layerCount = 1;
 
+		viewInfo.components = {
+			VK_COMPONENT_SWIZZLE_R,
+			VK_COMPONENT_SWIZZLE_G,
+			VK_COMPONENT_SWIZZLE_B,
+			VK_COMPONENT_SWIZZLE_A
+		};
+
 		VkImageView imageView;
 		if (vkCreateImageView ( device, &viewInfo, nullptr, &imageView ) != VK_SUCCESS) {
 			throw std::runtime_error ( "failed to create texture image view!" );
@@ -169,7 +176,7 @@ namespace VULKAN {
 		createInfo.imageColorSpace = surfaceFormat.colorSpace;
 		createInfo.imageExtent = extent;
 		createInfo.imageArrayLayers = 1;
-		createInfo.imageUsage = VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT;
+		createInfo.imageUsage = VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT /* | VK_IMAGE_USAGE_TRANSFER_SRC_BIT | VK_IMAGE_USAGE_TRANSFER_DST_BIT*/;
 
 		findQueueFamilies ();
 		uint32_t queueFamilyIndices[] = { graphicsFamily.value (), presentFamily.value () };
@@ -187,6 +194,9 @@ namespace VULKAN {
 		createInfo.compositeAlpha = VK_COMPOSITE_ALPHA_OPAQUE_BIT_KHR;
 		createInfo.presentMode = presentMode;
 		createInfo.clipped = VK_TRUE;
+
+
+
 
 		SwapChain swapChain;
 
@@ -233,6 +243,7 @@ namespace VULKAN {
 			*/
 			VkFramebufferCreateInfo framebufferInfo {};
 			framebufferInfo.sType = VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO;
+			framebufferInfo.pNext = NULL;
 			framebufferInfo.renderPass = renderPass;
 			//framebufferInfo.attachmentCount = 1;// static_cast<uint32_t>(attachments.size());
 			//framebufferInfo.pAttachments = attachments;

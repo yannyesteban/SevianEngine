@@ -83,7 +83,7 @@ namespace SEVIAN {
 		
 		CameraComponent * lastCamera = nullptr;
 		LightComponent* lastLight = nullptr;
-
+		UniformBufferObject shadowUBO {};
 		renderer->beginRenderPass ( 0 );// shadows render pass
 		for (auto& entity : entities) {
 
@@ -113,7 +113,7 @@ namespace SEVIAN {
 				continue;
 			}
 
-			UniformBufferObject shadowUBO {};
+			
 			UniformDataDept shadowMVP;
 			glm::mat4 translation = glm::translate ( glm::mat4 ( 1.0f ), position->position );
 			//glm::mat4 rotation = glm::rotate ( glm::mat4 ( 1.0f ), time * 0.1f * glm::radians ( 90.0f ), glm::vec3 ( 0.0f, 0.0f, 1.0f ) );
@@ -126,9 +126,10 @@ namespace SEVIAN {
 			// Matriz de vista desde el punto de vista de la luz
 			shadowUBO.lightView = lastLight->view;
 			shadowUBO.lightProj = lastLight->proj;
-			//shadowUBO.lightPos = lastLight->position;
+			shadowUBO.lightPos = lastLight->position;
 			//shadowUBO.cameraPos = lastCamera->position;
 			shadowMVP.MVP = lastLight->proj * lastLight->view * shadowUBO.model;
+			shadowUBO.MVP = lastLight->proj * lastLight->view * shadowUBO.model;
 			mesh->prop->ShadowRender ( shadowUBO );
 			//renderer->drawText ( "YANNY", position->position, cam );
 
@@ -174,19 +175,21 @@ namespace SEVIAN {
 			ubo.view = lastCamera->view;
 			ubo.proj = lastCamera->proj;
 			
-			ubo.lightView = lastLight->view;
-			ubo.lightProj = lastLight->proj;
+			ubo.lightView = shadowUBO.lightView;// lastLight->view;
+			ubo.lightProj = shadowUBO.lightProj;// lastLight->proj;
 
 			ubo.lightColor = lastLight->color;
 			ubo.lightIntensity = lastLight->intensity;
 			
-			ubo.lightPos = lastLight->position;
+			ubo.lightPos = shadowUBO.lightPos;//lastLight->position;
 			ubo.cameraPos = lastCamera->position;
-
+			ubo.MVP = shadowUBO.lightProj * shadowUBO.lightView * ubo.model;
 			mesh->prop->render ( ubo );
-			//renderer->drawText ( "YANNY", position->position, cam );
+			
 			
 		}
+		Camera cam = {};
+		renderer->drawText ( "YANNY", glm::vec3(0.0, 0.0, 0.0), cam);
 
 		renderer->endRenderPass ();
 		renderer->endFrame ();

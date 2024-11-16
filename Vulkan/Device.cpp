@@ -134,7 +134,7 @@ namespace VULKAN {
 				uboLayoutBinding.descriptorCount = 1;
 				uboLayoutBinding.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
 				uboLayoutBinding.pImmutableSamplers = nullptr;
-				uboLayoutBinding.stageFlags = VK_SHADER_STAGE_VERTEX_BIT;
+				uboLayoutBinding.stageFlags = VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT;
 				bindings.push_back ( uboLayoutBinding );
 			}
 			else if (_info.descriptorType == VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER) {
@@ -509,6 +509,15 @@ namespace VULKAN {
 		allocInfo.allocationSize = memRequirements.size;
 		allocInfo.memoryTypeIndex = findMemoryType ( memRequirements.memoryTypeBits, properties );
 
+		// If the buffer has VK_BUFFER_USAGE_SHADER_DEVICE_ADDRESS_BIT set we also need to enable the appropriate flag during allocation
+		VkMemoryAllocateFlagsInfoKHR allocFlagsInfo {};
+		if (usage & VK_BUFFER_USAGE_SHADER_DEVICE_ADDRESS_BIT) {
+			allocFlagsInfo.sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_FLAGS_INFO_KHR;
+			allocFlagsInfo.flags = VK_MEMORY_ALLOCATE_DEVICE_ADDRESS_BIT_KHR;
+			allocInfo.pNext = &allocFlagsInfo;
+		}
+
+
 		if (vkAllocateMemory ( device, &allocInfo, nullptr, &bufferMemory ) != VK_SUCCESS) {
 			throw std::runtime_error ( "failed to allocate buffer memory!" );
 		}
@@ -785,7 +794,16 @@ namespace VULKAN {
 
 	VkFormat Device::findDepthFormat () {
 		return findSupportedFormat (
-			{ VK_FORMAT_D32_SFLOAT, VK_FORMAT_D32_SFLOAT_S8_UINT, VK_FORMAT_D24_UNORM_S8_UINT },
+			{  VK_FORMAT_D32_SFLOAT_S8_UINT, VK_FORMAT_D16_UNORM, VK_FORMAT_D32_SFLOAT, VK_FORMAT_D32_SFLOAT_S8_UINT, VK_FORMAT_D24_UNORM_S8_UINT },
+			VK_IMAGE_TILING_OPTIMAL,
+			VK_FORMAT_FEATURE_DEPTH_STENCIL_ATTACHMENT_BIT
+		);
+	}
+
+
+	VkFormat Device::findShadowMapFormat () {
+		return findSupportedFormat (
+			{ VK_FORMAT_D16_UNORM, VK_FORMAT_D16_UNORM, VK_FORMAT_D32_SFLOAT_S8_UINT , /*VK_FORMAT_D16_UNORM, VK_FORMAT_D24_UNORM_S8_UINT,*/ VK_FORMAT_D32_SFLOAT_S8_UINT, VK_FORMAT_D16_UNORM, VK_FORMAT_D32_SFLOAT, VK_FORMAT_D32_SFLOAT_S8_UINT, VK_FORMAT_D24_UNORM_S8_UINT },
 			VK_IMAGE_TILING_OPTIMAL,
 			VK_FORMAT_FEATURE_DEPTH_STENCIL_ATTACHMENT_BIT
 		);

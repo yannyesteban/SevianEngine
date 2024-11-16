@@ -67,10 +67,29 @@ namespace SEVIAN {
 	struct UniformBufferObject
 	{
 		
+		glm::mat4 model;
+		glm::mat4 view;
+		glm::mat4 proj;
+		
+		glm::mat4 MVP;
+
+		glm::mat4 lightView;  // Añadido: Matriz de vista desde la luz
+		glm::mat4 lightProj;  // Añadido: Matriz de proyección desde la luz
+		glm::vec3 lightPos; // Posición de la luz
+		glm::vec3 lightColor;
+		glm::vec3 cameraPos;  // Añadimos la posición de la cámara
+
+		float lightIntensity;
+
+	};
+
+	struct UniformBufferObject1
+	{
+
 		alignas(16) glm::mat4 model;
 		alignas(16) glm::mat4 view;
 		alignas(16) glm::mat4 proj;
-		
+
 
 		alignas(16) glm::mat4 lightView;  // Añadido: Matriz de vista desde la luz
 		alignas(16) glm::mat4 lightProj;  // Añadido: Matriz de proyección desde la luz

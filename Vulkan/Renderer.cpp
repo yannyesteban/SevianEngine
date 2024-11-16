@@ -4,6 +4,8 @@
 #include <tiny_obj_loader.h>
 
 
+
+
 using namespace ::SEVIAN;
 
 namespace VULKAN {
@@ -61,68 +63,32 @@ namespace VULKAN {
 
 		physicalDevices = getPhysicalDevices ();
 
-		int position = 0;
+		int selectedDevice = 0;
 
-		device = physicalDevices.at ( position ).createDevice ();
-		commandPool = physicalDevices.at ( position ).createCommandPool ();
+		device = physicalDevices.at ( selectedDevice ).createDevice ();
+		commandPool = physicalDevices.at ( selectedDevice ).createCommandPool ();
 
-		graphicsQueue = physicalDevices.at ( position ).graphicsQueue;
-		presentQueue = physicalDevices.at ( position ).presentQueue;
+		graphicsQueue = physicalDevices.at ( selectedDevice ).graphicsQueue;
+		presentQueue = physicalDevices.at ( selectedDevice ).presentQueue;
 
 		device->commandPool = commandPool;
 		device->createCommandBuffers ( device->frames, commandPool );
 
-		swapChain = physicalDevices.at ( position ).createSwapChain ( window );
+		swapChain = physicalDevices.at ( selectedDevice ).createSwapChain ( window );
 		extent = swapChain.extent;
-		renderPass = device->createRenderPass ( swapChain.imageFormat );
-		shadowRenderPass = device->createShadowRenderPass ();
+		renderPass = device->createRenderPass ( swapChain.imageFormat ); // OK
+		
 		
 		depthResources = device->createDepthResources ( extent );
 		// = device->createDepthResources ( extent );
 
-			VulkanDepthResources depthResource {};
-
-			VkFormat depthFormat = device->findDepthFormat ();
-
-			device->createImage ( shadowExtent.width, shadowExtent.height, depthFormat, VK_IMAGE_TILING_OPTIMAL, VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT | VK_IMAGE_USAGE_SAMPLED_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, depthResource.image, depthResource.imageMemory );
-			depthResource.imageView = device->createImageView ( depthResource.image, depthFormat, VK_IMAGE_ASPECT_DEPTH_BIT );
-
-			depthResources2 =  depthResource;
-			device->depthResource = depthResource;
-		swapChain.framebuffers = physicalDevices.at ( position ).createFramebuffers ( swapChain, renderPass, { depthResources.imageView } );
-		shadowFrameBuffer = physicalDevices.at ( position ).createShadowFramebuffer ( shadowRenderPass, depthResources2.imageView, shadowExtent );
-		device->shadowFrameBuffer = shadowFrameBuffer;
+			
+		swapChain.framebuffers = physicalDevices.at ( selectedDevice ).createFramebuffers ( swapChain, renderPass, { depthResources.imageView } );
 		device->renderPass = renderPass;
-		device->shadowRenderPass = shadowRenderPass;
-		//descriptorSetLayout = device->createDescriptorSetLayout ();
 		descriptorPool = device->createDescriptorPool ();
-		//device->descriptorSetLayout = descriptorSetLayout;
+		
 
-
-		//VkFilter shadowmap_filter = vks::tools::formatIsFilterable(physicalDevice, offscreenDepthFormat, VK_IMAGE_TILING_OPTIMAL) ? VK_FILTER_LINEAR : VK_FILTER_NEAREST;
-		VkSamplerCreateInfo samplerInfo {};
-		samplerInfo.sType = VK_STRUCTURE_TYPE_SAMPLER_CREATE_INFO;
-		samplerInfo.magFilter = VK_FILTER_LINEAR;
-		samplerInfo.minFilter = VK_FILTER_LINEAR;
-		samplerInfo.addressModeU = VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE;
-		samplerInfo.addressModeV = VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE;
-		samplerInfo.addressModeW = VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE;
-		samplerInfo.anisotropyEnable = VK_FALSE;
-
-		//samplerInfo.anisotropyEnable = VK_TRUE;
-
-		samplerInfo.borderColor = VK_BORDER_COLOR_FLOAT_OPAQUE_WHITE;
-		samplerInfo.unnormalizedCoordinates = VK_FALSE;
-		samplerInfo.compareEnable = VK_TRUE;
-		samplerInfo.compareOp = VK_COMPARE_OP_LESS;  // Importante para shadow mapping
-		samplerInfo.mipmapMode = VK_SAMPLER_MIPMAP_MODE_LINEAR;
-		samplerInfo.mipLodBias = 0.0f;
-		samplerInfo.maxAnisotropy = 1.0f;
-		samplerInfo.minLod = 0.0f;
-		samplerInfo.maxLod = 1.0f;
-
-		vkCreateSampler ( device->device, &samplerInfo, nullptr, &device->shadowMapSampler );
-
+		shadowWorld = new ShadowWorld ( device, shadowExtent.width, shadowExtent.height );
 
 		textureManager = std::make_shared<TextureManager> ( device );
 
@@ -139,7 +105,7 @@ namespace VULKAN {
 
 		device->createCommandBuffers ( frames, device->commandPool );
 		
-		if (2 > 5) {
+		if (2 > 0) {
 			fontText.device = device;
 			fontText.frames = frames;
 			fontText.descriptorPool = descriptorPool;
@@ -653,32 +619,10 @@ namespace VULKAN {
 		/* record command buffer */
 		VkCommandBufferBeginInfo beginInfo {};
 		beginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
-
+		beginInfo.flags = VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT;
 		if (vkBeginCommandBuffer ( frame.commandBuffers, &beginInfo ) != VK_SUCCESS) {
 			throw std::runtime_error ( "failed to begin recording command buffer!" );
 		}
-
-		
-
-
-
-
-		//entity.draw ( commandBuffer, frame );
-		//entity2.draw ( commandBuffer, frame );
-
-		/*
-
-		VkBuffer vertexBuffers[] = { objects[0].vertex.buffer };
-		VkDeviceSize offsets[] = { 0 };
-
-		auto obj = objects[0];
-
-		vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline);
-		vkCmdBindVertexBuffers(commandBuffer, 0, 1, vertexBuffers, offsets);
-		vkCmdBindIndexBuffer(commandBuffer, objects[0].indices.buffer, 0, VK_INDEX_TYPE_UINT16);
-		vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipelineLayout, 0, 1,&frame.descriptorSet, 0, nullptr);
-		vkCmdDrawIndexed(commandBuffer, static_cast<uint32_t>(obj.item.indices.size()), 1, 0, 0, 0);
-		*/
 
 
 
@@ -748,16 +692,17 @@ namespace VULKAN {
 
 
 		if (index == 0) {
-			VkRenderPassBeginInfo renderPassInfo {};
-			renderPassInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
-			renderPassInfo.renderPass = shadowRenderPass;
-			renderPassInfo.framebuffer = shadowFrameBuffer;
-			renderPassInfo.renderArea.offset = { 0, 0 };
-			renderPassInfo.renderArea.extent = shadowExtent;
 
 			std::array<VkClearValue, 1> clearValues {};
-			
+
 			clearValues[0].depthStencil = { 1.0f, 0 };
+
+			VkRenderPassBeginInfo renderPassInfo {};
+			renderPassInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
+			renderPassInfo.renderPass = shadowWorld->renderPass; //shadowRenderPass;
+			renderPassInfo.framebuffer = shadowWorld->frameBuffer;// shadowFrameBuffer;
+			renderPassInfo.renderArea.offset = { 0, 0 };
+			renderPassInfo.renderArea.extent = shadowExtent;
 
 			renderPassInfo.clearValueCount = 1;// static_cast<uint32_t>(clearValues.size ());
 			renderPassInfo.pClearValues = clearValues.data ();
@@ -779,31 +724,25 @@ namespace VULKAN {
 			vkCmdSetScissor ( frame.commandBuffers, 0, 1, &scissor );
 
 			// Establecer el depth bias dinámico
-			float depthBiasConstantFactor = 1.0f; // Cambia según tu necesidad
+			float depthBiasConstantFactor = 1.25f; // Cambia según tu necesidad
 			float depthBiasClamp = 0.0f;
-			float depthBiasSlopeFactor = 1.0f; // Cambia según tu necesidad
+			float depthBiasSlopeFactor = 1.75f; // Cambia según tu necesidad
 
 			vkCmdSetDepthBias ( commandBuffer, depthBiasConstantFactor, depthBiasClamp, depthBiasSlopeFactor );
 
 			return;
 		}
 		else {
+			std::array<VkClearValue, 2> clearValues {};
+			clearValues[0].color = { {0.0f, 0.5f, 0.0f, 1.0f} };
+			clearValues[1].depthStencil = { 1.0f, 0 };
+
 			VkRenderPassBeginInfo renderPassInfo {};
 			renderPassInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
 			renderPassInfo.renderPass = device->renderPass;
 			renderPassInfo.framebuffer = swapChain.framebuffers[imageIndex];
 			renderPassInfo.renderArea.offset = { 0, 0 };
 			renderPassInfo.renderArea.extent = swapChain.extent;
-
-			/*VkClearValue clearColor = { { { 0.0f, 0.0f, 0.0f, 1.0f } } };
-			renderPassInfo.clearValueCount = 1;
-			renderPassInfo.pClearValues = &clearColor;
-			*/
-
-			std::array<VkClearValue, 2> clearValues {};
-			clearValues[0].color = { {0.0f, 0.1f, 0.0f, 1.0f} };
-			clearValues[1].depthStencil = { 1.0f, 0 };
-
 			renderPassInfo.clearValueCount = static_cast<uint32_t>(clearValues.size ());
 			renderPassInfo.pClearValues = clearValues.data ();
 
@@ -1216,7 +1155,7 @@ namespace VULKAN {
 		appInfo.applicationVersion = VK_MAKE_VERSION ( 1, 0, 0 );
 		appInfo.pEngineName = "No Engine";
 		appInfo.engineVersion = VK_MAKE_VERSION ( 1, 0, 0 );
-		appInfo.apiVersion = VK_API_VERSION_1_0;
+		appInfo.apiVersion = VK_API_VERSION_1_1;
 
 		VkInstanceCreateInfo createInfo {};
 		createInfo.sType = VK_STRUCTURE_TYPE_INSTANCE_CREATE_INFO;
@@ -1384,6 +1323,7 @@ namespace VULKAN {
 			if (isDeviceSuitable ( device )) {
 				std::cout << " isDeviceSuitable -> deviceProperties:  " << deviceProperties.deviceName << std::endl;
 				PhysicalDevice ph = PhysicalDevice ( instance, surface, device );
+				ph.name = deviceProperties.deviceName;
 				physicalDevices.push_back ( ph );
 				//physicalDevice = device;
 				//break;

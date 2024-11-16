@@ -20,8 +20,12 @@ namespace VULKAN {
 			getBindingDescriptionGeneric (),
 			getAttributeDescriptionsGeneric (),
 			pipelineLayout,
-			"shaders/sceneVert.spv",
-			"shaders/sceneFrag.spv"
+			"shaders/Sombra.vert.spv",
+			"shaders/Sombra.frag.spv"
+			//"shaders/FinalVert.spv",
+			//"shaders/FinalFrag.spv"
+			//"shaders/sceneVert.spv",
+			//"shaders/sceneFrag.spv"
 			//"shaders/MeshEntityVert.spv",
 			//"shaders/MeshEntityFrag.spv"
 		);
@@ -255,7 +259,7 @@ namespace VULKAN {
 		depthStencil.sType = VK_STRUCTURE_TYPE_PIPELINE_DEPTH_STENCIL_STATE_CREATE_INFO;
 		depthStencil.depthTestEnable = VK_TRUE;
 		depthStencil.depthWriteEnable = VK_TRUE;
-		depthStencil.depthCompareOp = VK_COMPARE_OP_LESS;
+		depthStencil.depthCompareOp = VK_COMPARE_OP_LESS_OR_EQUAL;
 		depthStencil.depthBoundsTestEnable = VK_FALSE;
 		depthStencil.stencilTestEnable = VK_FALSE;
 
@@ -265,8 +269,8 @@ namespace VULKAN {
 
 		VkPipelineColorBlendStateCreateInfo colorBlending {};
 		colorBlending.sType = VK_STRUCTURE_TYPE_PIPELINE_COLOR_BLEND_STATE_CREATE_INFO;
-		colorBlending.logicOpEnable = VK_FALSE;
-		colorBlending.logicOp = VK_LOGIC_OP_COPY;
+		//colorBlending.logicOpEnable = VK_FALSE;
+		//colorBlending.logicOp = VK_LOGIC_OP_COPY;
 		colorBlending.attachmentCount = 1;
 		colorBlending.pAttachments = &colorBlendAttachment;
 		colorBlending.blendConstants[0] = 0.0f;
@@ -360,9 +364,9 @@ namespace VULKAN {
 
 		rasterizer.frontFace = VK_FRONT_FACE_COUNTER_CLOCKWISE;// VK_FRONT_FACE_CLOCKWISE;//VK_FRONT_FACE_COUNTER_CLOCKWISE;
 		rasterizer.depthBiasEnable = VK_TRUE;
-		rasterizer.depthBiasConstantFactor = 1.25f;  // Ajustar según sea necesario
-		rasterizer.depthBiasClamp = 0.0f;
-		rasterizer.depthBiasSlopeFactor = 1.75f;
+		//rasterizer.depthBiasConstantFactor = 1.25f;  // Ajustar según sea necesario
+		//rasterizer.depthBiasClamp = 0.0f;
+		//rasterizer.depthBiasSlopeFactor = 1.75f;
 
 
 		VkPipelineMultisampleStateCreateInfo multisampling {};
@@ -374,7 +378,7 @@ namespace VULKAN {
 		depthStencil.sType = VK_STRUCTURE_TYPE_PIPELINE_DEPTH_STENCIL_STATE_CREATE_INFO;
 		depthStencil.depthTestEnable = VK_TRUE;
 		depthStencil.depthWriteEnable = VK_TRUE;
-		depthStencil.depthCompareOp = VK_COMPARE_OP_LESS;
+		depthStencil.depthCompareOp = VK_COMPARE_OP_LESS;// VK_COMPARE_OP_LESS_OR_EQUAL;// VK_COMPARE_OP_LESS;
 		depthStencil.depthBoundsTestEnable = VK_FALSE;
 		depthStencil.stencilTestEnable = VK_FALSE;
 
@@ -384,8 +388,8 @@ namespace VULKAN {
 
 		VkPipelineColorBlendStateCreateInfo colorBlending {};
 		colorBlending.sType = VK_STRUCTURE_TYPE_PIPELINE_COLOR_BLEND_STATE_CREATE_INFO;
-		colorBlending.logicOpEnable = VK_FALSE;
-		colorBlending.logicOp = VK_LOGIC_OP_COPY;
+		//colorBlending.logicOpEnable = VK_FALSE;
+		//colorBlending.logicOp = VK_LOGIC_OP_COPY;
 		colorBlending.attachmentCount = 1;
 		colorBlending.pAttachments = &colorBlendAttachment;
 		colorBlending.blendConstants[0] = 0.0f;

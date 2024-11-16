@@ -131,7 +131,7 @@
       <OptimizeReferences>true</OptimizeReferences>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <AdditionalLibraryDirectories>C:\source\lib\glfw-3.3.8\build\src\Release;C:\VulkanSDK\1.3.261.1\Lib;C:\source\lib\freetype-2.13.2\output\Release;C:\source\2024\Sevian\x64\Release;C:\Users\yanny\Downloads\opencv\x\lib\Release;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-      <AdditionalDependencies>glfw3.lib;freetype.lib;vulkan-1.lib;Vulkan.lib;opencv_calib3d4100d.lib;opencv_core4100.lib;opencv_dnn4100.lib;opencv_highgui4100.lib;opencv_imgcodecs4100.lib;opencv_imgproc4100.lib;opencv_ml4100.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>glfw3.lib;freetype.lib;vulkan-1.lib;Vulkan.lib;opencv_core4100.lib;opencv_dnn4100.lib;opencv_highgui4100.lib;opencv_imgcodecs4100.lib;opencv_imgproc4100.lib;opencv_ml4100.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
@@ -187,6 +187,8 @@
     <ClInclude Include="World.h" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="Final.frag" />
+    <None Include="Final.vert" />
     <None Include="lights.frag" />
     <None Include="lights.vert" />
     <None Include="MeshEntity.frag" />
@@ -206,6 +208,8 @@
     <None Include="solid.vert" />
     <None Include="solid_color.frag" />
     <None Include="solid_color.vert" />
+    <None Include="Sombra.frag" />
+    <None Include="Sombra.vert" />
     <None Include="text_frag.frag" />
     <None Include="text_vert.vert" />
     <None Include="total_f.frag" />

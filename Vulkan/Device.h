@@ -66,6 +66,7 @@ namespace VULKAN {
 
 		VkFormat findSupportedFormat ( const std::vector<VkFormat>& candidates, VkImageTiling tiling, VkFormatFeatureFlags features );
 		VkFormat findDepthFormat ();
+		VkFormat findShadowMapFormat ();
 
 		VulkanDepthResources createDepthResources ( VkExtent2D extent );
 
@@ -406,19 +407,21 @@ namespace VULKAN {
 			VkImageCreateInfo imageInfo {};
 			imageInfo.sType = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO;
 			imageInfo.imageType = VK_IMAGE_TYPE_2D;
-			imageInfo.extent.width = width;
-			imageInfo.extent.height = height;
-			imageInfo.extent.depth = 1;
+			imageInfo.format = format;
+			imageInfo.extent = { width, height, 1 };
+			//imageInfo.extent.width = width;
+			//imageInfo.extent.height = height;
+			//imageInfo.extent.depth = 1;
 			imageInfo.mipLevels = 1;
 			imageInfo.arrayLayers = 1;
-			imageInfo.format = format;
+			
 			imageInfo.tiling = tiling;
-			imageInfo.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
+			//imageInfo.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
 			imageInfo.usage = usage;
 			imageInfo.samples = VK_SAMPLE_COUNT_1_BIT;
 			imageInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
 			//imageInfo.samples = VK_SAMPLE_COUNT_1_BIT;
-			//imageInfo.flags = 0; // Optional
+			imageInfo.flags = 0; // Optional
 
 			if (vkCreateImage ( device, &imageInfo, nullptr, &image ) != VK_SUCCESS) {
 				throw std::runtime_error ( "failed to create image!" );
@@ -431,7 +434,7 @@ namespace VULKAN {
 			allocInfo.sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO;
 			allocInfo.allocationSize = memRequirements.size;
 			allocInfo.memoryTypeIndex = findMemoryType ( memRequirements.memoryTypeBits, properties );
-
+			
 			if (vkAllocateMemory ( device, &allocInfo, nullptr, &imageMemory ) != VK_SUCCESS) {
 				throw std::runtime_error ( "failed to allocate image memory!" );
 			}
@@ -447,9 +450,14 @@ namespace VULKAN {
 			viewInfo.subresourceRange = {};
 			viewInfo.subresourceRange.aspectMask = aspectFlags;
 			viewInfo.subresourceRange.baseMipLevel = 0;
-			viewInfo.subresourceRange.levelCount = 1;
+			viewInfo.subresourceRange.levelCount = 1;// VK_REMAINING_MIP_LEVELS;// 1;
 			viewInfo.subresourceRange.baseArrayLayer = 0;
-			viewInfo.subresourceRange.layerCount = 1;
+			viewInfo.subresourceRange.layerCount = 1;// VK_REMAINING_ARRAY_LAYERS;// 1;
+
+			// Stencil aspect should only be set on depth + stencil formats (VK_FORMAT_D16_UNORM_S8_UINT..VK_FORMAT_D32_SFLOAT_S8_UINT
+			if (format >= VK_FORMAT_D16_UNORM_S8_UINT) {
+				viewInfo.subresourceRange.aspectMask |= VK_IMAGE_ASPECT_STENCIL_BIT;
+			}
 
 			VkImageView imageView;
 			if (vkCreateImageView ( device, &viewInfo, nullptr, &imageView ) != VK_SUCCESS) {
@@ -632,7 +640,7 @@ namespace VULKAN {
 		}
 
 		VkRenderPass createRenderPass ( VkFormat swapChainImageFormat ) {
-			VkRenderPass renderPass;
+			
 			VkAttachmentDescription colorAttachment {};
 			colorAttachment.format = swapChainImageFormat;
 			colorAttachment.samples = VK_SAMPLE_COUNT_1_BIT;
@@ -669,6 +677,13 @@ namespace VULKAN {
 			subpass.colorAttachmentCount = 1;
 			subpass.pColorAttachments = &colorAttachmentRef;
 			subpass.pDepthStencilAttachment = &depthAttachmentRef;
+			/* extras */
+
+			subpass.inputAttachmentCount = 0;
+			subpass.pInputAttachments = nullptr;
+			subpass.preserveAttachmentCount = 0;
+			subpass.pPreserveAttachments = nullptr;
+			subpass.pResolveAttachments = nullptr;
 
 
 			VkSubpassDependency dependency {};
@@ -678,6 +693,26 @@ namespace VULKAN {
 			dependency.srcAccessMask = 0;
 			dependency.dstStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT | VK_PIPELINE_STAGE_EARLY_FRAGMENT_TESTS_BIT;
 			dependency.dstAccessMask = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT | VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT;
+
+
+			std::array<VkSubpassDependency, 2> dependencies;
+
+			dependencies[0].srcSubpass = VK_SUBPASS_EXTERNAL;
+			dependencies[0].dstSubpass = 0;
+			dependencies[0].srcStageMask = VK_PIPELINE_STAGE_EARLY_FRAGMENT_TESTS_BIT | VK_PIPELINE_STAGE_LATE_FRAGMENT_TESTS_BIT;
+			dependencies[0].dstStageMask = VK_PIPELINE_STAGE_EARLY_FRAGMENT_TESTS_BIT | VK_PIPELINE_STAGE_LATE_FRAGMENT_TESTS_BIT;
+			dependencies[0].srcAccessMask = VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT;
+			dependencies[0].dstAccessMask = VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT | VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_READ_BIT;
+			dependencies[0].dependencyFlags = 0;
+
+			dependencies[1].srcSubpass = VK_SUBPASS_EXTERNAL;
+			dependencies[1].dstSubpass = 0;
+			dependencies[1].srcStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
+			dependencies[1].dstStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
+			dependencies[1].srcAccessMask = 0;
+			dependencies[1].dstAccessMask = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT | VK_ACCESS_COLOR_ATTACHMENT_READ_BIT;
+			dependencies[1].dependencyFlags = 0;
+
 
 			std::array<VkAttachmentDescription, 2> attachments = { colorAttachment, depthAttachment };
 
@@ -689,9 +724,13 @@ namespace VULKAN {
 			renderPassInfo.pAttachments = attachments.data ();
 			renderPassInfo.subpassCount = 1;
 			renderPassInfo.pSubpasses = &subpass;
-			renderPassInfo.dependencyCount = 1;
-			renderPassInfo.pDependencies = &dependency;
+			
+			renderPassInfo.dependencyCount = static_cast<uint32_t>(dependencies.size ());
+			renderPassInfo.pDependencies = dependencies.data ();
 
+			//renderPassInfo.dependencyCount = 1;
+			//renderPassInfo.pDependencies = &dependency;
+			VkRenderPass renderPass;
 			if (vkCreateRenderPass ( device, &renderPassInfo, nullptr, &renderPass ) != VK_SUCCESS) {
 				throw std::runtime_error ( "failed to create render pass!" );
 			}
@@ -704,7 +743,7 @@ namespace VULKAN {
 			
 
 			VkAttachmentDescription depthAttachment {};
-			depthAttachment.format = findDepthFormat ();
+			depthAttachment.format = findShadowMapFormat (); //VK_FORMAT_D16_UNORM;// VK_FORMAT_D32_SFLOAT;// VK_FORMAT_D16_UNORM;//findDepthFormat ();
 			depthAttachment.samples = VK_SAMPLE_COUNT_1_BIT;
 			depthAttachment.loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
 			depthAttachment.storeOp = VK_ATTACHMENT_STORE_OP_STORE;

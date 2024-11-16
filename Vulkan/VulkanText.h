@@ -71,6 +71,12 @@ namespace VULKAN {
 
 	class VulkanText
 	{
+	private:
+		VkDescriptorSetLayout descriptorSetLayout = VK_NULL_HANDLE;
+		VkPipelineLayout pipelineLayout = VK_NULL_HANDLE;
+		VkPipeline pipeline = VK_NULL_HANDLE;
+		VkPipeline createGraphPipeline ( VkVertexInputBindingDescription bindingDescription, std::vector<VkVertexInputAttributeDescription> attributeDescriptions, VkPipelineLayout pipelineLayout, std::string vertSource, std::string fragSource );
+
 	public:
 		
 		FT_Library  library;

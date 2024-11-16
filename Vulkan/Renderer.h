@@ -7,7 +7,7 @@
 #include "VulkanText.h"
 #include "VulkanEntity.h"
 #include "MeshManager.h"
-
+#include "ShadowWorld.h"
 
 #include "MeshEntity.h"
 
@@ -108,6 +108,8 @@ namespace VULKAN {
         std::vector<Texture> textures;
         std::vector<Shader> shaders;
         std::vector<Item> items;
+
+        ShadowWorld * shadowWorld;
 
         const std::vector<const char*> validationLayers = {
             "VK_LAYER_KHRONOS_validation"
@@ -274,7 +276,7 @@ namespace VULKAN {
         uint32_t imageIndex;
         bool framebufferResized = false;
         VulkanText fontText;
-        VkExtent2D shadowExtent = { 2096, 2096 };
+        VkExtent2D shadowExtent = { 2048, 2048 };
         std::unordered_map<uint32_t, std::unique_ptr<Entity>> entities;
 
         // methods

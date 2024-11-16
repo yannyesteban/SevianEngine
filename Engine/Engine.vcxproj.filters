@@ -223,5 +223,17 @@
     <None Include="scene.frag">
       <Filter>shaders</Filter>
     </None>
+    <None Include="Final.vert">
+      <Filter>shaders</Filter>
+    </None>
+    <None Include="Final.frag">
+      <Filter>shaders</Filter>
+    </None>
+    <None Include="Sombra.vert">
+      <Filter>shaders</Filter>
+    </None>
+    <None Include="Sombra.frag">
+      <Filter>shaders</Filter>
+    </None>
   </ItemGroup>
 </Project>

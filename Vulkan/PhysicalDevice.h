@@ -54,7 +54,7 @@ namespace VULKAN {
 
 		VkQueue graphicsQueue;
 		VkQueue presentQueue;
-
+		std::string name = "";
 		std::string test = "yanny estbena";
 		PhysicalDevice ( VkInstance instance, VkSurfaceKHR surface, VkPhysicalDevice physicalDevice );
 		VkImageView createImageView ( VkImage image, VkFormat format );
@@ -67,6 +67,10 @@ namespace VULKAN {
 		Device* createDevice ();
 		VkSurfaceFormatKHR chooseSwapSurfaceFormat ( const std::vector<VkSurfaceFormatKHR>& availableFormats ) {
 			for (const auto& availableFormat : availableFormats) {
+				if (availableFormat.format == VK_FORMAT_B8G8R8A8_UNORM && availableFormat.colorSpace == VK_COLOR_SPACE_SRGB_NONLINEAR_KHR) {
+					return availableFormat;
+				}
+				
 				if (availableFormat.format == VK_FORMAT_B8G8R8A8_SRGB && availableFormat.colorSpace == VK_COLOR_SPACE_SRGB_NONLINEAR_KHR) {
 					return availableFormat;
 				}

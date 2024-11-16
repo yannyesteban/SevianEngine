@@ -4,6 +4,7 @@ layout(set = 0, binding = 0) uniform UniformBufferObject {
     mat4 model;
     mat4 view;
     mat4 proj;
+    mat4 MVP;
     mat4 lightView;  // Añadido: Matriz de vista desde la luz
     mat4 lightProj;  // Añadido: Matriz de proyección desde la luz
     vec3 lightPos;
@@ -18,8 +19,15 @@ layout(location = 1) in vec3 inNormal;
 layout(location = 2) in vec2 inTexCoord;
 layout(location = 3) in vec3 inColor;
 
+out gl_PerVertex 
+{
+    vec4 gl_Position;   
+};
+
+
 void main() {
-    gl_Position = ubo.lightProj * ubo.lightView * ubo.model * vec4(inPosition, 1.0);
+    //gl_Position = ubo.lightProj * ubo.lightView * ubo.model * vec4(inPosition, 1.0);
+    gl_Position = ubo.MVP * vec4(inPosition, 1.0);
 }
 
 // Random function to generate pseudo-random values
