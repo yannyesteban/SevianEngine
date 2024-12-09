@@ -21,8 +21,8 @@ namespace SEVIAN {
             systems.push_back ( std::move ( system ) );
         }
 
-        void update () {
-             scene->update ();
+        void update ( float deltaTime ) {
+             scene->update ( deltaTime );
             
         }
     };

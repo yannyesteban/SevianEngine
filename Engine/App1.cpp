@@ -128,7 +128,7 @@ void App1::run () {
 
 		//renderer->renderFrame ();
 
-		world.update ();
+		world.update ( 5);
 
 	}
 

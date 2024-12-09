@@ -2,9 +2,9 @@
 #include "Models.h"
 #include "VulkanProperty.h"
 namespace SEVIAN {
-    void InitializationSystem::init ( std::vector<std::shared_ptr<Entity>>& entities ) {
+    void InitializationSystem::init ( std::vector<std::shared_ptr<Entity>>& entities, float deltaTime ) {
     }
-    void InitializationSystem::update ( std::vector<std::shared_ptr<Entity>>& entities ) {
+    void InitializationSystem::update ( std::vector<std::shared_ptr<Entity>>& entities, float deltaTime ) {
        
 
 

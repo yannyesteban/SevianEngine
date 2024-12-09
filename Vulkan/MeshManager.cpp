@@ -20,8 +20,10 @@ namespace VULKAN {
 			getBindingDescriptionGeneric (),
 			getAttributeDescriptionsGeneric (),
 			pipelineLayout,
-			"shaders/Sombra.vert.spv",
-			"shaders/Sombra.frag.spv"
+			"shaders/bone.vert.spv",
+			"shaders/bone.frag.spv"
+			//"shaders/Sombra.vert.spv",
+			//"shaders/Sombra.frag.spv"
 			//"shaders/FinalVert.spv",
 			//"shaders/FinalFrag.spv"
 			//"shaders/sceneVert.spv",

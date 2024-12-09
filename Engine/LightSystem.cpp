@@ -7,10 +7,10 @@ namespace SEVIAN {
 	LightSystem::LightSystem () {
 	}
 
-	void SEVIAN::LightSystem::init ( std::vector<std::shared_ptr<Entity>>& entities ) {
+	void SEVIAN::LightSystem::init ( std::vector<std::shared_ptr<Entity>>& entities, float deltaTime ) {
 	}
 
-	void SEVIAN::LightSystem::update ( std::vector<std::shared_ptr<Entity>>& entities ) {
+	void SEVIAN::LightSystem::update ( std::vector<std::shared_ptr<Entity>>& entities, float deltaTime ) {
 
 		for (auto& entity : entities) {
 

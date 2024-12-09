@@ -30,6 +30,8 @@
 #include <set>
 #include <unordered_map>
 
+#define MAX_BONES 64
+
 namespace SEVIAN {
 
 	struct TextureInfo
@@ -44,6 +46,9 @@ namespace SEVIAN {
 		glm::vec3 normal;
 		glm::vec2 texCoords;
 		glm::vec3 color;
+
+		int boneIDs[4];       // IDs de huesos que influyen en el vértice (máximo 4)
+		float boneWeights[4]; // Pesos asociados a cada hueso
 
 		bool operator==( const Vertex& other ) const {
 			return position == other.position && color == other.color && texCoords == other.texCoords;
@@ -63,8 +68,26 @@ namespace SEVIAN {
 	{
 		glm::mat4 MVP;
 	};
-
 	struct UniformBufferObject
+	{
+		alignas(16) glm::mat4 model;
+		alignas(16) glm::mat4 view;
+		alignas(16) glm::mat4 proj;
+		alignas(16) glm::mat4 MVP;
+		alignas(16) glm::mat4 lightView;
+		alignas(16) glm::mat4 lightProj;
+		
+		alignas(16) glm::mat4 boneTransforms[MAX_BONES]; // Coloca las matrices juntas
+		alignas(16) glm::vec3 outColor;  // Vec3 debe ir al final para evitar relleno innecesario
+		alignas(16) glm::vec3 lightPos;  // Vec3 debe ir antes del float o rellenará espacio
+		alignas(4) float lightIntensity;
+		alignas(16) glm::vec3 lightColor;
+		alignas(16) glm::vec3 cameraPos;
+		
+	};
+
+
+	struct UniformBufferObjectX
 	{
 		
 		glm::mat4 model;
@@ -75,12 +98,23 @@ namespace SEVIAN {
 
 		glm::mat4 lightView;  // Añadido: Matriz de vista desde la luz
 		glm::mat4 lightProj;  // Añadido: Matriz de proyección desde la luz
+		glm::mat4 boneTransforms[MAX_BONES];
+
+
 		glm::vec3 lightPos; // Posición de la luz
+		glm::vec3 outColor;
+
 		glm::vec3 lightColor;
 		glm::vec3 cameraPos;  // Añadimos la posición de la cámara
-
+		
 		float lightIntensity;
+		
+		
+	};
 
+	struct BoneUBO
+	{
+		glm::mat4 boneTransforms[MAX_BONES]; // Matrices finales de los huesos
 	};
 
 	struct UniformBufferObject1
@@ -101,7 +135,7 @@ namespace SEVIAN {
 
 	};
 
-	struct UniformBufferObjectX
+	struct UniformBufferObjectX2
 	{
 		alignas(16) glm::vec3 color;
 		alignas(16) glm::mat4 model;

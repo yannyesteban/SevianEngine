@@ -135,6 +135,8 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="ActorEntity.cpp" />
+    <ClCompile Include="AnimationSystem.cpp" />
     <ClCompile Include="CameraEntity.cpp" />
     <ClCompile Include="CameraSystem.cpp" />
     <ClCompile Include="Component.cpp" />
@@ -153,8 +155,11 @@
     <ClCompile Include="Rinconada.cpp" />
     <ClCompile Include="Scene.cpp" />
     <ClCompile Include="createSquareEntity.cpp" />
+    <ClCompile Include="SceneData.cpp" />
+    <ClCompile Include="SkeletonSystem.cpp" />
     <ClCompile Include="System.cpp" />
     <ClCompile Include="Tools.cpp" />
+    <ClCompile Include="TransformSystem.cpp" />
     <ClCompile Include="Window.cpp" />
     <ClCompile Include="World.cpp" />
   </ItemGroup>
@@ -164,6 +169,9 @@
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="ActorEntity.h" />
+    <ClInclude Include="Animation.h" />
+    <ClInclude Include="AnimationSystem.h" />
     <ClInclude Include="CameraEntity.h" />
     <ClInclude Include="CameraSystem.h" />
     <ClInclude Include="Component.h" />
@@ -181,12 +189,17 @@
     <ClInclude Include="RenderSystem.h" />
     <ClInclude Include="Rinconada.h" />
     <ClInclude Include="Scene.h" />
+    <ClInclude Include="SceneData.h" />
+    <ClInclude Include="SkeletonSystem.h" />
     <ClInclude Include="System.h" />
     <ClInclude Include="Tools.h" />
+    <ClInclude Include="TransformSystem.h" />
     <ClInclude Include="Window.h" />
     <ClInclude Include="World.h" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="bone.frag" />
+    <None Include="bone.vert" />
     <None Include="Final.frag" />
     <None Include="Final.vert" />
     <None Include="lights.frag" />

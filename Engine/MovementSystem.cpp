@@ -1,9 +1,9 @@
 #include "MovementSystem.h"
 
-void SEVIAN::MovementSystem::init ( std::vector<std::shared_ptr<Entity>>& entities ) {
+void SEVIAN::MovementSystem::init ( std::vector<std::shared_ptr<Entity>>& entities, float deltaTime ) {
 }
 
-void SEVIAN::MovementSystem::update ( std::vector<std::shared_ptr<Entity>>& entities ) {
+void SEVIAN::MovementSystem::update ( std::vector<std::shared_ptr<Entity>>& entities, float deltaTime ) {
 
     for (auto& entity : entities) {
         auto input  = entity->getComponent<InputComponent> ();

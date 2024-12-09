@@ -9,7 +9,7 @@ VkVertexInputBindingDescription getBindingDescriptionGeneric () {
 	return bindingDescription;
 }
 std::vector<VkVertexInputAttributeDescription> getAttributeDescriptionsGeneric () {
-	std::vector<VkVertexInputAttributeDescription> attributeDescriptions ( 4, {} );
+	std::vector<VkVertexInputAttributeDescription> attributeDescriptions ( 6, {} );
 	/*    glm::vec3 position;
 	glm::vec3 normal;
 	glm::vec2 texCoords;
@@ -33,6 +33,19 @@ std::vector<VkVertexInputAttributeDescription> getAttributeDescriptionsGeneric (
 	attributeDescriptions[3].location = 3;
 	attributeDescriptions[3].format = VK_FORMAT_R32G32B32_SFLOAT;
 	attributeDescriptions[3].offset = offsetof ( SEVIAN::Vertex, color );
+
+
+	// Atributo: boneIDs
+	attributeDescriptions[4].binding = 0;
+	attributeDescriptions[4].location = 4;
+	attributeDescriptions[4].format = VK_FORMAT_R32G32B32A32_SINT; // int[4]
+	attributeDescriptions[4].offset = offsetof ( Vertex, boneIDs );
+
+	// Atributo: boneWeights
+	attributeDescriptions[5].binding = 0;
+	attributeDescriptions[5].location = 5;
+	attributeDescriptions[5].format = VK_FORMAT_R32G32B32A32_SFLOAT; // float[4]
+	attributeDescriptions[5].offset = offsetof ( Vertex, boneWeights );
 
 	return attributeDescriptions;
 }

@@ -16,8 +16,8 @@ namespace SEVIAN {
 		void addStartSystem ( std::shared_ptr<System> system );
 		void runSystems ();
 		void runStartSystems ();
-		void init ();
-		void update ();
+		void init ( float deltaTime );
+		void update ( float deltaTime );
 	};
 
 }

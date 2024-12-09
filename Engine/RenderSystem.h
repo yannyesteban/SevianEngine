@@ -6,6 +6,7 @@
 //#include "VulkanProperty.h"
 //#include "VulkanDevice.h"
 #include "Component.h"
+#include "TransformSystem.h"
 #include <RendererFactory.h>
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
@@ -23,14 +24,14 @@ namespace SEVIAN {
 
     public:
         RenderSystem ( std::shared_ptr<RenderInterface>  r ) : renderer ( r ) { }
-        void init ( std::vector<std::shared_ptr<Entity>>& entities ) override;
-        void update ( std::vector<std::shared_ptr<Entity>>& entities ) override;
+        void init ( std::vector<std::shared_ptr<Entity>>& entitie, float deltaTimes ) override;
+        void update ( std::vector<std::shared_ptr<Entity>>& entities, float deltaTime ) override;
 
        
 
     };
 
-
+    /*
     class StaticRenderSystem : public System
     {
         //int device;
@@ -39,7 +40,9 @@ namespace SEVIAN {
     public:
         StaticRenderSystem ( std::shared_ptr<RenderInterface>  r ) : renderer ( r ) { }
 
-        void update ( std::vector<std::shared_ptr<Entity>>& entities ) override;
+        void init ( std::vector<std::shared_ptr<Entity>>& entitie, float deltaTimes ) override;
+        void update ( std::vector<std::shared_ptr<Entity>>& entities, float deltaTime ) override;
 
     };
+    */
 }

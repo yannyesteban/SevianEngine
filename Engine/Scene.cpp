@@ -24,22 +24,22 @@ namespace SEVIAN {
 	}
 	void Scene::runSystems () {
 		for (auto& system : systems) {
-			system->update ( entities );
+			system->update ( entities, 0 );
 		}
 	}
 	void Scene::runStartSystems () {
 		for (auto& system : startSystems) {
-			system->update ( entities );
+			system->update ( entities, 0 );
 		}
 	}
-	void Scene::init () {
+	void Scene::init ( float deltaTime ) {
 		for (auto& system : systems) {
-			system->init ( entities );
+			system->init ( entities, deltaTime );
 		}
 	}
-	void Scene::update () {
+	void Scene::update ( float deltaTime ) {
 		for (auto& system : systems) {
-			system->update ( entities );
+			system->update ( entities, deltaTime );
 		}
 	}
 }

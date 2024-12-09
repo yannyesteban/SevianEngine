@@ -1,10 +1,9 @@
 #include "RaceSystem.h"
 
-void SEVIAN::RaceSystem::init ( std::vector<std::shared_ptr<Entity>>& entities ) {
+void SEVIAN::RaceSystem::init ( std::vector<std::shared_ptr<Entity>>& entities, float deltaTime ) {
 }
 
-void SEVIAN::RaceSystem::update ( std::vector<std::shared_ptr<Entity>>& entities ) {
-
+void SEVIAN::RaceSystem::update ( std::vector<std::shared_ptr<Entity>>& entities, float deltaTime ) {
 
 
 	for (auto& entity : entities) {
@@ -49,16 +48,12 @@ void SEVIAN::RaceSystem::update ( std::vector<std::shared_ptr<Entity>>& entities
 
 		if (rotation) {
 			if (Tools::isKeyPressed ( Key::Y )) {
-				
 				rotation->rotation.y += 0.001;
 			}
 			if (Tools::isKeyPressed ( Key::U )) {
-				
 				rotation->rotation.z += 0.001;
 			}
 			if (Tools::isKeyPressed ( Key::T )) {
-				
-
 				rotation->rotation.x += 0.001;
 			}
 		}
@@ -89,6 +84,8 @@ void SEVIAN::RaceSystem::update ( std::vector<std::shared_ptr<Entity>>& entities
 			if (Tools::isKeyPressed ( Key::M )) {
 				position->position.z += 0.001;
 			}
+
+			
 
 		}
 	}

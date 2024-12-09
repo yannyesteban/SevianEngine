@@ -1,7 +1,7 @@
 #include "renderSystem.h"
 
 namespace SEVIAN {
-	void RenderSystem::init ( std::vector<std::shared_ptr<Entity>>& entities ) {
+	void RenderSystem::init ( std::vector<std::shared_ptr<Entity>>& entities, float deltaTime ) {
 
 		for (auto& entity : entities) {
 
@@ -12,6 +12,7 @@ namespace SEVIAN {
 			auto texture = entity->getComponent<TextureComponent> ();
 			auto sprite = entity->getComponent<SpriteComponent> ();
 			auto model = entity->getComponent<ModelComponent> ();
+			//auto transform = entity->getComponent<TransformComponent> ();
 
 			if (mesh /* && t == "diffuse1"*/ && texture) {
 				Info3D info;
@@ -77,7 +78,7 @@ namespace SEVIAN {
 		}
 	}
 
-	void RenderSystem::update ( std::vector<std::shared_ptr<Entity>>& entities ) {
+	void RenderSystem::update ( std::vector<std::shared_ptr<Entity>>& entities, float deltaTime ) {
 
 		renderer->beginFrame ();
 		
@@ -94,6 +95,9 @@ namespace SEVIAN {
 			auto camera = entity->getComponent<CameraComponent> ();
 			auto light = entity->getComponent<LightComponent> ();
 			auto name = entity->getComponent<NameComponent> ();
+			auto transform = entity->getComponent<TransformComponent> ();
+
+			auto skeleton = entity->getComponent<SkeletonComponent> (); // Nueva línea
 
 			if (name && (name->name != Key::N5 && name->name != Key::N0 && name->name != Key::N1)) {
 				//continue;
@@ -115,14 +119,8 @@ namespace SEVIAN {
 
 			
 			UniformDataDept shadowMVP;
-			glm::mat4 translation = glm::translate ( glm::mat4 ( 1.0f ), position->position );
-			//glm::mat4 rotation = glm::rotate ( glm::mat4 ( 1.0f ), time * 0.1f * glm::radians ( 90.0f ), glm::vec3 ( 0.0f, 0.0f, 1.0f ) );
-
-			glm::mat4 rotationMat = glm::rotate ( glm::mat4 ( 1.0f ), rotation->rotation.z, glm::vec3 ( 0.0f, 0.0f, 1.0f ) ) *
-				glm::rotate ( glm::mat4 ( 1.0f ), rotation->rotation.y, glm::vec3 ( 0.0f, 1.0f, 0.0f ) ) *
-				glm::rotate ( glm::mat4 ( 1.0f ), rotation->rotation.x, glm::vec3 ( 1.0f, 0.0f, 0.0f ) );
-			shadowUBO.model = translation * rotationMat;	//ubo.model = /* rotation * */  translation;
-
+			
+			shadowUBO.model = transform->modelMatrix;
 			// Matriz de vista desde el punto de vista de la luz
 			shadowUBO.lightView = lastLight->view;
 			shadowUBO.lightProj = lastLight->proj;
@@ -130,6 +128,16 @@ namespace SEVIAN {
 			//shadowUBO.cameraPos = lastCamera->position;
 			shadowMVP.MVP = lastLight->proj * lastLight->view * shadowUBO.model;
 			shadowUBO.MVP = lastLight->proj * lastLight->view * shadowUBO.model;
+
+			for (size_t i = 0; i < MAX_BONES; ++i) {
+				if (i < skeleton->boneTransforms.size ()) {
+					shadowUBO.boneTransforms[i] = skeleton->boneTransforms[i];
+				}
+				else {
+					// Rellena los huesos restantes con la matriz identidad
+					shadowUBO.boneTransforms[i] = glm::mat4 ( 1.0f );
+				}
+			}
 			mesh->prop->ShadowRender ( shadowUBO );
 			//renderer->drawText ( "YANNY", position->position, cam );
 
@@ -146,6 +154,8 @@ namespace SEVIAN {
 			auto scale = entity->getComponent<ScaleComponent> ();
 			auto camera = entity->getComponent<CameraComponent> ();
 			auto light = entity->getComponent<LightComponent> ();
+			auto transform = entity->getComponent<TransformComponent> ();
+			auto skeleton = entity->getComponent<SkeletonComponent> (); // Nueva línea
 
 			if (camera) {
 				lastCamera = camera;
@@ -164,14 +174,8 @@ namespace SEVIAN {
 
 			UniformBufferObject ubo {};
 
-			glm::mat4 translation = glm::translate ( glm::mat4 ( 1.0f ), position->position );
-			//glm::mat4 rotation = glm::rotate ( glm::mat4 ( 1.0f ), time * 0.1f * glm::radians ( 90.0f ), glm::vec3 ( 0.0f, 0.0f, 1.0f ) );
 
-			glm::mat4 rotationMat = glm::rotate ( glm::mat4 ( 1.0f ), rotation->rotation.z, glm::vec3 ( 0.0f, 0.0f, 1.0f ) ) *
-									glm::rotate ( glm::mat4 ( 1.0f ), rotation->rotation.y, glm::vec3 ( 0.0f, 1.0f, 0.0f ) ) *
-									glm::rotate ( glm::mat4 ( 1.0f ), rotation->rotation.x, glm::vec3 ( 1.0f, 0.0f, 0.0f ) );
-			ubo.model = translation * rotationMat;	//ubo.model = /* rotation * */  translation;
-
+			ubo.model = transform->modelMatrix;
 			ubo.view = lastCamera->view;
 			ubo.proj = lastCamera->proj;
 			
@@ -184,16 +188,30 @@ namespace SEVIAN {
 			ubo.lightPos = shadowUBO.lightPos;//lastLight->position;
 			ubo.cameraPos = lastCamera->position;
 			ubo.MVP = shadowUBO.lightProj * shadowUBO.lightView * ubo.model;
+			for (size_t i = 0; i < MAX_BONES; ++i) {
+				if (i < skeleton->boneTransforms.size ()) {
+					ubo.boneTransforms[i] = skeleton->boneTransforms[i];
+				}
+				else {
+					// Rellena los huesos restantes con la matriz identidad
+					ubo.boneTransforms[i] = glm::mat4 ( 1.0f );
+				}
+			}
+			ubo.outColor = glm::vec3 ( 1.0, 0.3, 0.0 );
+			//ubo.boneTransforms[0] = glm::mat4 ( 1.0f ); // Inicializa con identidad
+			//ubo.boneTransforms[0][0] = glm::vec4 ( 0.0f, 0.7f, 0.6f, 1.0f ); // Codifica rojo
+			//ubo.boneTransforms[0][1] = glm::vec4 ( 0.0f, 0.0f, 0.0f, 1.0f ); // Codifica verde (opcional)
+			//ubo.boneTransforms[0][2] = glm::vec4 ( 0.0f, 0.0f, 0.0f, 1.0f ); // Codifica azul (opcional)
+			//ubo.boneTransforms[0][3] = glm::vec4 ( 0.0f, 0.0f, 0.0f, 1.0f ); // Última fila (opcional)
 			mesh->prop->render ( ubo );
 			
 			
 		}
 		Camera cam = {};
-		renderer->drawText ( "YANNY", glm::vec3(0.0, 0.0, 0.0), cam);
+		renderer->drawText ( "Alfa24", glm::vec3(0.0, 0.0, 0.0), cam);
 
 		renderer->endRenderPass ();
 		renderer->endFrame ();
 	}
-	void StaticRenderSystem::update ( std::vector<std::shared_ptr<Entity>>& entities ) {
-	}
+	
 }

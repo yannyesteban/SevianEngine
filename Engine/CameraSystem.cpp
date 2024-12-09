@@ -3,10 +3,10 @@
 SEVIAN::CameraSystem::CameraSystem () {
 }
 
-void SEVIAN::CameraSystem::init ( std::vector<std::shared_ptr<Entity>>& entities ) {
+void SEVIAN::CameraSystem::init ( std::vector<std::shared_ptr<Entity>>& entities, float deltaTime ) {
 }
 
-void SEVIAN::CameraSystem::update ( std::vector<std::shared_ptr<Entity>>& entities ) {
+void SEVIAN::CameraSystem::update ( std::vector<std::shared_ptr<Entity>>& entities, float deltaTime ) {
 
 	for (auto& entity : entities) {
 

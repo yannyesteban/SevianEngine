@@ -1,5 +1,6 @@
 #include "Game.h"
 #include "RenderSystem.h"
+#include "AnimationSystem.h"
 #include "RaceSystem.h"
 
 #include "CameraEntity.h"
@@ -8,6 +9,15 @@
 #include "LightEntity.h"
 #include "LightSystem.h"
 
+#include "SceneData.h"
+
+float calculateDeltaTime () {
+    static auto lastTime = std::chrono::high_resolution_clock::now ();
+    auto currentTime = std::chrono::high_resolution_clock::now ();
+    float deltaTime = std::chrono::duration<float, std::chrono::seconds::period> ( currentTime - lastTime ).count ();
+    lastTime = currentTime;
+    return deltaTime;
+}
 
 int SEVIAN::Game::play () {
 
@@ -51,36 +61,45 @@ int SEVIAN::Game::play () {
     //auto squareEntity6 = createSpriteEntity ( Key::N7, *scene, "a1", "textures/aifuture.jpeg", 0.1, 0.3, 0.0f, 1.0, 1.0, glm::vec3 ( 1.0f, 1.0f, 1.0f ) );
     
 
+    //loadScene ( "models/viking_room.obj" );
+    /*
     auto cubo4 = createCubeEntity ( "aifuture", "textures/aifuture.jpeg", Key::N0, *scene, 0.0, 0.0, 2.0 );
     auto cubo1 = createCubeEntity ( "aTravel", "textures/aTravel.jpeg", Key::N1, *scene, 0.0, 0.0, 0.0 );
     auto cubo2 = createCubeEntity ( "escultura", "textures/escultura.jpg", Key::N2, *scene, 0.0, 0.0, -2.5 );
     auto cubo3 = createCubeEntity ( "suiza", "textures/suiza.jpg", Key::N3, * scene, 0.0, 0.0, -3.0 );
     
     auto sphere1 = createSphereEntity ( "escultura", "textures/escultura.jpg", Key::N5, *scene, 0.0, 0.0, -1.0, 0.5, 64, 64 );
+    */
+    //createActorEntity ( *scene, "models/doscosas.glb" );
 
-    
-   
+    createActorEntity ( *scene, "C:/sources2025/Blender/seis.gltf" );
+    //createActorEntity ( *scene, "models/StereoJack.obj");
     
     auto movementSystem = std::make_shared<RaceSystem> ( );
     auto lightSystem = std::make_shared<LightSystem> ();
     auto cameraSystem = std::make_shared<CameraSystem> ();
+    auto transformSystem = std::make_shared<TransformSystem> ();
+    auto animationSystem = std::make_shared<AnimationSystem> ();
+
     auto renderSystem = std::make_shared<RenderSystem> ( render );
 
     scene->addSystem ( movementSystem );
     scene->addSystem ( lightSystem );
     scene->addSystem ( cameraSystem );
+    scene->addSystem ( transformSystem );
+    scene->addSystem ( animationSystem );
     scene->addSystem ( renderSystem );
 	
     
-    scene->init ();
+    scene->init (0);
 
     auto camera = SEVIAN::Camera ();
     while (!glfwWindowShouldClose ( window )) {
-
+        float deltaTime = calculateDeltaTime ();
 
         //render->beginFrame ();
 
-        world->update ();
+        world->update ( deltaTime );
 
         //render->drawText ( "YANNY", { 0.0f, 0.0f, 0.0f }, camera );
         //render->endFrame ();

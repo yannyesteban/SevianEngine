@@ -10,8 +10,8 @@ namespace SEVIAN {
 	{
 	public:
 		virtual ~System () = default;
-		virtual void update ( std::vector<std::shared_ptr<Entity>>& entities ) = 0;
-		virtual void init ( std::vector<std::shared_ptr<Entity>>& entities ) = 0;
+		virtual void update ( std::vector<std::shared_ptr<Entity>>& entities, float deltaTime ) = 0;
+		virtual void init ( std::vector<std::shared_ptr<Entity>>& entities, float deltaTime ) = 0;
 	};
 
 }

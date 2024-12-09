@@ -17,8 +17,8 @@ namespace SEVIAN {
 
     public:
         RaceSystem (  )  { }
-        void init ( std::vector<std::shared_ptr<Entity>>& entities ) override;
-        void update ( std::vector<std::shared_ptr<Entity>>& entities ) override;
+        void init ( std::vector<std::shared_ptr<Entity>>& entities, float deltaTime ) override;
+        void update ( std::vector<std::shared_ptr<Entity>>& entities, float deltaTime ) override;
 
     };
 }

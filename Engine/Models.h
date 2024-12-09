@@ -16,6 +16,23 @@
 namespace SEVIAN {
 
 
+    struct Mesh
+    {
+        std::vector<Vertex> vertices;
+        std::vector<uint32_t> indices;
+        std::vector <std::string> texture;
+
+    };
+
+    
+
+    struct MeshesComponent : public Component
+    {
+        std::vector<Mesh> meshes;
+        std::shared_ptr<Entity3D> prop;
+        void update ( float deltaTime ) override;
+       
+    };
     struct SpriteComponent : public Component
     {
         glm::vec3 position;

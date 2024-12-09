@@ -16,8 +16,8 @@ namespace SEVIAN {
 
     public:
         MovementSystem ( std::shared_ptr<RenderInterface>  r ) : renderer ( r ) { }
-        void init ( std::vector<std::shared_ptr<Entity>>& entities ) override;
-        void update ( std::vector<std::shared_ptr<Entity>>& entities ) override;
+        void init ( std::vector<std::shared_ptr<Entity>>& entities, float deltaTime ) override;
+        void update ( std::vector<std::shared_ptr<Entity>>& entities, float deltaTime ) override;
 
     };
 }

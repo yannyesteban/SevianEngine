@@ -1,10 +1,10 @@
 #include "InputSystem.h"
 
 
-void SEVIAN::InputSystem::init ( std::vector<std::shared_ptr<Entity>>& entities ) {
+void SEVIAN::InputSystem::init ( std::vector<std::shared_ptr<Entity>>& entities, float deltaTime ) {
 }
 
-void SEVIAN::InputSystem::update ( std::vector<std::shared_ptr<Entity>>& entities ) {
+void SEVIAN::InputSystem::update ( std::vector<std::shared_ptr<Entity>>& entities, float deltaTime ) {
 
     for (auto& entity : entities) {
         auto input = entity->getComponent<InputComponent> ();
