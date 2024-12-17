@@ -125,7 +125,7 @@ void mainBasic()
 	mat4 lightSpace = ubo.lightProj * ubo.lightView;//ubo.lightSpace;
 	outShadowCoord = ( biasMat * lightSpace * ubo.model ) * vec4(inPos, 1.0);
     
-    outColor = ubo.boneTransforms[0][0].xyz; // Solo rojo
+    //outColor = ubo.boneTransforms[0][0].xyz; // Solo rojo
     //outColor = vec3(ubo.boneTransforms[0][0].x, ubo.boneTransforms[0][0].y, ubo.boneTransforms[0][0].z);
 
     //outColor = vec3(ubo.boneTransforms[0][0].x, ubo.boneTransforms[0][0].y, ubo.boneTransforms[0][0].z);
@@ -169,7 +169,8 @@ void main() {
 
 
     if (band == 0) {
-        mainBone();
+        //mainBone();
+        main2();
 
     }
     else {

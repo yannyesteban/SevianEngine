@@ -72,15 +72,15 @@ int SEVIAN::Game::play () {
     */
     //createActorEntity ( *scene, "models/doscosas.glb" );
 
-    createActorEntity ( *scene, "C:/sources2025/Blender/seis.gltf" );
+    createActorEntity ( *scene, "C:/sources2025/Blender/tres.glb" );
     //createActorEntity ( *scene, "models/StereoJack.obj");
     
-    auto movementSystem = std::make_shared<RaceSystem> ( );
+   
     auto lightSystem = std::make_shared<LightSystem> ();
     auto cameraSystem = std::make_shared<CameraSystem> ();
     auto transformSystem = std::make_shared<TransformSystem> ();
     auto animationSystem = std::make_shared<AnimationSystem> ();
-
+    auto movementSystem = std::make_shared<RaceSystem> ();
     auto renderSystem = std::make_shared<RenderSystem> ( render );
 
     scene->addSystem ( movementSystem );
