@@ -21,6 +21,7 @@
 #include <map>
 #include <algorithm>
 #include <unordered_map>
+#include "TextEntity.h"
 
 
 #ifdef NDEBUG
@@ -276,6 +277,8 @@ namespace VULKAN {
         uint32_t imageIndex;
         bool framebufferResized = false;
         VulkanText fontText;
+
+        TextEntity * textManager;
         VkExtent2D shadowExtent = { 2048, 2048 };
         std::unordered_map<uint32_t, std::unique_ptr<Entity>> entities;
 

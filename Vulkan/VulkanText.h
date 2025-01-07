@@ -54,18 +54,7 @@ namespace VULKAN {
 		return attributeDescriptions;
 	}
 
-	struct Character
-	{
-		VkImage        textureImage;
-		VkDeviceMemory textureImageMemory;
-		VkImageView    textureImageView;
-		VkSampler      textureSampler;
-		int            width;
-		int            height;
-		int            bearingX;
-		int            bearingY;
-		long           advance;
-	};
+
 
 
 

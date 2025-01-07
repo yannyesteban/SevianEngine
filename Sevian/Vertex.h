@@ -228,6 +228,8 @@ namespace SEVIAN {
 		std::string texture;
 		std::string path;
 	};
+
+	
 }
 
 

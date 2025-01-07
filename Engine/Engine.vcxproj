@@ -104,7 +104,7 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>C:\source\2024\Sevian\Vulkan;C:\VulkanSDK\1.3.283.0\Include;C:\source\glm;C:\source\lib\glfw-3.3.8\include;C:\source\lib\stb-master;C:\source\2024\Sevian\Sevian;C:\source\lib\freetype-2.13.2\include;C:\Users\yanny\Downloads\opencv\sources\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>C:\source\2024\Sevian\Vulkan;C:\VulkanSDK\1.3.283.0\Include;C:\source\glm;C:\source\lib\glfw-3.3.8\include;C:\source\lib\stb-master;C:\source\2024\Sevian\Sevian;C:\source\lib\freetype-2.13.2\include;C:\Users\yanny\Downloads\opencv\sources\include;C:\source\lib\json\include;C:\vcpkg\packages\msdfgen_x64-windows\include\msdfgen;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <LanguageStandard>stdcpp17</LanguageStandard>
     </ClCompile>
     <Link>
@@ -209,7 +209,13 @@
     <None Include="MeshEntity.vert" />
     <None Include="model.frag" />
     <None Include="model.vert" />
+    <None Include="msdf.frag" />
+    <None Include="msdf.vert" />
+    <None Include="msdf2.frag" />
+    <None Include="msdf2.vert" />
+    <None Include="msdf3.frag" />
     <None Include="offscreen.vert" />
+    <None Include="one.json" />
     <None Include="scene.frag" />
     <None Include="scene0.frag" />
     <None Include="scene.vert" />

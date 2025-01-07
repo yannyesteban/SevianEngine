@@ -305,6 +305,12 @@ namespace VULKAN {
 	}
 
 	Device* PhysicalDevice::createDevice () {
+		VkFormatProperties formatProperties;
+		vkGetPhysicalDeviceFormatProperties ( physicalDevice, VK_FORMAT_R32G32B32_SFLOAT, &formatProperties );
+
+		if (!(formatProperties.optimalTilingFeatures & VK_FORMAT_FEATURE_TRANSFER_DST_BIT)) {
+			//throw std::runtime_error ( "VK_FORMAT_R32G32B32_SFLOAT no es compatible con VK_FORMAT_FEATURE_TRANSFER_DST_BIT." );
+		}
 		createLogicalDevice ();
 		Device* devic = new Device ( physicalDevice, device, graphicsQueue );
 		return devic;

@@ -72,7 +72,16 @@ int SEVIAN::Game::play () {
     */
     //createActorEntity ( *scene, "models/doscosas.glb" );
 
-    createActorEntity ( *scene, "C:/sources2025/Blender/tres.glb" );
+   
+    
+    if (1 == 0) {
+        createActorEntity ( *scene, "C:/sources2025/Blender/tres.glb" );
+    }
+    
+    
+    
+    
+    
     //createActorEntity ( *scene, "models/StereoJack.obj");
     
    

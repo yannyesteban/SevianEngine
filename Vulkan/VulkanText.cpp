@@ -109,6 +109,90 @@ namespace VULKAN {
 		memcpy ( uniformBuffersMapped, &ubo, sizeof ( ubo ) );
 	}
 
+
+	void VulkanText::initialize () {
+		auto error = FT_Init_FreeType ( &library );
+		if (error) {
+			std::cout << "error";
+		}
+		else {
+			std::cout << "todo bien";
+		}
+
+		error = FT_New_Face ( library,
+			"C:\\source\\2024\\Sevian\\Engine\\fonts\\arial.ttf",
+			0,
+			&face );
+
+		if (error == FT_Err_Unknown_File_Format) {
+			std::cout << "todo bien 2";
+		}
+		else if (error) {
+			std::cout << "error 2";
+		}
+
+		FT_Set_Pixel_Sizes ( face, 0, 48 );
+
+		FT_GlyphSlot slot = face->glyph;
+
+		for (unsigned char c = 33; c < 128; c++) {
+			if (FT_Load_Char ( face, c, FT_LOAD_RENDER )) {
+				std::cout << "ERROR::FREETYTPE: Failed to load Glyph" << std::endl;
+				continue;
+			}
+
+			//FT_Render_Glyph ( slot, FT_RENDER_MODE_SDF );
+
+			if (FT_Render_Glyph ( slot, FT_RENDER_MODE_SDF )) {
+				std::cerr << "ERROR::FREETYTPE: Failed to render Glyph " << c << std::endl;
+				continue;
+			}
+
+			//generateSDF ( slot );
+
+			//std::string filename = "sdf_glyph_" + std::to_string ( c ) + ".png";
+			//saveSDFBitmap ( slot->bitmap, filename );
+
+			createTextureImage ( face, c, Characters[c] );
+
+			createImageView ( Characters[c].textureImage, VK_FORMAT_R8_UNORM/*VK_FORMAT_R32_SFLOAT*/, Characters[c].textureImageView );
+			createTextureSampler ( Characters[c].textureSampler );
+
+
+			std::cout << "FREETYTPE:  load Glyph" << Characters[c].width << std::endl;
+
+
+		}
+
+		std::vector<DSLInfo> bufDSLInfo;
+		bufDSLInfo.push_back ( { VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 0 } );
+		bufDSLInfo.push_back ( { VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 1 } );
+
+		descriptorSetLayout = device->createDescriptorSetLayout ( bufDSLInfo );
+
+
+		std::vector<VkDescriptorSetLayout> layouts = { descriptorSetLayout };
+		pipelineLayout = device->createPipelineLayout ( layouts );
+
+		pipeline = createGraphPipeline (
+			getBindingDescription2 (),
+			getAttributeDescriptions2 (),
+			pipelineLayout,
+			"shaders/text_vert.spv",
+			"shaders/text_frag.spv"
+			//"shaders/FinalVert.spv",
+			//"shaders/FinalFrag.spv"
+			//"shaders/sceneVert.spv",
+			//"shaders/sceneFrag.spv"
+			//"shaders/MeshEntityVert.spv",
+			//"shaders/MeshEntityFrag.spv"
+		);
+
+
+
+
+	}
+
 	VkPipeline VulkanText::createGraphPipeline ( VkVertexInputBindingDescription bindingDescription, std::vector<VkVertexInputAttributeDescription> attributeDescriptions, VkPipelineLayout pipelineLayout, std::string vertSource, std::string fragSource ) {
 		
 		
@@ -253,89 +337,7 @@ namespace VULKAN {
 		return pipeline1 ;
 	}
 
-	void VulkanText::initialize () {
-		auto error = FT_Init_FreeType ( &library );
-		if (error) {
-			std::cout << "error";
-		}
-		else {
-			std::cout << "todo bien";
-		}
-
-		error = FT_New_Face ( library,
-			"C:\\source\\2024\\Sevian\\Engine\\fonts\\arial.ttf",
-			0,
-			&face );
-
-		if (error == FT_Err_Unknown_File_Format) {
-			std::cout << "todo bien 2";
-		}
-		else if (error) {
-			std::cout << "error 2";
-		}
-
-		FT_Set_Pixel_Sizes ( face, 0, 48 );
-
-		FT_GlyphSlot slot = face->glyph;
-		
-		for (unsigned char c = 33; c < 128; c++) {
-			if (FT_Load_Char ( face, c, FT_LOAD_RENDER )) {
-				std::cout << "ERROR::FREETYTPE: Failed to load Glyph" << std::endl;
-				continue;
-			}
-			
-			//FT_Render_Glyph ( slot, FT_RENDER_MODE_SDF );
-			
-			if (FT_Render_Glyph ( slot, FT_RENDER_MODE_SDF )) {
-				std::cerr << "ERROR::FREETYTPE: Failed to render Glyph " << c << std::endl;
-				continue;
-			}
-
-			//generateSDF ( slot );
-
-			//std::string filename = "sdf_glyph_" + std::to_string ( c ) + ".png";
-			//saveSDFBitmap ( slot->bitmap, filename );
-
-			createTextureImage ( face, c, Characters[c] );
-
-			createImageView ( Characters[c].textureImage, VK_FORMAT_R8_UNORM/*VK_FORMAT_R32_SFLOAT*/, Characters[c].textureImageView);
-			createTextureSampler ( Characters[c].textureSampler );
-
-
-			std::cout << "FREETYTPE:  load Glyph" << Characters[c].width << std::endl;
-
-
-		}
-
-		std::vector<DSLInfo> bufDSLInfo;
-		bufDSLInfo.push_back ( { VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 0 } );
-		bufDSLInfo.push_back ( { VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 1 } );
-
-		descriptorSetLayout = device->createDescriptorSetLayout ( bufDSLInfo );
-
-		
-		std::vector<VkDescriptorSetLayout> layouts = { descriptorSetLayout };
-		pipelineLayout = device->createPipelineLayout ( layouts );
-
-		pipeline = createGraphPipeline (
-			getBindingDescription2(),
-			getAttributeDescriptions2 (),
-			pipelineLayout,
-			"shaders/text_vert.spv",
-			"shaders/text_frag.spv"
-			//"shaders/FinalVert.spv",
-			//"shaders/FinalFrag.spv"
-			//"shaders/sceneVert.spv",
-			//"shaders/sceneFrag.spv"
-			//"shaders/MeshEntityVert.spv",
-			//"shaders/MeshEntityFrag.spv"
-		);
-
-		
-
-		
-	}
-
+	
 	void VulkanText::start () {
 
 		if (!play) {

@@ -60,6 +60,9 @@
     <ClInclude Include="ShadowWorld.h">
       <Filter>Archivos de encabezado</Filter>
     </ClInclude>
+    <ClInclude Include="TextEntity.h">
+      <Filter>Archivos de encabezado</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Renderer.cpp">
@@ -102,6 +105,9 @@
       <Filter>Archivos de origen</Filter>
     </ClCompile>
     <ClCompile Include="ShadowWorld.cpp">
+      <Filter>Archivos de origen</Filter>
+    </ClCompile>
+    <ClCompile Include="TextEntity.cpp">
       <Filter>Archivos de origen</Filter>
     </ClCompile>
   </ItemGroup>

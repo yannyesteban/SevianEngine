@@ -63,7 +63,10 @@ namespace VULKAN {
 
 		physicalDevices = getPhysicalDevices ();
 
-		int selectedDevice = 0;
+
+		
+
+		int selectedDevice = 1;
 
 		device = physicalDevices.at ( selectedDevice ).createDevice ();
 		commandPool = physicalDevices.at ( selectedDevice ).createCommandPool ();
@@ -109,7 +112,19 @@ namespace VULKAN {
 			fontText.device = device;
 			fontText.frames = frames;
 			fontText.descriptorPool = descriptorPool;
-			fontText.initialize ();
+			
+			
+			
+			//fontText.initialize ();
+
+			textManager = new TextEntity (MSDF, 
+				"hola",
+				"C:\\source\\2024\\Sevian\\Engine\\fonts\\arial.ttf",
+				device,
+				frames,
+				descriptorPool
+
+			);
 		}
 		
 		meshManager = new MeshManager ( device, textureManager.get() );
@@ -912,8 +927,11 @@ namespace VULKAN {
 
 	void VulkanRenderer::drawText ( std::string text, glm::vec3 position, Camera camera ) {
 
-		fontText.draw (
-			text, currentFrame, commandBuffer, position, camera, extent.width, extent.height );
+		//fontText.draw (			text, currentFrame, commandBuffer, position, camera, extent.width, extent.height );
+		
+		
+		textManager->draw2 (			text, currentFrame, commandBuffer, position, camera, extent.width, extent.height );
+
 	}
 	
 

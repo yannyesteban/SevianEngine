@@ -416,7 +416,7 @@ namespace VULKAN {
 			imageInfo.arrayLayers = 1;
 			
 			imageInfo.tiling = tiling;
-			//imageInfo.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
+			imageInfo.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
 			imageInfo.usage = usage;
 			imageInfo.samples = VK_SAMPLE_COUNT_1_BIT;
 			imageInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;

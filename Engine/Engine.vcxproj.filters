@@ -274,5 +274,21 @@
     <None Include="bone.frag">
       <Filter>shaders</Filter>
     </None>
+    <None Include="one.json" />
+    <None Include="msdf.vert">
+      <Filter>shaders</Filter>
+    </None>
+    <None Include="msdf.frag">
+      <Filter>shaders</Filter>
+    </None>
+    <None Include="msdf2.vert">
+      <Filter>shaders</Filter>
+    </None>
+    <None Include="msdf2.frag">
+      <Filter>shaders</Filter>
+    </None>
+    <None Include="msdf3.frag">
+      <Filter>shaders</Filter>
+    </None>
   </ItemGroup>
 </Project>
