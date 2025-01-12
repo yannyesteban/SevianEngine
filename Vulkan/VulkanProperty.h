@@ -7,7 +7,7 @@ namespace VULKAN {
 	class VulkanProperty : public Entity3D
 	{
 	public:
-		
+
 		VertexBuffer vertex;
 		VertexBuffer indices;
 
@@ -23,11 +23,11 @@ namespace VULKAN {
 		VkDeviceMemory vertexBufferMemory = VK_NULL_HANDLE;
 		VkDeviceMemory indexBufferMemory = VK_NULL_HANDLE;
 		std::vector<VulkanUBuffer> buffers;
-		
+
 		void render ( UniformBufferObject ubo ) override;
 		void ShadowRender ( UniformBufferObject ubo ) override;
 
-		
+
 
 	};
 
@@ -54,16 +54,25 @@ namespace VULKAN {
 		// No es necesario volver a declarar los métodos render y ShadowRender 
 		// ya que se heredan de la clase base Entity3D
 	};
+	struct Bounds
+	{
+		double l, b, r, t;
+	};
+
 
 	class Glyph : public Element
 	{
 	public:
+		double l, b, r, t;
+		float u0, v0, u1, v1, w, h, offsetX, offsetY;
 		int            width;
 		int            height;
 		int            bearingX;
 		int            bearingY;
-		long           advance;
-
+		float           advance;
+		int charIndex;
+		char ch;
+		Bounds bounds;
 		void* bitmap;
 
 		VkImage        textureImage = VK_NULL_HANDLE;

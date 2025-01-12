@@ -2,6 +2,9 @@
 
 
 layout(location = 0) in vec2 fragTexCoord;
+layout(location = 1) flat  in int fragColor;
+
+
 layout(location = 0) out vec4 outColor;
 
 layout(binding = 1) uniform sampler2D textSampler;
@@ -179,8 +182,29 @@ void main11()
 	
 }
 
+void main12() {
+     pxRange = 8.0;
+    vec4 bgColor = vec4(1.0, 1.0, 1.0, 0.0);
+    vec4 fgColor = vec4(0.0, 0.0, 0.0, 1.0);
+
+    if(fragColor == 1){
+        bgColor = vec4(1.0, 1.0, 1.0, 0.0);
+
+    }else{
+
+        bgColor = vec4(1.0, 0.0, 1.0, 0.0);
+    }
+    vec4 msd = texture(textSampler, fragTexCoord);
+    float sd = median(msd.r, msd.g, msd.b);
+    float screenPxDistance = screenPxRange()*(sd - 0.5);
+    float opacity = clamp(screenPxDistance + 0.5, 0.4, 1.0);
+
+
+    outColor = mix(bgColor, fgColor, opacity);
+}
+
 void main(){
-    int x = 7;//2;//7;
+    int x = 12;//12;//2;//7;
 
     if (x == 1) {
         main1();
@@ -214,6 +238,9 @@ void main(){
     }
     if (x == 11) {
         main11();
+    }
+    if (x == 12) {
+        main12();
     }
 
 }

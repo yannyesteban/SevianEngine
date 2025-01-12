@@ -29,6 +29,8 @@ namespace VULKAN {
 		public Entity3D
 	{
 		
+		VulkanTexture texture;
+		
 		std::string text;
 		std::string font;
 		
@@ -37,6 +39,7 @@ namespace VULKAN {
 		VkDescriptorPool descriptorPool;
 
 		Glyph character;
+		Glyph character2;
 		std::shared_ptr<Entity3D> prop;
 		bool play = false;
 		TextureManager* textureManager;
@@ -95,6 +98,7 @@ namespace VULKAN {
 	public:
 		void fontInit ( std::string fontPath );
 		void fontInit2 ( std::string fontPath );
+		void fontInit3 ( std::string fontPath );
 		TextEntity (
 			FontRenderType type,
 			std::string text,
@@ -114,7 +118,9 @@ namespace VULKAN {
 		void ShadowRender ( UniformBufferObject ubo ) override;
 
 		void draw ( std::string text, uint32_t currentFrame, VkCommandBuffer commandBuffer, glm::vec3 position, Camera camera, uint32_t width, uint32_t height );
+		//void fontInit4 ( std::string fontPath );
 		void draw2 ( std::string text, uint32_t currentFrame, VkCommandBuffer commandBuffer, glm::vec3 position, Camera camera, uint32_t width, uint32_t height );
+		std::shared_ptr<Entity3D> init ( std::vector<VertexText> vertices, std::vector<uint32_t> indices, VulkanTexture texture );
 	};
 
 }

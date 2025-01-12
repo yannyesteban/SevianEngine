@@ -61,6 +61,7 @@ namespace SEVIAN {
 	{
 		glm::vec2 pos;
 		glm::vec2 texCoord;
+		int color = 1;
 
 	};
 
