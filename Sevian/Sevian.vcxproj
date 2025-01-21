@@ -105,7 +105,7 @@
       <PreprocessorDefinitions>_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <LanguageStandard>stdcpp17</LanguageStandard>
-      <AdditionalIncludeDirectories>C:\source\lib\glfw-3.3.8\include;C:\source\glm;</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>C:\source\lib\glfw-3.3.8\include;C:\source\glm;C:\Users\yanny\Downloads\opencv\build\include;C:\vcpkg\packages\msdfgen_x64-windows\include\msdfgen</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -139,10 +139,12 @@
   <ItemGroup>
     <ClInclude Include="RendererFactory.h" />
     <ClInclude Include="RenderInterface.h" />
+    <ClInclude Include="TextEngine.h" />
     <ClInclude Include="Vertex.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="maincpp.cpp" />
+    <ClCompile Include="TextEngine.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

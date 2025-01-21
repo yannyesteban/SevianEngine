@@ -59,7 +59,7 @@ namespace VULKAN {
 		double l, b, r, t;
 	};
 
-
+	/*
 	class Glyph : public Element
 	{
 	public:
@@ -85,6 +85,7 @@ namespace VULKAN {
 
 
 	};
+	*/
 
 }
 

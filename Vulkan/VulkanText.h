@@ -27,7 +27,7 @@ namespace VULKAN {
 	static VkVertexInputBindingDescription getBindingDescription2 () {
 		VkVertexInputBindingDescription bindingDescription {};
 		bindingDescription.binding = 0;
-		bindingDescription.stride = sizeof ( SEVIAN::VertexText );
+		bindingDescription.stride = sizeof ( SEVIAN::VertexTextOld );
 		bindingDescription.inputRate = VK_VERTEX_INPUT_RATE_VERTEX;
 
 		return bindingDescription;
@@ -42,12 +42,12 @@ namespace VULKAN {
 		attributeDescriptions[0].binding = 0;
 		attributeDescriptions[0].location = 0;
 		attributeDescriptions[0].format = VK_FORMAT_R32G32_SFLOAT;
-		attributeDescriptions[0].offset = offsetof ( SEVIAN::VertexText, pos );
+		attributeDescriptions[0].offset = offsetof ( SEVIAN::VertexTextOld, pos );
 
 		attributeDescriptions[1].binding = 0;
 		attributeDescriptions[1].location = 1;
 		attributeDescriptions[1].format = VK_FORMAT_R32G32_SFLOAT;
-		attributeDescriptions[1].offset = offsetof ( SEVIAN::VertexText, texCoord );
+		attributeDescriptions[1].offset = offsetof ( SEVIAN::VertexTextOld, texCoord );
 
 
 
@@ -87,7 +87,7 @@ namespace VULKAN {
 		void createImageView ( VkImage image, VkFormat format, VkImageView& imageView );
 		void createTextureSampler ( VkSampler& sampler );
 
-		std::shared_ptr<Entity3D> init ( std::vector<VertexText> vertices, std::vector<uint32_t> indices, /*VulkanTexture*/ Character texture);
+		std::shared_ptr<Entity3D> init ( std::vector<VertexTextOld> vertices, std::vector<uint32_t> indices, /*VulkanTexture*/ Character texture);
 		Pipeline createGraphicsPipeline3 ( VkVertexInputBindingDescription bindingDescription, std::vector<VkVertexInputAttributeDescription> attributeDescriptions, VkDescriptorSetLayout& descriptorSetLayout );
 
 

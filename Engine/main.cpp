@@ -30,7 +30,7 @@ int main () {
 
     return 0;*/
 
-    GameInfo info = { VK, "Race", 800 ,800 };
+    GameInfo info = { VK, "Race", 2000 ,1000 };
 
     std::unique_ptr<Game> race = std::make_unique<Game> ( info );
 

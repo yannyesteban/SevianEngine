@@ -1,48 +1,17 @@
 #include "TextEntity.h"
-#include <algorithm>
+
 #include <opencv2/opencv.hpp>
 #include <iostream>
-#include <vector>
+#include <msdfgen.h>
+#include <msdfgen-ext.h>
 
 
 
-const std::string mainText = "Yanny@hotmail.com";
+const std::string mainText = "Yanny@A.com";
 
-const int W = 10, H = 10;
 
-// Dimensiones de cada glifo en el atlas
-const int texWidth = 64;
-const int texHeight = 64;
-const double size = 64;
-
-//const int atlasWidth = 320;
-//const int atlasHeight = 320;
-// Función para copiar un glifo a la posición correcta dentro del atlas
-void copyGlyphToAtlas2 ( const msdfgen::Bitmap<float, 3>& msdf, std::vector<uint8_t>& atlasData, int startX, int startY, int atlasWidth ) {
-	for (int y = 0; y < texHeight; ++y) {
-		for (int x = 0; x < texWidth; ++x) {
-			int atlasIndex = ((startY + y) * atlasWidth + (startX + x)) * 4;
-			for (int channel = 0; channel < 3; ++channel) {
-				atlasData[atlasIndex + channel] = msdfgen::pixelFloatToByte ( msdf ( x, y )[channel] );
-			}
-			atlasData[atlasIndex + 3] = 255; // Canal alfa (opaco)
-		}
-	}
-}
-// Función para copiar un glifo a la posición correcta dentro del atlas
-void copyGlyphToAtlas ( const msdfgen::Bitmap<float, 3>& msdf, std::vector<uint8_t>& atlasData, int startX, int startY, int atlasWidth ) {
-	for (int y = 0; y < texHeight; ++y) {
-		for (int x = 0; x < texWidth; ++x) {
-			int atlasIndex = ((startY + y) * atlasWidth + (startX + x)) * 4;
-			for (int channel = 0; channel < 3; ++channel) {
-				atlasData[atlasIndex + channel] = msdfgen::pixelFloatToByte ( msdf ( x, y )[channel] );
-			}
-			atlasData[atlasIndex + 3] = 255; // Canal alfa (opaco)
-		}
-	}
-}
 // Función para guardar el atlas SDF como imagen
-void saveSDFAtlas ( const std::vector<uint8_t>& atlasData, int atlasWidth, int atlasHeight, const std::string& filename ) {
+void saveSDFAtlas ( const std::vector<uint8_t>& atlasData, int atlasWidth, int atlasHeight, const std::string& filename, const std::string& filename2 ) {
 	// Crear una imagen de OpenCV del tamaño del atlas, con 4 canales (RGBA)
 	cv::Mat sdfImage ( atlasHeight, atlasWidth, CV_8UC4, (void*) atlasData.data () );
 
@@ -53,13 +22,19 @@ void saveSDFAtlas ( const std::vector<uint8_t>& atlasData, int atlasWidth, int a
 	else {
 		std::cout << "Atlas guardado correctamente como: " << filename << std::endl;
 	}
+
+	cv::flip ( sdfImage, sdfImage, 0 ); // Invertir verticalmente
+	cv::imwrite ( filename2, sdfImage );
+	
 }
 const int FONT_SIZE = 32;
-#include <msdfgen.h>
-#include <msdfgen-ext.h>
+
 
 using namespace msdfgen;
-int main1 ( std::string src, char c ) {
+int msdfgenTest ( std::string src, char c ) {
+	int texWidth = 32;
+	int texHeight = 32;
+	double size = 32;
 	if (FreetypeHandle* ft = initializeFreetype ()) {
 		if (FontHandle* font = loadFont ( ft, src.c_str () )) {
 			Shape shape;
@@ -73,7 +48,7 @@ int main1 ( std::string src, char c ) {
 				Vector2 scale ( texWidth * 0.90, texWidth * 0.90 );
 				SDFTransformation t ( Projection ( scale, Vector2 ( 0.125, 0.125 * 2 ) ), Range ( 0.125 ) );
 				generateMSDF ( msdf, shape, t );
-				
+
 
 				std::string name = "char_test_";
 				name += c;
@@ -88,169 +63,24 @@ int main1 ( std::string src, char c ) {
 	return 0;
 }
 
-void updateUniformBuffer5 ( void* uniformBuffersMapped, glm::vec3 position,
-	Camera camera, uint32_t width, uint32_t height ) {
-	static auto startTime = std::chrono::high_resolution_clock::now ();
-
-	// Calcular el tiempo transcurrido
-	auto currentTime = std::chrono::high_resolution_clock::now ();
-	float time = std::chrono::duration<float, std::chrono::seconds::period> ( currentTime - startTime ).count ();
-
-	UniformBufferObject2 ubo {};
-
-	// Calcular el aspecto
-	float aspectRatio = width / static_cast<float>(height);
-
-	// Elegir el tipo de proyección (comentar/descomentar según se necesite)
-	// Proyección Perspectiva (comentada si usas ortográfica)
-	// ubo.proj = glm::perspective(glm::radians(45.0f), aspectRatio, 0.1f, 10.0f);
-	// ubo.proj[1][1] *= -1;  // Invertir el eje Y para el espacio de recorte de Vulkan
-	auto delta = 300.0f;
-	// Proyección Ortográfica (descomentada si usas ortográfica)
-	ubo.proj = glm::ortho ( -delta * aspectRatio, delta * aspectRatio, -delta, delta, 1.0f, 5.0f );
-	//ubo.proj = glm::ortho ( 0.0f, static_cast<float>(width), 0.0f, static_cast<float>(height) );
-	ubo.proj = glm::ortho ( -static_cast<float>(width), static_cast<float>(width), -static_cast<float>(height), static_cast<float>(height), 5.0f, -5.0f );
-	ubo.proj = glm::ortho ( -static_cast<float>(width), static_cast<float>(width), -static_cast<float>(height), static_cast<float>(height) );
-
-	auto deltaX = static_cast<float>(width) / 2;
-	auto deltaY = static_cast<float>(height) / 2;
-	ubo.proj = glm::ortho ( -deltaX, deltaX, -deltaY, deltaY, 1.0f, 25.0f );
-
-	ubo.proj = glm::ortho ( -deltaX, deltaX, -deltaY, deltaY );
-	// Sin invertir el eje Y para una proyección ortográfica
-	ubo.proj[1][1] *= -1;  // Solo se necesita si estás usando Vulkan o OpenGL con un espacio de recorte diferente
-
-	// Modelo y Vista (sin rotación en este caso)
-	ubo.model = glm::mat4 ( 1.0f );  // No hay rotación aplicada
-	ubo.view = glm::lookAt ( glm::vec3 ( 0.0f, 0.0f, 2.0f ),  // Cámara desde (0, 0, 2)
-		glm::vec3 ( 0.0f, 0.0f, 0.0f ),  // Mira al origen
-		glm::vec3 ( 0.0f, 1.0f, 0.0f ) ); // "Arriba" en la dirección Y
-
-	// Copiar los datos del UBO en la memoria mapeada
-	memcpy ( uniformBuffersMapped, &ubo, sizeof ( ubo ) );
-}
-
-
-void updateUniformBuffer51 ( void* uniformBuffersMapped, glm::vec3 position,
-	Camera camera, uint32_t width, uint32_t height ) {
-	static auto startTime = std::chrono::high_resolution_clock::now ();
-
-	auto currentTime = std::chrono::high_resolution_clock::now ();
-	float time = std::chrono::duration<float, std::chrono::seconds::period> ( currentTime - startTime ).count ();
-
-	UniformBufferObject2 ubo {};
-
-	// Calcular el ratio de aspecto
-	float aspectRatio = width / static_cast<float>(height);
-
-	// Usar una proyección ortográfica
-	glm::mat4 projection = glm::ortho ( -aspectRatio, aspectRatio, -1.0f, 1.0f, 0.0f, 1.0f );
-
-	// Modelo de rotación (si es necesario)
-	ubo.model = glm::rotate ( glm::mat4 ( 1.0f ), time * glm::radians ( 90.0f ), glm::vec3 ( 0.0f, 0.0f, 1.0f ) );
-
-	// Vista de la cámara
-	//ubo.view = glm::lookAt ( glm::vec3 ( 2.0f, 2.0f, 2.0f ), glm::vec3 ( 0.0f, 0.0f, 0.0f ), glm::vec3 ( 0.0f, 0.0f, 1.0f ) );
-	ubo.view = glm::lookAt ( glm::vec3 ( 0.0f, 0.0f, 2.0f ), glm::vec3 ( 0.0f, 0.0f, 0.0f ), glm::vec3 ( 0.0f, 1.0f, 0.0f ) );
-
-	// Asignar la proyección ortográfica calculada
-	ubo.proj = projection;
-
-	// Copiar el UBO a la memoria
-	memcpy ( uniformBuffersMapped, &ubo, sizeof ( ubo ) );
-}
-
-
-void updateUniformBuffer5no ( void* uniformBuffersMapped, glm::vec3 position,
-	Camera camera, uint32_t width, uint32_t height ) {
-	static auto startTime = std::chrono::high_resolution_clock::now ();
-
-	auto currentTime = std::chrono::high_resolution_clock::now ();
-	float time = std::chrono::duration<float, std::chrono::seconds::period> ( currentTime - startTime ).count ();
-
-	UniformBufferObject2 ubo {};
-
-	float aspectRatio = width / static_cast<float>(height);
-	glm::mat4 projection;
-
-	if (aspectRatio > 1.0f) {
-		projection = glm::ortho ( -1.0f * aspectRatio, 1.0f * aspectRatio, -1.0f, 1.0f, 0.0f, 1.0f );
+void printTest ( Bitmap<float, 3> msdf, char c ) {
+	if (c == '@' || c == 'A' || c == 'g' || c == 'e' || c == 'y' || c == 'o') {
+		std::string name = "test_";
+		name += c;
+		name += ".png";
+		//printf ( "altura: %c es : %f", c, height );
+		savePng ( msdf, name.c_str () );
 	}
-	else {
-		projection = glm::ortho ( -1.0f, 1.0f, -1.0f / aspectRatio, 1.0f / aspectRatio, 0.0f, 1.0f );
-	}
-
-	ubo.model = glm::rotate ( glm::mat4 ( 1.0f ), time * glm::radians ( 90.0f ), glm::vec3 ( 0.0f, 0.0f, 1.0f ) );
-	ubo.view = glm::lookAt ( glm::vec3 ( 2.0f, 2.0f, 2.0f ), glm::vec3 ( 0.0f, 0.0f, 0.0f ), glm::vec3 ( 0.0f, 0.0f, 1.0f ) );
-	ubo.proj = projection;
-	ubo.proj[1][1] *= -1;
-
-	memcpy ( uniformBuffersMapped, &ubo, sizeof ( ubo ) );
-}
-
-void updateUniformBuffer5si ( void* uniformBuffersMapped, glm::vec3 position,
-	Camera camera, uint32_t width, uint32_t height ) {
-	static auto startTime = std::chrono::high_resolution_clock::now ();
-	auto currentTime = std::chrono::high_resolution_clock::now ();
-	float time = std::chrono::duration<float, std::chrono::seconds::period> ( currentTime - startTime ).count ();
-
-	UniformBufferObject2 ubo {};
-
-	// Aspect ratio
-	float aspectRatio = width / static_cast<float>(height);
-
-	// Choose the projection type (uncomment the one you need)
-	// Perspective projection
-	ubo.proj = glm::perspective ( glm::radians ( 45.0f ), aspectRatio, 0.1f, 10.0f );
-	ubo.proj[1][1] *= -1; // Invert Y-axis for Vulkan clip space
-
-	// Ortho projection (if needed)
-	// ubo.proj = glm::ortho(-1.0f * aspectRatio, 1.0f * aspectRatio, -1.0f, 1.0f, 0.0f, 1.0f);
-
-	// View and Model
-	ubo.model = glm::mat4 ( 1.0f ); // No rotation
-	ubo.view = glm::lookAt ( glm::vec3 ( 0.0f, 0.0f, 2.0f ), glm::vec3 ( 0.0f, 0.0f, 0.0f ), glm::vec3 ( 0.0f, 1.0f, 0.0f ) );
-
-	// Copy the UBO to the mapped memory
-	memcpy ( uniformBuffersMapped, &ubo, sizeof ( ubo ) );
 }
 
 
-void updateUniformBuffer511 ( void* uniformBuffersMapped, glm::vec3 position,
-	Camera camera, uint32_t width, uint32_t height ) {
-	static auto startTime = std::chrono::high_resolution_clock::now ();
-
-	auto currentTime = std::chrono::high_resolution_clock::now ();
-	float time = std::chrono::duration<float, std::chrono::seconds::period> ( currentTime - startTime ).count ();
-
-	UniformBufferObject2 ubo {};
-
-
-	float aspectRatio = width / static_cast<float>(height);
-	glm::mat4 projection = glm::ortho ( -1.0f * aspectRatio, 1.0f * aspectRatio, -1.0f, 1.0f, 0.0f, 1.0f );
-
-
-
-	ubo.model = glm::rotate ( glm::mat4 ( 1.0f ), time * glm::radians ( 90.0f ), glm::vec3 ( 0.0f, 0.0f, 1.0f ) );
-
-	ubo.view = glm::lookAt ( glm::vec3 ( 2.0f, 2.0f, 2.0f ), glm::vec3 ( 0.0f, 0.0f, 0.0f ), glm::vec3 ( 0.0f, 0.0f, 1.0f ) );
-	ubo.proj = glm::perspective ( glm::radians ( 45.0f ), width / (float) height, 0.1f, 10.0f );
-	//ubo.proj = projection;
-	ubo.proj[1][1] *= -1;
-
-
-
-
-	memcpy ( uniformBuffersMapped, &ubo, sizeof ( ubo ) );
-}
 
 
 
 namespace VULKAN {
-	
 
-	void TextEntity::fontInit ( std::string fontPath ) {
-					
+	void TextEntity::fontInit ( AtlasInfo info ) {
+
 		// Inicializar msdfgen y cargar la fuente TTF
 		msdfgen::FreetypeHandle* ft = msdfgen::initializeFreetype ();
 		if (!ft) {
@@ -258,39 +88,40 @@ namespace VULKAN {
 			return;
 		}
 
-		msdfgen::FontHandle* font = msdfgen::loadFont ( ft, fontPath.c_str () );
+		msdfgen::FontHandle* font = msdfgen::loadFont ( ft, info.fontPath.c_str () );
 		if (!font) {
-			std::cerr << "No se pudo cargar la fuente: " << fontPath << std::endl;
+			std::cerr << "No se pudo cargar la fuente: " << info.fontPath << std::endl;
 			msdfgen::deinitializeFreetype ( ft );
 			return;
 		}
-		//std::map<char, Glyph> Characters;
 		msdfgen::FontMetrics metrics;
-		float scaleReal = texWidth / size;
-		float pixelSize = 1 / size;
+
+		int deltaSize = ceil ( info.border * info.size * 2 );
+
+		int texWidth = info.size + deltaSize;
+		int texHeight = info.size + deltaSize;
+
+		float realScale = texWidth / info.size;
+		float pixelSize = 1 / info.size;
 		float padding = 4 * pixelSize;
-		
-		int atlasWidth = texWidth * W;
-		int atlasHeight = texHeight * H;
-		const float range = 0.2;  // Rango constante en unidades EM
-		const double border = 0.0;
+
+		int atlasWidth = texWidth * info.cols;
+		int atlasHeight = texHeight * info.rows;
 
 		msdfgen::getFontMetrics ( metrics, font, FONT_SCALING_EM_NORMALIZED );
 		std::vector<uint8_t> msdfData ( atlasWidth * atlasHeight * 4 );
-		
+
 		int index = 0;
-		VkDeviceSize imageSize = msdfData.size ();
-		for (unsigned char c = 32; c < 128; c++) {
+		//VkDeviceSize imageSize = msdfData.size ();
 
+		for (unsigned char c = info.firstGlyph; c < info.lastGlyph; c++) {
 
-			int col = (index % W);
-			int row = H - floor ( index / H ) - 1;
-			int row2 = floor ( index / H );
-			// Cargar el glifo del carácter
+			int col = (index % info.cols);
+			int row = info.rows - floor ( index / info.rows ) - 1;
+			int row2 = floor ( index / info.rows );
 			
 			double advance = 0;
-		
-			//msdfgen::Shape::Bounds bounds;
+
 			msdfgen::Shape shape;
 			msdfgen::Bitmap<float, 3> msdf ( texWidth, texHeight );
 			if (!msdfgen::loadGlyph ( shape, font, c, FONT_SCALING_EM_NORMALIZED, &advance )) {
@@ -301,70 +132,62 @@ namespace VULKAN {
 			}
 
 			shape.normalize ();
-			//edgeColoringSimple ( shape, 3.0 );
-			msdfgen::Shape::Bounds bounds = shape.getBounds ( border );
-			
-
-			if (c == '@') {
-				//main1 ( "C:\\source\\2024\\Sevian\\Engine\\fonts\\arial.ttf", c );
-				printf ( "" );
-				
+			if (info.edgeColoring) {
+				edgeColoringSimple ( shape, info.angleThreshold );
 			}
 
-			float texel = (float) texWidth / atlasWidth;
+			msdfgen::Shape::Bounds bounds = shape.getBounds ( info.border );
+
 			float width = bounds.r - bounds.l;
 			float height = bounds.t - bounds.b;
 
-			float left = (1.0 - width) / 2.0 - bounds.l;     // Centrar horizontalmente
-			float bottom = (1.0 - bounds.t + bounds.b) / 2.0 - bounds.b;   // Centrar verticalmente
-			//bottom = 1.0 - bounds.t;
+			float left;
+			float bottom;
 
-			bottom = 1.0 - bounds.t;
+			if (c == 'A') {
+				printf ( "" );
 
-			left = - bounds.l;
+			}
 
+			float factor = (float) info.size / texWidth;
+			float texel = (float) texWidth / atlasWidth;
+			float deltaX;
+			float deltaY;
 
-			float u0 = texel * col;
-			float u1 = u0 + texel * width;
+			if (info.centered) {
+				left = (realScale - width) / 2.0 - bounds.l;     // Centrar horizontalmente
+				bottom = (realScale - bounds.t + bounds.b) / 2.0 - bounds.b;   // Centrar verticalmente
 
-			float v0 = texel * row2;
-			float v1 = v0 + texel * height;
-			Characters[c].t = bounds.t;
-			Characters[c].b = bounds.b;
-			Characters[c].l = bounds.l;
-			Characters[c].r = bounds.r;
-			Characters[c].u0 = u0;
-			Characters[c].u1 = u1;
-			Characters[c].v0 = v0;
-			Characters[c].v1 = v1;
-			
-			Characters[c].advance = advance;
-			Characters[c].charIndex = index;
-			Characters[c].w = width;
-			Characters[c].h = height;
-			Characters[c].ch = c;
-			Characters[c].offsetY = bounds.b;
-			auto f = &Characters[c];
-		
-			
-			
+				deltaX = (realScale - width) / 2 * factor;
+				deltaY = (realScale - height) / 2 * factor;
+			}
+			else {
+				left = -bounds.l;
+				bottom = realScale - bounds.t;
 
-			Vector2 scale ( size, size );
+				deltaX = 0.0;
+				deltaY = 0.0;
+
+			}
+
+			float u0 = texel * (col + deltaX);
+			float u1 = u0 + texel * factor * width;
+			float v0 = texel * row2 + deltaY * texel;
+			float v1 = v0 + texel * height * factor;
+
+			AtlasGlyphInfo ch = { width, height, bounds.l, bounds.t, u0, v0, u1, v1, advance };
+			Characters[c] = ch;
+
+			Vector2 scale ( info.size, info.size );
 			Vector2 translation ( left, bottom );
-			msdfgen::SDFTransformation tr = msdfgen::SDFTransformation ( msdfgen::Projection ( scale, translation ), msdfgen::Range ( range ) );
-
+			msdfgen::SDFTransformation tr = msdfgen::SDFTransformation ( msdfgen::Projection ( scale, translation ), msdfgen::Range ( info.range ) );
 
 			generateMSDF ( msdf, shape, tr );
-			if (c == '@' || c == 'A' || c == 'g' || c == 'a' || c == 'y') {
-				std::string name = "test_";
-				name += c;
-				name += ".png";
-				printf ( "altura: %c es : %f", c, height );
-				savePng ( msdf, name.c_str () );
-			}
-			
 
+			printTest ( msdf, c );
+			
 			int pos = row * atlasWidth * texWidth + col * texHeight;
+			
 			for (int y = 0; y < texHeight; ++y) {
 				for (int x = 0; x < texWidth; ++x) {
 					int pos0 = (pos + y * atlasWidth + x) * 4;
@@ -377,59 +200,21 @@ namespace VULKAN {
 			}
 
 			index++;
-			
+
 		}
 
-		
-		cv::Mat sdfImage ( atlasHeight, atlasWidth, CV_8UC4, msdfData.data () );
-		cv::imwrite ( "atlas.png", sdfImage );
-		
-		cv::flip ( sdfImage, sdfImage, 0 ); // Invertir verticalmente
-		cv::imwrite ( "atlas_corrected.png", sdfImage );
-		//saveSDFAtlas ( msdfData, atlasWidth, atlasWidth, "atlas.png" );
-		if (3 == 3) { // for debug
-			VkFormat format = VK_FORMAT_R8G8B8A8_UNORM;
-
-			// Crear el staging buffer
-			VkBuffer stagingBuffer;
-			VkDeviceMemory stagingBufferMemory;
-			device->createBuffer (
-				imageSize,
-				VK_BUFFER_USAGE_TRANSFER_SRC_BIT,
-				VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT,
-				stagingBuffer, stagingBufferMemory );
-
-			void* data;
-			vkMapMemory ( device->device, stagingBufferMemory, 0, imageSize, 0, &data );
-			memcpy ( data, msdfData.data (), static_cast<size_t>(imageSize) );
-			vkUnmapMemory ( device->device, stagingBufferMemory );
-
-			// Crear la textura Vulkan
-			device->createImage ( atlasWidth, atlasHeight, format, VK_IMAGE_TILING_OPTIMAL,
-				VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT,
-				VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, texture.textureImage, texture.textureImageMemory );
-
-			// Transiciones de layouts y copia de buffer a imagen
-			device->transitionImageLayout ( texture.textureImage, format,
-				VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL );
-			device->copyBufferToImage ( stagingBuffer, texture.textureImage,
-				static_cast<uint32_t>(atlasWidth), static_cast<uint32_t>(atlasHeight) );
-			device->transitionImageLayout ( texture.textureImage, format,
-				VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL );
-
-			vkDestroyBuffer ( device->device, stagingBuffer, nullptr );
-			vkFreeMemory ( device->device, stagingBufferMemory, nullptr );
-
-			createImageView ( texture.textureImage, format, texture.imageView );
-			createTextureSampler ( texture.sampler );
-		}
-		else {
-
-			texture = *device->createTexture ( "char_test_g.png" );
-		}
-		
 		msdfgen::destroyFont ( font );
 		msdfgen::deinitializeFreetype ( ft );
+
+		saveSDFAtlas ( msdfData, atlasWidth, atlasWidth, "atlas_.png", "atlas_c.png" );
+
+		
+
+		//texture = *device->createTexture ( "char_test_g.png" );
+
+		texture = createAtlasTexture ( msdfData, atlasWidth, atlasHeight );
+
+		
 
 		std::vector<DSLInfo> bufDSLInfo;
 		bufDSLInfo.push_back ( { VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 0 } );
@@ -442,19 +227,20 @@ namespace VULKAN {
 		pipelineLayout = device->createPipelineLayout ( layouts );
 
 		pipeline = createGraphPipeline (
-			getBindingDescription2 (),
-			getAttributeDescriptions2 (),
+			VertexText::getBindingDescription (),
+			VertexText::getAttributeDescriptions (),
 			pipelineLayout,
 			"shaders/msdf.vert.spv",
 			"shaders/msdf.frag.spv"
 		);
 	}
 
-	void TextEntity::draw2 ( std::string text, uint32_t currentFrame, VkCommandBuffer commandBuffer, glm::vec3 position, Camera camera, uint32_t width, uint32_t height ) {
+
+	void TextEntity::draw ( std::string text, uint32_t currentFrame, VkCommandBuffer commandBuffer, glm::vec3 position, Camera camera, uint32_t width, uint32_t height ) {
 
 		static bool play = false;
 
-		int size = 32;
+		int size = 100;
 
 		if (!play) {
 			play = true;
@@ -462,6 +248,8 @@ namespace VULKAN {
 			float y = -size * 2 + 150;
 			y = 400 - 200;
 			x = -400;
+			x = (width / 2.0) * -1;
+			y = 500 - size;
 			float scale = 1.0f * size;
 			uint32_t indexOffset = 0;
 			int i = 0;
@@ -470,200 +258,46 @@ namespace VULKAN {
 			if (mainText != "") {
 				text = mainText;
 			}
-			std::vector<VertexText> vertices;
+			std::vector<VertexTextOld> vertices;
 			std::vector<uint32_t> indices;
+			int step = 0;
+			for (auto c = text.begin (); c != text.end (); c++) {
+				AtlasGlyphInfo ch = Characters[*c];
+				float xpos = x + ch.bearingX * scale;
+				float ypos = y - (ch.height - ch.bearingY) * scale;
 
-			if (4 == 4) {
-				int step = 0;
-				for (auto c = text.begin (); c != text.end (); c++) {
-					Glyph ch = Characters[*c];
-					float xpos = x + ch.offsetX * scale;
-					float ypos = y + ch.offsetY * scale;
-					
-					float u0 = ch.u0;
-					float v0 = ch.v0;
-					float u1 = ch.u1;
-					float v1 = ch.v1;
+				float u0 = ch.u0;
+				float v0 = ch.v0;
+				float u1 = ch.u1;
+				float v1 = ch.v1;
 
-					float w = ch.w * scale;
-					float h = ch.h * scale;
+				float w = ch.width * scale;
+				float h = ch.height * scale;
 
 
-					int color = step % 1;
-					vertices.push_back ( { {xpos, ypos}, {u0, v1}, color } );             // Bottom-left
-					vertices.push_back ( { {xpos + w, ypos}, {u1, v1}, color } );         // Bottom-right
-					vertices.push_back ( { {xpos, ypos + h}, {u0, v0}, color } );         // Top-left
-					vertices.push_back ( { {xpos + w, ypos + h}, {u1, v0}, color } );     // Top-right
+				int color = step % 1;
+				color = 5;
+				vertices.push_back ( { {xpos, ypos}, {u0, v1}, color } );             // Bottom-left
+				vertices.push_back ( { {xpos + w, ypos}, {u1, v1}, color } );         // Bottom-right
+				vertices.push_back ( { {xpos, ypos + h}, {u0, v0}, color } );         // Top-left
+				vertices.push_back ( { {xpos + w, ypos + h}, {u1, v0}, color } );     // Top-right
 
-					// Definir los índices del quad
-					indices.push_back ( indexOffset + 0 );
-					indices.push_back ( indexOffset + 1 );
-					indices.push_back ( indexOffset + 2 );
-					indices.push_back ( indexOffset + 1 );
-					indices.push_back ( indexOffset + 3 );
-					indices.push_back ( indexOffset + 2 );
+				// Definir los índices del quad
+				indices.push_back ( indexOffset + 0 );
+				indices.push_back ( indexOffset + 1 );
+				indices.push_back ( indexOffset + 2 );
+				indices.push_back ( indexOffset + 1 );
+				indices.push_back ( indexOffset + 3 );
+				indices.push_back ( indexOffset + 2 );
 
-					indexOffset += 4;
+				indexOffset += 4;
 
-					// Avanzar la posición X para el siguiente glifo
-					//x += (ch.advance /* >> 6*/) * scale;
-					x += ch.advance * scale;
-					step++;
-				}
+				
+				x += ch.advance * scale;
+				step++;
 			}
-			else
-
-				if (4 == 4) {
-					for (auto c = text.begin (); c != text.end (); c++) {
-						Glyph ch = Characters[*c];
-
-						// Calcular la celda en el atlas
-						int charIndex = *c - 32;
-						int texRow = charIndex / 10;
-						int texCol = charIndex % 10;
-
-						float texCellSize = 1.0f / 10.0f;
-						float u0 = texCol * texCellSize;
-						float v0 = texRow * texCellSize;
-						float u1 = u0 + texCellSize;
-						float v1 = v0 + texCellSize;
-
-						auto ww = (ch.r - ch.l);
-						auto hh = (ch.t - ch.b);
-
-						u0 = ch.u0;
-						v0 = ch.v0;
-						//u1 = u0 + ww;
-						//v1 = v0 + hh;
-						auto xOffset = ch.l;
-						auto yOffset = -ch.t;
-						// Calcular el quad usando bounding box
-						float xpos = x + ch.l * scale;
-						float ypos = y - ch.t * scale;
-						float w = (ch.r - ch.l) * scale;
-						float h = (ch.t - ch.b) * scale;
 
 
-						w = scale;
-						h = scale;
-
-
-						xpos = x;
-						ypos = y - h;
-						ch.advance = w / scale;
-						// Definir los vértices del quad
-						vertices.push_back ( { {xpos, ypos}, {u0, v1} } );             // Bottom-left
-						vertices.push_back ( { {xpos + w, ypos}, {u1, v1} } );         // Bottom-right
-						vertices.push_back ( { {xpos, ypos + h}, {u0, v0} } );         // Top-left
-						vertices.push_back ( { {xpos + w, ypos + h}, {u1, v0} } );     // Top-right
-
-						// Definir los índices del quad
-						indices.push_back ( indexOffset + 0 );
-						indices.push_back ( indexOffset + 1 );
-						indices.push_back ( indexOffset + 2 );
-						indices.push_back ( indexOffset + 1 );
-						indices.push_back ( indexOffset + 3 );
-						indices.push_back ( indexOffset + 2 );
-
-						indexOffset += 4;
-
-						// Avanzar la posición X para el siguiente glifo
-						//x += (ch.advance /* >> 6*/) * scale;
-						x += w;
-					}
-				}
-				else {
-					for (auto c = text.begin (); c != text.end (); c++) {
-
-
-
-
-
-						std::cout << " - - - i " << i << "\n";
-						Glyph ch = Characters[*c];
-
-						//ch = Characters[0];
-						ch.advance = 30;
-
-						float xpos = x + ch.bearingX * scale;
-
-
-						float ypos = y - (ch.height - ch.bearingY) * scale;
-
-
-
-						float w = ch.width * scale;
-						float h = ch.height * scale;
-
-						// Define los vértices para el carácter
-						/*vertices.push_back ({ { xpos,     ypos }, { 0.0f, 0.9f } }); // Bottom-left
-						vertices.push_back ( { {xpos + w, ypos    }, {0.1f, 0.9f} } ); // Bottom-right
-						vertices.push_back ( { {xpos,     ypos + h}, {0.0f, 1.0f} } ); // Top-left
-						vertices.push_back ( { {xpos + w, ypos + h}, {0.1f, 1.0f} } ); // Top-right
-						*/
-
-						float f = 1.0f / 3;
-						vertices.push_back ( { {xpos,     ypos   }, {0.3f, 0.4f} } ); // Bottom-left
-						vertices.push_back ( { {xpos + w, ypos    }, {0.4, 0.4} } ); // Bottom-right
-						vertices.push_back ( { {xpos,     ypos + h}, {0.3f, 0.3f} } ); // Top-left
-						vertices.push_back ( { {xpos + w, ypos + h}, {0.4, 0.3f} } ); // Top-right
-
-						std::cout << " " << xpos << ", " << ypos << " -> {0.0f, 1.0f}" << "\n";
-						std::cout << " " << xpos + w << ", " << ypos << " -> {1.0f, 1.0f}" << "\n";
-						std::cout << " " << xpos << ", " << ypos + h << " -> {0.0f, 0.0f}" << "\n";
-						std::cout << " " << xpos + w << ", " << ypos + h << " -> {1.0f, 0.0f}" << "\n";
-
-
-						//vertices.push_back ( { {-0.1f,     -0.1f   }, {0.0f, 1.0f} } ); // Bottom-left
-						//vertices.push_back ( { {0.1f, -0.1f    }, {1.0f, 1.0f} } ); // Bottom-right
-						//vertices.push_back ( { {0.1f,     0.1f}, {1.0f, 0.0f} } ); // Top-left
-						//vertices.push_back ( { {-0.1f, 0.1f}, {0.0f, 0.0f} } ); // Top-right
-
-
-
-						//vertices.push_back ( { {-0.1f,     -0.1f   }, {0.0f, 0.0f} } );
-						//vertices.push_back ( { {0.1f,     -0.1f   }, {1.0f, 0.0f} } );
-						//vertices.push_back ( { {0.1f,     0.1f   }, {1.0f, 1.0f} } );
-						//vertices.push_back ( { {-0.1f,     0.1f   }, {0.0f, 1.0f} } );
-
-						//indexOffset = 0;
-						// Define los índices para el carácter
-						indices.push_back ( indexOffset + 0 );
-						indices.push_back ( indexOffset + 1 );
-						indices.push_back ( indexOffset + 2 );
-
-						indices.push_back ( indexOffset + 1 );
-						indices.push_back ( indexOffset + 3 );
-						indices.push_back ( indexOffset + 2 );
-
-						indexOffset += 4;
-
-						x += (ch.advance) * scale; // advance.x is in 1/64th pixels
-						//x += 0.20;
-
-
-
-
-						i++;
-					}
-
-				}
-
-
-
-			/*
-			float s = 1.5f;
-			std::vector<VertexText> vertices3 = {
-				{{ -s , s}, { 0.0f, 0.0f }},// Top-left
-				{{  s,  s}, { 1.0f, 0.0f }},// Top-right
-				{{  s, -s}, { 1.0f, 1.0f }},// Bottom - right
-				{{ -s, -s}, { 0.0f, 1.0f }}// Bottom-left
-
-			};
-
-			std::vector<uint32_t> indices2 = {
-				0, 1, 2, 2, 3, 0 // Dos triángulos que forman el quad
-			};*/
 			prop = init ( vertices, indices, texture );
 			tx.push_back ( prop );
 		}
@@ -674,7 +308,7 @@ namespace VULKAN {
 		if (vulkanProp) {
 
 			Frame frame = frames[currentFrame];
-			updateUniformBuffer5 ( vulkanProp->buffers[currentFrame].buffersMapped, position, camera, width, height );
+			updateUniformBuffer ( vulkanProp->buffers[currentFrame].buffersMapped, position, camera, width, height );
 
 
 
@@ -696,370 +330,23 @@ namespace VULKAN {
 
 	}
 
-
-
-	void TextEntity::fontInit2 ( std::string fontPath ) {
-		// Inicializar msdfgen y cargar la fuente TTF
-		msdfgen::FreetypeHandle* ft = msdfgen::initializeFreetype ();
-		if (!ft) {
-			std::cerr << "No se pudo inicializar FreeType con msdfgen" << std::endl;
-			return;
-		}
-
-		msdfgen::FontHandle* font = msdfgen::loadFont ( ft, fontPath.c_str () );
-		if (!font) {
-			std::cerr << "No se pudo cargar la fuente: " << fontPath << std::endl;
-			msdfgen::deinitializeFreetype ( ft );
-			return;
-		}
-
-		msdfgen::FontMetrics metrics;
-		msdfgen::getFontMetrics ( metrics, font, FONT_SCALING_EM_NORMALIZED );
-
-		int texWidth = 32;
-		int texHeight = 32;
-		int atlasWidth = 512;
-		int atlasHeight = 512;
-
-		std::vector<uint8_t> msdfData ( atlasWidth * atlasHeight * 4, 0 );
-		int offsetX = 0;
-		int offsetY = 0;
-		int maxRowHeight = 0;
-
-		for (unsigned char c = 33; c < 128; c++) {
-			// Cargar el glifo del carácter
-			msdfgen::Shape shape;
-			double advance = 0;
-			if (!msdfgen::loadGlyph ( shape, font, c, FONT_SCALING_EM_NORMALIZED, &advance )) {
-				std::cerr << "No se pudo cargar el glifo para el carácter: " << c << std::endl;
-				continue;
-			}
-
-			shape.normalize ();
-			edgeColoringSimple ( shape, 3.0 );
-
-			// Obtener los límites del glifo
-			msdfgen::Shape::Bounds bounds = shape.getBounds ();
-			int width = static_cast<int>(ceil ( bounds.r - bounds.l ));
-			int height = static_cast<int>(ceil ( bounds.t - bounds.b ));
-
-			if (offsetX + width >= atlasWidth) {
-				offsetX = 0;
-				offsetY += maxRowHeight;
-				maxRowHeight = 0;
-			}
-			if (offsetY + height >= atlasHeight) {
-				std::cerr << "El atlas es demasiado pequeño para contener todos los glifos." << std::endl;
-				break;
-			}
-
-			maxRowHeight = std::max ( maxRowHeight, height );
-
-			msdfgen::Bitmap<float, 3> msdf ( texWidth, texHeight );
-			//msdfgen::generateMSDF ( msdf, shape, 4.0, 1.0, msdfgen::Vector2 ( -bounds.l, -bounds.b ) );
-
-
-			msdfgen::SDFTransformation tr ( msdfgen::Projection ( 32.0, msdfgen::Vector2 ( 0.125, 0.125 ) ), msdfgen::Range ( 0.125 ) );
-			generateMSDF ( msdf, shape, tr );
-			// Copiar los datos del glifo al atlas
-			for (int y = 0; y < height; ++y) {
-				for (int x = 0; x < width; ++x) {
-					for (int channel = 0; channel < 3; ++channel) {
-						msdfData[((offsetY + y) * atlasWidth + (offsetX + x)) * 4 + channel] =
-							msdfgen::pixelFloatToByte ( msdf ( x, y )[channel] );
-					}
-					msdfData[((offsetY + y) * atlasWidth + (offsetX + x)) * 4 + 3] = 255; // Canal alfa
-				}
-			}
-
-			Glyph glyph;
-			glyph.width = width;
-			glyph.height = height;
-			glyph.bearingX = static_cast<int>(bounds.l);
-			glyph.bearingY = static_cast<int>(bounds.t);
-			glyph.advance = static_cast<long>(advance);
-			Characters[c] = glyph;
-
-			offsetX += width;
-		}
-
-		VkDeviceSize imageSize = msdfData.size ();
-
-		// Crear el staging buffer
-		VkBuffer stagingBuffer;
-		VkDeviceMemory stagingBufferMemory;
-		device->createBuffer (
-			imageSize,
-			VK_BUFFER_USAGE_TRANSFER_SRC_BIT,
-			VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT,
-			stagingBuffer, stagingBufferMemory );
-
-		void* data;
-		vkMapMemory ( device->device, stagingBufferMemory, 0, imageSize, 0, &data );
-		memcpy ( data, msdfData.data (), static_cast<size_t>(imageSize) );
-		vkUnmapMemory ( device->device, stagingBufferMemory );
-
-		// Crear la textura Vulkan
-		device->createImage (
-			atlasWidth, atlasHeight, VK_FORMAT_R8G8B8A8_UNORM, VK_IMAGE_TILING_OPTIMAL,
-			VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT,
-			VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, character.textureImage, character.textureImageMemory );
-
-		// Transiciones de layouts y copia de buffer a imagen
-		device->transitionImageLayout ( character.textureImage, VK_FORMAT_R8G8B8A8_UNORM,
-			VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL );
-		device->copyBufferToImage ( stagingBuffer, character.textureImage,
-			static_cast<uint32_t>(atlasWidth), static_cast<uint32_t>(atlasHeight) );
-		device->transitionImageLayout ( character.textureImage, VK_FORMAT_R8G8B8A8_UNORM,
-			VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL );
-
-		vkDestroyBuffer ( device->device, stagingBuffer, nullptr );
-		vkFreeMemory ( device->device, stagingBufferMemory, nullptr );
-
-		createImageView ( character.textureImage, VK_FORMAT_R8G8B8A8_UNORM, character.textureImageView );
-		createTextureSampler ( character.textureSampler );
-
-		msdfgen::destroyFont ( font );
-		msdfgen::deinitializeFreetype ( ft );
-
-		std::vector<DSLInfo> bufDSLInfo;
-		bufDSLInfo.push_back ( { VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 0 } );
-		bufDSLInfo.push_back ( { VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 1 } );
-
-		descriptorSetLayout = device->createDescriptorSetLayout ( bufDSLInfo );
-		ubo = device->createUniformBuffer ( device->frames, sizeof ( UniformBufferObject ) );
-
-		std::vector<VkDescriptorSetLayout> layouts = { descriptorSetLayout };
-		pipelineLayout = device->createPipelineLayout ( layouts );
-
-		pipeline = createGraphPipeline (
-			getBindingDescription2 (),
-			getAttributeDescriptions2 (),
-			pipelineLayout,
-			"shaders/msdf.vert.spv",
-			"shaders/msdf.frag.spv"
-		);
-	}
-
-
-	void TextEntity::fontInit3 ( std::string fontPath ) {
-		// Inicializar msdfgen y cargar la fuente TTF
-		msdfgen::FreetypeHandle* ft = msdfgen::initializeFreetype ();
-		if (!ft) {
-			std::cerr << "No se pudo inicializar FreeType con msdfgen" << std::endl;
-			return;
-		}
-
-		msdfgen::FontHandle* font = msdfgen::loadFont ( ft, fontPath.c_str () );
-		if (!font) {
-			std::cerr << "No se pudo cargar la fuente: " << fontPath << std::endl;
-			msdfgen::deinitializeFreetype ( ft );
-			return;
-		}
-		//std::map<char, Glyph> Characters;
-		msdfgen::FontMetrics metrics;
-		int texWidth = 32;
-		int texHeight = 32;
-		int atlasWidth = 320;
-		int atlasHeight = 320;
-
-		msdfgen::getFontMetrics ( metrics, font, FONT_SCALING_EM_NORMALIZED );
-		std::vector<uint8_t> msdfData ( atlasWidth * atlasHeight * 4 );
-
-		int index = 0;
-		VkDeviceSize imageSize = msdfData.size ();
-		for (unsigned char c = 32; c < 128; c++) {
-			double border = 0.0;
-			// Cargar el glifo del carácter
-			msdfgen::Shape shape;
-			double advance = 0;
-			msdfgen::FontMetrics metrics;
-			msdfgen::getFontMetrics ( metrics, font, FONT_SCALING_EM_NORMALIZED );
-			msdfgen::Shape::Bounds bounds;
-
-			if (!msdfgen::loadGlyph ( shape, font, c, FONT_SCALING_EM_NORMALIZED, &advance )) {
-				std::cerr << "No se pudo cargar el glifo para el carácter: " << c << std::endl;
-				msdfgen::destroyFont ( font );
-				msdfgen::deinitializeFreetype ( ft );
-				return;
-			}
-			shape.normalize ();
-			edgeColoringSimple ( shape, 3.0 );
-			bounds = shape.getBounds ( border );
-			char test = 66;
-
-			// Obtener el bounding box del Shape
-			double l, b, r, t;
-			shape.bound ( l, b, r, t ); // Devuelve los límites izquierdo, inferior, derecho y superior del glifo en unidades EM
-
-			// Calcular propiedades del glifo en píxeles
-			int width = (int) ceil ( bounds.r - bounds.l );        // Ancho del glifo
-			int height = (int) ceil ( bounds.t - bounds.b );       // Alto del glifo
-			int bearingX = (int) floor ( bounds.l );        // Desplazamiento horizontal desde el origen hasta el inicio del glifo
-			int bearingY = (int) ceil ( bounds.t );         // Desplazamiento vertical desde el origen hasta la línea de base
-
-
-
-			// Asignar propiedades al objeto Glyph
-			Glyph glyph;
-			glyph.width = width * 32;
-			glyph.height = height * 32;
-			glyph.bearingX = bounds.l * 32;
-			glyph.bearingY = bounds.t * 32;
-			glyph.advance = (long) advance * 32;
-
-
-			if (c == 66) {
-				std::cout << "";
-				Characters[c].width = ceil ( bounds.r * 32 - bounds.l * 32 );
-			}
-
-			Characters[c].width = ceil ( bounds.r * 32 - bounds.l * 32 );
-			Characters[c].height = ceil ( bounds.t * 32 - bounds.b * 32 );
-			Characters[c].bearingX = bounds.l * 32;
-			Characters[c].bearingY = bounds.t * 32;
-
-			Characters[c].advance = Characters[c].advance ;// advance * 20;
-
-
-
-			msdfgen::Bitmap<float, 3> msdf ( texWidth, texHeight );
-			//msdfgen::generateMSDF(msdf, shape, border_width, 1.0, msdfgen::Vector2(-bounds.l, -bounds.b));
-			msdfgen::SDFTransformation tr ( msdfgen::Projection ( 32.0, msdfgen::Vector2 ( 0.125, 0.125 ) ), msdfgen::Range ( 0.125 ) );
-			generateMSDF ( msdf, shape, tr );
-
-			/*std::string name = "char2_";
-			name += c;
-			name += ".png";
-			main1 ( fontPath, test );
-			savePng ( msdf, name.c_str () );*/
-			// Calcular posición del glifo en la cuadrícula del atlas
-			int startX = (index % (atlasWidth / texWidth)) * texWidth;
-			int startY = (index / (atlasWidth / texWidth)) * texHeight;
-
-			// Copiar el glifo al atlas
-			copyGlyphToAtlas ( msdf, msdfData, startX, startY, atlasWidth );
-
-			index++;
-
-			//for (int y = 0; y < texHeight; ++y) {
-			//	for (int x = 0; x < texWidth; ++x) {
-			//		for (int channel = 0; channel < 3; ++channel) {
-
-			//			//msdfData[(x + texWidth * y) * 4 + channel] = msdfgen::pixelFloatToByte ( msdf ( x, y )[channel] );
-			//			msdfData[index++] = msdfgen::pixelFloatToByte ( msdf ( x, y )[channel] );
-			//		}
-			//		//msdfData[(y * texWidth + x) * 4 + 3] = 255; // Canal alfa (completamente opaco)
-			//		msdfData[index++] = 255; // Canal alfa (completamente opaco)
-			//	}
-			//}
-		}
-
-		cv::Mat sdfImage ( atlasHeight, atlasWidth, CV_8UC4, msdfData.data () );
-		cv::imwrite ( "atlas.png", sdfImage );
-		//saveSDFAtlas ( msdfData, atlasWidth, atlasWidth, "atlas.png" );
-		VkFormat format = VK_FORMAT_R8G8B8A8_UNORM;
-
-		// Crear el staging buffer
-		VkBuffer stagingBuffer;
-		VkDeviceMemory stagingBufferMemory;
-		device->createBuffer (
-			imageSize,
-			VK_BUFFER_USAGE_TRANSFER_SRC_BIT,
-			VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT,
-			stagingBuffer, stagingBufferMemory );
-
-		void* data;
-		vkMapMemory ( device->device, stagingBufferMemory, 0, imageSize, 0, &data );
-		memcpy ( data, msdfData.data (), static_cast<size_t>(imageSize) );
-		vkUnmapMemory ( device->device, stagingBufferMemory );
-
-		// Crear la textura Vulkan
-		device->createImage ( atlasWidth, atlasHeight, format, VK_IMAGE_TILING_OPTIMAL,
-			VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT,
-			VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, character2.textureImage, character2.textureImageMemory );
-
-		// Transiciones de layouts y copia de buffer a imagen
-		device->transitionImageLayout ( character2.textureImage, format,
-			VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL );
-		device->copyBufferToImage ( stagingBuffer, character2.textureImage,
-			static_cast<uint32_t>(atlasWidth), static_cast<uint32_t>(atlasHeight) );
-		device->transitionImageLayout ( character2.textureImage, format,
-			VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL );
-
-		vkDestroyBuffer ( device->device, stagingBuffer, nullptr );
-		vkFreeMemory ( device->device, stagingBufferMemory, nullptr );
-
-		createImageView ( character2.textureImage, format, character2.textureImageView );
-		createTextureSampler ( character2.textureSampler );
-
-		msdfgen::destroyFont ( font );
-		msdfgen::deinitializeFreetype ( ft );
-
-		std::vector<DSLInfo> bufDSLInfo;
-		bufDSLInfo.push_back ( { VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 0 } );
-		bufDSLInfo.push_back ( { VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 1 } );
-
-		descriptorSetLayout = device->createDescriptorSetLayout ( bufDSLInfo );
-		ubo = device->createUniformBuffer ( device->frames, sizeof ( UniformBufferObject ) );
-
-		std::vector<VkDescriptorSetLayout> layouts = { descriptorSetLayout };
-		pipelineLayout = device->createPipelineLayout ( layouts );
-
-		pipeline = createGraphPipeline (
-			getBindingDescription2 (),
-			getAttributeDescriptions2 (),
-			pipelineLayout,
-			"shaders/msdf.vert.spv",
-			"shaders/msdf.frag.spv"
-		);
-	}
-
 	TextEntity::TextEntity ( FontRenderType type, std::string text, std::string font, Device* device, std::vector<Frame> frames, VkDescriptorPool descriptorPool ) :
 		text ( text ),
 		font ( font ),
 		device ( device ),
 		frames ( frames ),
 		descriptorPool ( descriptorPool ) {
-		fontInit ( font );
 
-		return;
-		auto error = FT_Init_FreeType ( &library );
-		if (error) {
-			std::cout << "error";
-		}
-		else {
-			std::cout << "todo bien";
-		}
+		
+		AtlasInfo info { font };
+		
+		//fontInit ( info );
 
-		error = FT_New_Face ( library, font.c_str (), 0, &face );
+		AtlasGenerator atlas;
 
-		if (error == FT_Err_Unknown_File_Format) {
-			std::cout << "todo bien 2";
-		}
-		else if (error) {
-			std::cout << "error 2";
-		}
+		f = atlas.create ( { info.fontPath } );
 
-		FT_Set_Pixel_Sizes ( face, 0, FONT_SIZE );
-
-		FT_GlyphSlot slot = face->glyph;
-
-		for (unsigned char c = 33; c < 128; c++) {
-			if (FT_Load_Char ( face, c, FT_LOAD_RENDER )) {
-				std::cout << "ERROR::FREETYTPE: Failed to load Glyph" << std::endl;
-				continue;
-			}
-
-			if (FT_Render_Glyph ( slot, FT_RENDER_MODE_SDF )) {
-				std::cerr << "ERROR::FREETYTPE: Failed to render Glyph " << c << std::endl;
-				continue;
-			}
-
-			initGlyph ( face, c, Characters[c] );
-
-			createTextureImage2 ( font, c, Characters[c] );
-		}
+		texture = createAtlasTexture ( f.atlas.data, f.atlas.width, f.atlas.height );
 
 		std::vector<DSLInfo> bufDSLInfo;
 		bufDSLInfo.push_back ( { VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 0 } );
@@ -1067,688 +354,37 @@ namespace VULKAN {
 
 		descriptorSetLayout = device->createDescriptorSetLayout ( bufDSLInfo );
 		ubo = device->createUniformBuffer ( device->frames, sizeof ( UniformBufferObject ) );
-
+		Characters = f.characters;
 		std::vector<VkDescriptorSetLayout> layouts = { descriptorSetLayout };
 		pipelineLayout = device->createPipelineLayout ( layouts );
 
 		pipeline = createGraphPipeline (
-			getBindingDescription2 (),
-			getAttributeDescriptions2 (),
+			VertexText::getBindingDescription (),
+			VertexText::getAttributeDescriptions (),
 			pipelineLayout,
 			"shaders/msdf.vert.spv",
 			"shaders/msdf.frag.spv"
 		);
 	}
-
-
-	TextEntity::TextEntity ( std::string text, std::string font, Device* device, std::vector<Frame> frames, VkDescriptorPool descriptorPool ) :
-		text ( text ),
-		font ( font ),
-		device ( device ),
-		frames ( frames ),
-		descriptorPool ( descriptorPool ) {
-
-		auto error = FT_Init_FreeType ( &library );
-		if (error) {
-			std::cout << "error";
-		}
-		else {
-			std::cout << "todo bien";
-		}
-
-		error = FT_New_Face ( library, font.c_str (), 0, &face );
-
-		if (error == FT_Err_Unknown_File_Format) {
-			std::cout << "todo bien 2";
-		}
-		else if (error) {
-			std::cout << "error 2";
-		}
-
-		FT_Set_Pixel_Sizes ( face, 0, FONT_SIZE );
-
-		FT_GlyphSlot slot = face->glyph;
-
-		for (unsigned char c = 33; c < 128; c++) {
-			if (FT_Load_Char ( face, c, FT_LOAD_RENDER )) {
-				std::cout << "ERROR::FREETYTPE: Failed to load Glyph" << std::endl;
-				continue;
-			}
-
-			if (FT_Render_Glyph ( slot, FT_RENDER_MODE_SDF )) {
-				std::cerr << "ERROR::FREETYTPE: Failed to render Glyph " << c << std::endl;
-				continue;
-			}
-
-			initGlyph ( face, c, Characters[c] );
-
-			createTextureImage2 ( font, c, Characters[c] );
-		}
-
-		std::vector<DSLInfo> bufDSLInfo;
-		bufDSLInfo.push_back ( { VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 0 } );
-		bufDSLInfo.push_back ( { VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 1 } );
-
-		descriptorSetLayout = device->createDescriptorSetLayout ( bufDSLInfo );
-		ubo = device->createUniformBuffer ( device->frames, sizeof ( UniformBufferObject ) );
-
-		std::vector<VkDescriptorSetLayout> layouts = { descriptorSetLayout };
-		pipelineLayout = device->createPipelineLayout ( layouts );
-
-		pipeline = createGraphPipeline (
-			getBindingDescription2 (),
-			getAttributeDescriptions2 (),
-			pipelineLayout,
-			"shaders/msdf.vert.spv",
-			"shaders/msdf.frag.spv"
-		);
-	}
-
-
-	void TextEntity::createTextureImage ( const std::string& fontPath, char c, Glyph& character ) {
-		// Inicializar msdfgen y cargar la fuente TTF
-		msdfgen::FreetypeHandle* ft = msdfgen::initializeFreetype ();
-		if (!ft) {
-			std::cerr << "No se pudo inicializar FreeType con msdfgen" << std::endl;
-			return;
-		}
-
-		msdfgen::FontHandle* font = msdfgen::loadFont ( ft, fontPath.c_str () );
-		if (!font) {
-			std::cerr << "No se pudo cargar la fuente: " << fontPath << std::endl;
-			msdfgen::deinitializeFreetype ( ft );
-			return;
-		}
-
-		// Cargar el glifo del carácter
-		msdfgen::Shape shape;
-		double advance = 0;
-		msdfgen::FontMetrics metrics;
-		msdfgen::getFontMetrics ( metrics, font, FONT_SCALING_EM_NORMALIZED );
-		msdfgen::Shape::Bounds bounds;
-
-		if (!msdfgen::loadGlyph ( shape, font, c,
-			//msdfgen::FontCoordinateScaling::FONT_SCALING_EM_NORMALIZED,
-			&advance )) {
-			std::cerr << "No se pudo cargar el glifo para el carácter: " << c << std::endl;
-			msdfgen::destroyFont ( font );
-			msdfgen::deinitializeFreetype ( ft );
-			return;
-		}
-		shape.normalize ();
-		edgeColoringSimple ( shape, 3.0 );
-		bounds = shape.getBounds ( 0 );
-		if (!msdfgen::loadGlyph ( shape, font, c,
-			msdfgen::FontCoordinateScaling::FONT_SCALING_EM_NORMALIZED )) {
-			std::cerr << "No se pudo cargar el glifo para el carácter: " << c << std::endl;
-			msdfgen::destroyFont ( font );
-			msdfgen::deinitializeFreetype ( ft );
-			return;
-		}
-		shape.normalize ();
-		edgeColoringSimple ( shape, 3.0 );
-
-		char test = 66;
-
-
-		character.width = 32;
-		character.height = 32;
-		character.advance = 32 * 100;
-
-
-		character.width = ceil ( bounds.r - bounds.l );
-		character.height = ceil ( bounds.t - bounds.b );
-		character.advance = advance * 100;
-
-
-		int texWidth = 32; // Ajusta el tamaño de textura según sea necesario
-		int texHeight = 32;
-
-		//edgeColoringSimple ( shape, 0.0 );
-		msdfgen::Bitmap<float, 3> msdf ( texWidth, texHeight );
-		//msdfgen::Bitmap<float, 3> msdf ( 32, 32 );
-		float scale = 4.0 / texHeight;
-		//msdfgen::SDFTransformation t ( msdfgen::Projection ( texHeight, msdfgen::Vector2 ( scale, scale ) ), msdfgen::Range ( scale ) );
-
-
-		msdfgen::SDFTransformation t ( msdfgen::Projection ( 32.0, msdfgen::Vector2 ( 0.125, 0.125 ) ), msdfgen::Range ( 0.125 ) );
-		//generateMSDF ( msdf, shape, t );
-
-
-		//msdfgen::generateMSDF ( msdf, shape, 6.0, 1.0, msdfgen::Vector2 ( -0.0, 0.0 ) );
-		msdfgen::generateMSDF ( msdf, shape, t );
-		// Convertir el Bitmap de msdfgen a un buffer lineal
-
-
-		if (c == test) {
-			std::string name = "char5_";
-			name += c;
-			name += ".png";
-			main1 ( fontPath, test );
-			savePng ( msdf, name.c_str () );
-		}
-
-
-		VkDeviceSize imageSize = texWidth * texHeight * 3 * sizeof ( float ); // 3 canales (R, G, B) de 32 bits flotantes
-		std::vector<float> msdfData ( texWidth * texHeight * 3 );
-		for (int y = 0; y < texHeight; ++y) {
-			for (int x = 0; x < texWidth; ++x) {
-				for (int channel = 0; channel < 3; ++channel) {
-					msdfData[(y * texWidth + x) * 3 + channel] = msdf ( x, y )[channel];
-					if (c == test) {
-						std::cout << " msdf ( x, y )[channel] " << msdf ( x, y )[channel] << "\n";
-					}
-				}
-			}
-
-		}
-
-		// Crear el staging buffer
-		VkBuffer stagingBuffer;
-		VkDeviceMemory stagingBufferMemory;
-		device->createBuffer ( imageSize, VK_BUFFER_USAGE_TRANSFER_SRC_BIT,
-			VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT,
-			stagingBuffer, stagingBufferMemory );
-
-		// Mapear los datos de msdf al staging buffer
-		void* data;
-		vkMapMemory ( device->device, stagingBufferMemory, 0, imageSize, 0, &data );
-		memcpy ( data, msdfData.data (), static_cast<size_t>(imageSize) );
-		vkUnmapMemory ( device->device, stagingBufferMemory );
-
-		// Crear la textura Vulkan
-		device->createImage ( texWidth, texHeight, VK_FORMAT_R32G32B32_SFLOAT, VK_IMAGE_TILING_LINEAR/* VK_IMAGE_TILING_OPTIMAL*/,
-			VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT,
-			VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, character.textureImage, character.textureImageMemory );
-
-		// Transiciones de layouts y copia de buffer a imagen
-		device->transitionImageLayout ( character.textureImage, VK_FORMAT_R32G32B32_SFLOAT, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL );
-		device->copyBufferToImage ( stagingBuffer, character.textureImage, static_cast<uint32_t>(texWidth), static_cast<uint32_t>(texHeight) );
-		device->transitionImageLayout ( character.textureImage, VK_FORMAT_R32G32B32_SFLOAT, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL );
-
-		// Liberar el staging buffer
-		vkDestroyBuffer ( device->device, stagingBuffer, nullptr );
-		vkFreeMemory ( device->device, stagingBufferMemory, nullptr );
-
-
-		createImageView ( character.textureImage, VK_FORMAT_R32G32B32_SFLOAT, character.textureImageView );
-		createTextureSampler ( character.textureSampler );
-
-
-		// Liberar recursos de msdfgen
-		msdfgen::destroyFont ( font );
-		msdfgen::deinitializeFreetype ( ft );
-	}
-	/*
-	FT_Library ft_library;
-FT_Face face;
-
-FT_Init_FreeType(&ft_library);
-FT_New_Memory_Face(ft_library, data, (FT_Long)size, 0, &face);
-
-unsigned int tex_width = 1024;
-unsigned int tex_height = tex_width;
-unsigned int buffer_size = tex_width * tex_height * 4;
-
-// Create image buffer
-uint8_t* pixels = new uint8_t[buffer_size]{0};
-unsigned int pen_x = 0;
-unsigned int pen_y = 0;
-int max_height = 0;
-
-msdfgen::FontHandle* font_handle = msdfgen::adoptFreetypeFont(face);
-msdfgen::FontMetrics font_metrics;
-msdfgen::getFontMetrics(font_metrics, font_handle);
-_line_height = font_metrics.lineHeight;
-
-FT_UInt gindex = 0;
-FT_ULong charcode = FT_Get_First_Char(face, &gindex);
-
-	// Go through all available characters in the font
-while (gindex != 0)
-{
-	float glyph_width = 0;
-	float glyph_height = 0;
-	double advance = 0;
-	float border_width = 4;
-	// Next
-	charcode = FT_Get_Next_Char(face, charcode, &gindex);
-}
-
-
-	*/
-
-
-	void TextEntity::createTextureImage2 ( const std::string& fontPath, char c, Glyph& character ) {
-		// Inicializar msdfgen y cargar la fuente TTF
-		msdfgen::FreetypeHandle* ft = msdfgen::initializeFreetype ();
-		if (!ft) {
-			std::cerr << "No se pudo inicializar FreeType con msdfgen" << std::endl;
-			return;
-		}
-
-		msdfgen::FontHandle* font = msdfgen::loadFont ( ft, fontPath.c_str () );
-		if (!font) {
-			std::cerr << "No se pudo cargar la fuente: " << fontPath << std::endl;
-			msdfgen::deinitializeFreetype ( ft );
-			return;
-		}
-		double border = 0.0;
-		// Cargar el glifo del carácter
-		msdfgen::Shape shape;
-		double advance = 0;
-		msdfgen::FontMetrics metrics;
-		msdfgen::getFontMetrics ( metrics, font, FONT_SCALING_EM_NORMALIZED );
-		msdfgen::Shape::Bounds bounds;
-
-		if (!msdfgen::loadGlyph ( shape, font, c, FONT_SCALING_EM_NORMALIZED, &advance )) {
-			std::cerr << "No se pudo cargar el glifo para el carácter: " << c << std::endl;
-			msdfgen::destroyFont ( font );
-			msdfgen::deinitializeFreetype ( ft );
-			return;
-		}
-		shape.normalize ();
-		edgeColoringSimple ( shape, 3.0 );
-		bounds = shape.getBounds ( border );
-		char test = 66;
-
-		// Obtener el bounding box del Shape
-		double l, b, r, t;
-		shape.bound ( l, b, r, t ); // Devuelve los límites izquierdo, inferior, derecho y superior del glifo en unidades EM
-
-		// Calcular propiedades del glifo en píxeles
-		int width = (int) ceil ( bounds.r - bounds.l );        // Ancho del glifo
-		int height = (int) ceil ( bounds.t - bounds.b );       // Alto del glifo
-		int bearingX = (int) floor ( bounds.l );        // Desplazamiento horizontal desde el origen hasta el inicio del glifo
-		int bearingY = (int) ceil ( bounds.t );         // Desplazamiento vertical desde el origen hasta la línea de base
-
-
-
-		// Asignar propiedades al objeto Glyph
-		Glyph glyph;
-		glyph.width = width * 32;
-		glyph.height = height * 32;
-		glyph.bearingX = bounds.l * 32;
-		glyph.bearingY = bounds.t * 32;
-		glyph.advance = (long) advance * 32;
-
-
-		if (c == 103) {
-			std::cout << "";
-			character.width = ceil ( bounds.r * 32 - bounds.l * 32 );
-		}
-
-		//character.width = ceil ( bounds.r - bounds.l );
-		//character.height = ceil ( bounds.t - bounds.b );
-		character.advance = character.advance ;// advance * 20;
-
-		// Normalizar el glifo y generar el mapa MSDF
-
-
-		int texWidth = 32;
-		int texHeight = 32;
-
-		msdfgen::Bitmap<float, 3> msdf ( texWidth, texHeight );
-		//msdfgen::generateMSDF(msdf, shape, border_width, 1.0, msdfgen::Vector2(-bounds.l, -bounds.b));
-		msdfgen::SDFTransformation tr ( msdfgen::Projection ( 32.0, msdfgen::Vector2 ( 0.125, 0.125 ) ), msdfgen::Range ( 0.125 ) );
-		generateMSDF ( msdf, shape, tr );
-		//msdfgen::generateMSDF ( msdf, shape, 2, 1.0, msdfgen::Vector2 ( -16, -16 ) );
-		if (c == test) {
-			std::string name = "char2_";
-			name += c;
-			name += ".png";
-			main1 ( fontPath, test );
-			savePng ( msdf, name.c_str () );
-		}
-
-		VkFormat format = VK_FORMAT_R8G8B8A8_UNORM;
-		std::vector<uint8_t> msdfData ( texWidth * texHeight * 4 );
-		/*
-
-		for (int y = 0; y < texHeight; ++y) {
-			for (int x = 0; x < texWidth; ++x) {
-				int flippedY = texHeight - 1 - y;
-				for (int channel = 0; channel < 3; ++channel) {
-					msdfData[(y * texWidth + x) * 4 + channel] = static_cast<uint8_t>(msdf ( x, flippedY )[channel] * 255.0f);
-				}
-				msdfData[(y * texWidth + x) * 4 + 3] = 255;  // Alpha (completamente opaco)
-			}
-		}
-		for (int y = 0; y < texHeight; ++y) {
-			for (int x = 0; x < texWidth; ++x) {
-				int flippedY = texHeight - 1 - y;
-				for (int channel = 0; channel < 3; ++channel) {
-					// Invertir el eje Y
-
-					msdfData[(y * texWidth + x) * 3 + channel] = msdf ( x, flippedY )[channel];
-				}
-			}
-		}
-		*/
-		//std::vector<uint8_t> msdfData ( texWidth * texHeight * 4 ); // 4 canales: RGBA
-		VkDeviceSize imageSize = 0;
-
-		auto img1 = msdfData.size ();
-		auto img2 = texWidth * texHeight * 4 * sizeof ( uint8_t );
-
-		imageSize = msdfData.size ();
-		imageSize = texWidth * texHeight * 4 * sizeof ( uint8_t );
-		//imageSize = msdfData.size ();
-		for (int y = 0; y < texHeight; ++y) {
-			for (int x = 0; x < texWidth; ++x) {
-				for (int channel = 0; channel < 3; ++channel) {
-					float floatValue = msdf ( x, y )[channel]; // Valor flotante original
-					//float normalizedValue = (floatValue + 1.0f) / 2.0f; // Normalizar a rango [0, 1]
-					float normalizedValue = (floatValue / 0.125f) * 0.5f + 0.5f;
-					uint8_t unormValue = static_cast<uint8_t>(normalizedValue * 255.0f); // Convertir a 8 bits
-					msdfData[(y * texWidth + x) * 4 + channel] = unormValue;
-					//msdfData[(y * texWidth + x) * 4 + channel] = static_cast<uint8_t>(msdf ( x, y )[channel] * 255.0f);
-
-
-					//msdfData[(y * texWidth + x) * 4 + channel] = static_cast<uint8_t>(std::clamp ( msdf ( x, y )[channel] * 255.0f, 0.0f, 255.0f ));
-
-					msdfData[(x + texWidth * y) * 4 + channel] = msdfgen::pixelFloatToByte ( msdf ( x, y )[channel] );
-				}
-				msdfData[(y * texWidth + x) * 4 + 3] = 255; // Canal alfa (completamente opaco)
-			}
-		}
-
-
-		// Crear el staging buffer
-		VkBuffer stagingBuffer;
-		VkDeviceMemory stagingBufferMemory;
-		device->createBuffer (
-			imageSize,
-			VK_BUFFER_USAGE_TRANSFER_SRC_BIT,
-			VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT,
-			stagingBuffer, stagingBufferMemory );
-
-		void* data;
-		vkMapMemory ( device->device, stagingBufferMemory, 0, imageSize, 0, &data );
-		memcpy ( data, msdfData.data (), static_cast<size_t>(imageSize) );
-		vkUnmapMemory ( device->device, stagingBufferMemory );
-
-		// Crear la textura Vulkan
-		device->createImage ( texWidth, texHeight, format, VK_IMAGE_TILING_OPTIMAL,
-			VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT,
-			VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, character.textureImage, character.textureImageMemory );
-
-		// Transiciones de layouts y copia de buffer a imagen
-		device->transitionImageLayout ( character.textureImage, format,
-			VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL );
-		device->copyBufferToImage ( stagingBuffer, character.textureImage,
-			static_cast<uint32_t>(texWidth), static_cast<uint32_t>(texHeight) );
-		device->transitionImageLayout ( character.textureImage, format,
-			VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL );
-
-		vkDestroyBuffer ( device->device, stagingBuffer, nullptr );
-		vkFreeMemory ( device->device, stagingBufferMemory, nullptr );
-
-		createImageView ( character.textureImage, format, character.textureImageView );
-		createTextureSampler ( character.textureSampler );
-
-		msdfgen::destroyFont ( font );
-		msdfgen::deinitializeFreetype ( ft );
-	}
-
-
-
-	VkVertexInputBindingDescription TextEntity::getBindingDescription2 () {
-		VkVertexInputBindingDescription bindingDescription {};
-		bindingDescription.binding = 0;
-		bindingDescription.stride = sizeof ( SEVIAN::VertexText );
-		bindingDescription.inputRate = VK_VERTEX_INPUT_RATE_VERTEX;
-
-		return bindingDescription;
-	}
-
-	std::vector<VkVertexInputAttributeDescription> TextEntity::getAttributeDescriptions2 () {
-		std::vector<VkVertexInputAttributeDescription> attributeDescriptions ( 3, {} );
-		/*    glm::vec3 position;
-		glm::vec3 normal;
-		glm::vec2 texCoords;
-		glm::vec3 color;*/
-		attributeDescriptions[0].binding = 0;
-		attributeDescriptions[0].location = 0;
-		attributeDescriptions[0].format = VK_FORMAT_R32G32_SFLOAT;
-		attributeDescriptions[0].offset = offsetof ( SEVIAN::VertexText, pos );
-
-		attributeDescriptions[1].binding = 0;
-		attributeDescriptions[1].location = 1;
-		attributeDescriptions[1].format = VK_FORMAT_R32G32_SFLOAT;
-		attributeDescriptions[1].offset = offsetof ( SEVIAN::VertexText, texCoord );
-
-		attributeDescriptions[2].binding = 0;
-		attributeDescriptions[2].location = 2;
-		attributeDescriptions[2].format = VK_FORMAT_R8_SINT;
-		attributeDescriptions[2].offset = offsetof ( SEVIAN::VertexText, color );
-
-		return attributeDescriptions;
-	}
-
-
 
 
 
 	void TextEntity::render ( UniformBufferObject ubo ) {
 	}
 
-	void TextEntity::render2 ( UniformBufferObject ubo ) {
-	}
+	
 
 	void TextEntity::ShadowRender ( UniformBufferObject ubo ) {
 	}
-	/*
-	void TextEntity::draw ( std::string text, uint32_t currentFrame, VkCommandBuffer commandBuffer, glm::vec3 position,
-		Camera camera,
-		uint32_t width,
-		uint32_t height ) {
+	
 
-		static bool play = false;
-
-		if (!play) {
-			play = true;
-			float x = 0;
-			float y = 0;
-			float scale = 0.006f;
-			uint32_t indexOffset = 0;
-			int i = 0;
-
-			text = "A"; // Aquí puedes pasar el texto dinámico
-			for (auto c = text.begin (); c != text.end (); c++) {
-
-				std::vector<VertexText> vertices;
-				std::vector<uint32_t> indices;
-
-				std::cout << " - - - i " << i << "\n";
-				Glyph ch = Characters[*c];
-
-				// Ajustamos la posición Y, invirtiéndola para Vulkan
-				float xpos = x + ch.bearingX * scale;
-				float ypos = y - (ch.height - ch.bearingY) * scale;
-
-				// Aseguramos que las coordenadas de las esquinas están bien ajustadas
-				float w = ch.width * scale;
-				float h = ch.height * scale;
-
-				// Invertir la posición Y (Vulkan tiene el origen en la esquina inferior izquierda)
-				float invertedYPos = y - ypos - h; // Inversión del eje Y
-
-				// Definir los vértices del carácter, usando las coordenadas invertidas para Y
-				vertices.push_back ( { {xpos, invertedYPos }, {0.0f, 0.0f} } ); // Bottom-left
-				vertices.push_back ( { {xpos + w, invertedYPos}, {1.0f, 0.0f} } ); // Bottom-right
-				vertices.push_back ( { {xpos, invertedYPos + h}, {0.0f, 1.0f} } ); // Top-left
-				vertices.push_back ( { {xpos + w, invertedYPos + h}, {1.0f, 1.0f} } ); // Top-right
-
-				indexOffset = 0;
-				// Definir los índices del carácter
-				indices.push_back ( indexOffset + 0 );
-				indices.push_back ( indexOffset + 1 );
-				indices.push_back ( indexOffset + 2 );
-				indices.push_back ( indexOffset + 1 );
-				indices.push_back ( indexOffset + 3 );
-				indices.push_back ( indexOffset + 2 );
-
-				indexOffset += 4;
-
-				// Avanzamos en la posición X para el siguiente carácter
-				x += (ch.advance) * scale;
-
-				auto prop = init ( vertices, indices, ch );
-				tx.push_back ( prop );
-
-				i++;
-			}
-		}
-
-		// Procesar las propiedades de los vértices e índices
-		for (const auto& elemento : tx) {
-			auto vulkanProp = std::dynamic_pointer_cast<VulkanProperty>(elemento);
-			if (vulkanProp) {
-				Frame frame = frames[currentFrame];
-				updateUniformBuffer5 ( vulkanProp->buffers[currentFrame].buffersMapped, position, camera, width, height );
-
-				VkBuffer vertexBuffers[] = { vulkanProp->vertex.buffer };
-				VkDeviceSize offsets[] = { 0 };
-
-				vkCmdBindPipeline ( commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline );
-				vkCmdBindVertexBuffers ( commandBuffer, 0, 1, vertexBuffers, offsets );
-				vkCmdBindIndexBuffer ( commandBuffer, vulkanProp->indices.buffer, 0, VK_INDEX_TYPE_UINT32 );
-
-				vkCmdBindDescriptorSets ( commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipelineLayout, 0, 1, &vulkanProp->descriptorSets[currentFrame], 0, nullptr );
-				vkCmdDrawIndexed ( commandBuffer, static_cast<uint32_t>(vulkanProp->indicesSizes), 1, 0, 0, 0 );
-			}
-			else {
-				std::cerr << "Error: PropertyRender no es una instancia de VulkanProperty" << std::endl;
-			}
-		}
-	}*/
-
-	void TextEntity::draw ( std::string text, uint32_t currentFrame, VkCommandBuffer commandBuffer, glm::vec3 position,
-		Camera camera,
-		uint32_t width,
-		uint32_t height ) {
-
-		static bool play = false;
-
-
-
-		if (!play) {
-			play = true;
-			float x = 0.0;
-			float y = 0.0;
-			float scale = 1.0f * 4;
-			uint32_t indexOffset = 0;
-			int i = 0;
-			text = "BYan";
-
-			if (mainText != "") {
-				text = mainText;
-			}
-
-			for (auto c = text.begin (); c != text.end (); c++) {
-
-				std::vector<VertexText> vertices;
-				std::vector<uint32_t> indices;
-
-
-				std::cout << " - - - i " << i << "\n";
-				Glyph ch = Characters[*c];
-
-				float xpos = x + ch.bearingX * scale;
-
-
-				float ypos = y - (ch.height - ch.bearingY) * scale;
-
-
-
-				float w = ch.width * scale;
-				float h = ch.height * scale;
-
-				// Define los vértices para el carácter
-				vertices.push_back ( { {xpos,     ypos    }, {0.0f, 0.0f} } ); // Bottom-left
-				vertices.push_back ( { {xpos + w, ypos    }, {1.0f, 0.0f} } ); // Bottom-right
-				vertices.push_back ( { {xpos,     ypos + h}, {0.0f, 1.0f} } ); // Top-left
-				vertices.push_back ( { {xpos + w, ypos + h}, {1.0f, 1.0f} } ); // Top-right
-
-				//vertices.push_back ( { {xpos,     ypos   }, {0.0f, 0.0f} } ); // Bottom-left
-				//vertices.push_back ( { {xpos + w, ypos    }, {1.0f, 0.0f} } ); // Bottom-right
-				//vertices.push_back ( { {xpos,     ypos + h}, {0.0f, 1.0f} } ); // Top-left
-				//vertices.push_back ( { {xpos + w, ypos + h}, {1.0f, 1.0f} } ); // Top-right
-
-				//vertices.push_back ( { {-0.1f,     -0.1f   }, {0.0f, 1.0f} } ); // Bottom-left
-				//vertices.push_back ( { {0.1f, -0.1f    }, {1.0f, 1.0f} } ); // Bottom-right
-				//vertices.push_back ( { {0.1f,     0.1f}, {1.0f, 0.0f} } ); // Top-left
-				//vertices.push_back ( { {-0.1f, 0.1f}, {0.0f, 0.0f} } ); // Top-right
-
-
-
-				//vertices.push_back ( { {-0.1f,     -0.1f   }, {0.0f, 0.0f} } );
-				//vertices.push_back ( { {0.1f,     -0.1f   }, {1.0f, 0.0f} } );
-				//vertices.push_back ( { {0.1f,     0.1f   }, {1.0f, 1.0f} } );
-				//vertices.push_back ( { {-0.1f,     0.1f   }, {0.0f, 1.0f} } );
-
-				indexOffset = 0;
-				// Define los índices para el carácter
-				indices.push_back ( indexOffset + 0 );
-				indices.push_back ( indexOffset + 1 );
-				indices.push_back ( indexOffset + 2 );
-
-				indices.push_back ( indexOffset + 1 );
-				indices.push_back ( indexOffset + 3 );
-				indices.push_back ( indexOffset + 2 );
-
-				indexOffset += 4;
-
-				x += (ch.advance) * scale; // advance.x is in 1/64th pixels
-				//x += 0.20;
-				auto prop = init ( vertices, indices, ch );
-				tx.push_back ( prop );
-
-				i++;
-			}
-		}
-
-
-		for (const auto& elemento : tx) {
-			//std::cout << elemento << " ";
-			auto vulkanProp = std::dynamic_pointer_cast<VulkanProperty>(elemento);
-			if (vulkanProp) {
-
-				Frame frame = frames[currentFrame];
-				updateUniformBuffer5 ( vulkanProp->buffers[currentFrame].buffersMapped, position, camera, width, height );
-
-
-
-				VkBuffer vertexBuffers[] = { vulkanProp->vertex.buffer };
-				VkDeviceSize offsets[] = { 0 };
-
-				vkCmdBindPipeline ( commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline );
-				vkCmdBindVertexBuffers ( commandBuffer, 0, 1, vertexBuffers, offsets );
-				//vkCmdBindIndexBuffer(commandBuffer, indices.buffer, 0, VK_INDEX_TYPE_UINT16);
-				vkCmdBindIndexBuffer ( commandBuffer, vulkanProp->indices.buffer, 0, VK_INDEX_TYPE_UINT32 );
-
-				vkCmdBindDescriptorSets ( commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipelineLayout, 0, 1, &vulkanProp->descriptorSets[currentFrame], 0, nullptr );
-				vkCmdDrawIndexed ( commandBuffer, static_cast<uint32_t>(vulkanProp->indicesSizes), 1, 0, 0, 0 );
-			}
-			else {
-				std::cerr << "Error: PropertyRender no es una instancia de VulkanProperty" << std::endl;
-			}
-		}
-
-
-	}
-
-		
-	std::shared_ptr<Entity3D> TextEntity::init ( std::vector<VertexText> vertices, std::vector<uint32_t> indices, VulkanTexture texture ) {
+	
+	std::shared_ptr<Entity3D> TextEntity::init ( std::vector<VertexTextOld> vertices, std::vector<uint32_t> indices, VulkanTexture texture ) {
 		auto vulkanProp = std::make_shared<VulkanProperty> ();
 
 		std::vector<VulkanUBuffer>  x = device->createUniformBuffer ( frames, sizeof ( UniformBufferObject2 ) );
 
-
-
 		//vulkanProp->descriptorSets = device->createDescriptorSets ( x, texture.textureImageView, texture.textureSampler, sizeof ( UniformBufferObject2 ) );
-
 
 		std::vector<DSInfo> bufDSInfo;
 		bufDSInfo.push_back ( { VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, x, sizeof ( x ), VK_NULL_HANDLE, VK_NULL_HANDLE, 0 } );
@@ -1761,9 +397,7 @@ while (gindex != 0)
 		vulkanProp->descriptorSets = device->createDescriptorSets ( descriptorSetLayout, bufDSInfo );
 
 
-
-
-		auto attributeDescriptions = getAttributeDescriptions2 ();
+		auto attributeDescriptions = VertexText::getAttributeDescriptions ();
 		//auto pipeline = createGraphicsPipeline3 ( getBindingDescription2 (), attributeDescriptions, device->descriptorSetLayout );
 
 		vulkanProp->vertex = device->createDataBuffer ( (void*) vertices.data (), sizeof ( vertices[0] ) * vertices.size (), VK_BUFFER_USAGE_VERTEX_BUFFER_BIT );
@@ -1780,49 +414,9 @@ while (gindex != 0)
 
 	}
 
-	std::shared_ptr<Entity3D> TextEntity::init ( std::vector<VertexText> vertices, std::vector<uint32_t> indices, Glyph texture ) {
-		auto vulkanProp = std::make_shared<VulkanProperty> ();
+	
 
-		std::vector<VulkanUBuffer>  x = device->createUniformBuffer ( frames, sizeof ( UniformBufferObject2 ) );
-
-
-
-		//vulkanProp->descriptorSets = device->createDescriptorSets ( x, texture.textureImageView, texture.textureSampler, sizeof ( UniformBufferObject2 ) );
-
-
-		std::vector<DSInfo> bufDSInfo;
-		bufDSInfo.push_back ( { VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, x, sizeof ( x ), VK_NULL_HANDLE, VK_NULL_HANDLE, 0 } );
-
-		//std::vector<DSInfo> texDSInfo;
-		bufDSInfo.push_back ( { VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, x, sizeof ( x ), texture.textureImageView, texture.textureSampler, 1 } );
-		static int timer = 0;
-
-		std::cout << " timer ........ " << timer++ << "\n\n";
-		vulkanProp->descriptorSets = device->createDescriptorSets ( descriptorSetLayout, bufDSInfo );
-
-
-
-
-		auto attributeDescriptions = getAttributeDescriptions2 ();
-		//auto pipeline = createGraphicsPipeline3 ( getBindingDescription2 (), attributeDescriptions, device->descriptorSetLayout );
-
-		vulkanProp->vertex = device->createDataBuffer ( (void*) vertices.data (), sizeof ( vertices[0] ) * vertices.size (), VK_BUFFER_USAGE_VERTEX_BUFFER_BIT );
-		vulkanProp->indices = device->createDataBuffer ( (void*) indices.data (), sizeof ( indices[0] ) * indices.size (), VK_BUFFER_USAGE_INDEX_BUFFER_BIT );
-		vulkanProp->indicesSizes = indices.size ();
-		//device->createDataBuffer ( (void*) vertices.data (), sizeof ( vertices[0] ) * vertices.size (), VK_BUFFER_USAGE_VERTEX_BUFFER_BIT );
-
-		//vulkanProp->pipeline = pipeline.pipeline;
-		//vulkanProp->pipelineLayout = pipeline.pipelineLayout;
-		vulkanProp->buffers = x;
-
-		return vulkanProp;
-
-
-	}
-
-	std::shared_ptr<Entity3D> TextEntity::init2 ( std::vector<VertexText> vertices, std::vector<uint32_t> indices ) {
-		return std::shared_ptr<Entity3D> ();
-	}
+	
 
 	void TextEntity::createImageView ( VkImage image, VkFormat format, VkImageView& imageView ) {
 		VkImageViewCreateInfo viewInfo {};
@@ -1874,7 +468,7 @@ while (gindex != 0)
 
 	VkPipeline TextEntity::createGraphPipeline (
 		VkVertexInputBindingDescription bindingDescription,
-		std::vector<VkVertexInputAttributeDescription> attributeDescriptions,
+		std::array<VkVertexInputAttributeDescription, 3> attributeDescriptions,
 		VkPipelineLayout pipelineLayout,
 		std::string vertSource,
 		std::string fragSource ) {
@@ -1948,7 +542,7 @@ while (gindex != 0)
 		depthStencil.sType = VK_STRUCTURE_TYPE_PIPELINE_DEPTH_STENCIL_STATE_CREATE_INFO;
 		depthStencil.depthTestEnable = VK_TRUE;
 		depthStencil.depthWriteEnable = VK_TRUE;
-		depthStencil.depthCompareOp = VK_COMPARE_OP_LESS;
+		depthStencil.depthCompareOp = VK_COMPARE_OP_LESS_OR_EQUAL;
 		depthStencil.depthBoundsTestEnable = VK_FALSE;
 		depthStencil.stencilTestEnable = VK_FALSE;
 
@@ -2021,63 +615,87 @@ while (gindex != 0)
 	}
 
 
-	void TextEntity::initGlyph ( FT_Face face, char c, Glyph& character ) {
-		if (FT_Load_Char ( face, c, FT_LOAD_RENDER )) {
-			std::cerr << "No se pudo cargar el glifo" << std::endl;
-			return;
-		}
-		//std::vector<float> sdf = loadGlyphAndGenerateSDF ( face, c );
-		int texWidth = face->glyph->bitmap.width;
-		int texHeight = face->glyph->bitmap.rows;
+	
+	VulkanTexture TextEntity::createAtlasTexture ( std::vector<uint8_t> msdfData, int atlasWidth, int atlasHeight ) {
+		VulkanTexture texture;
+		VkDeviceSize imageSize = msdfData.size ();
+		VkFormat format = VK_FORMAT_R8G8B8A8_UNORM;
 
-		character.width = face->glyph->bitmap.width;
-		character.height = face->glyph->bitmap.rows;
-		character.bearingX = face->glyph->bitmap_left;
-		character.bearingY = face->glyph->bitmap_top;
-		character.advance = face->glyph->advance.x;
-		character.bitmap = face->glyph->bitmap.buffer;
-
-
-	}
-
-	void TextEntity::createTextureImage ( Glyph& character ) {
-
-		int texWidth = character.width;
-		int texHeight = character.height;
-
-
-
-
-		VkDeviceSize imageSize = texWidth * texHeight;
-		//VkDeviceSize imageSize = texWidth * texHeight * sizeof ( float );
-
+		// Crear el staging buffer
 		VkBuffer stagingBuffer;
 		VkDeviceMemory stagingBufferMemory;
-
-		device->createBuffer ( imageSize, VK_BUFFER_USAGE_TRANSFER_SRC_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, stagingBuffer, stagingBufferMemory );
-
-
+		device->createBuffer (
+			imageSize,
+			VK_BUFFER_USAGE_TRANSFER_SRC_BIT,
+			VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT,
+			stagingBuffer, stagingBufferMemory );
 
 		void* data;
 		vkMapMemory ( device->device, stagingBufferMemory, 0, imageSize, 0, &data );
-		memcpy ( data, character.bitmap, static_cast<size_t>(imageSize) );
+		memcpy ( data, msdfData.data (), static_cast<size_t>(imageSize) );
 		vkUnmapMemory ( device->device, stagingBufferMemory );
 
+		// Crear la textura Vulkan
+		device->createImage ( atlasWidth, atlasHeight, format, VK_IMAGE_TILING_OPTIMAL,
+			VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT,
+			VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, texture.textureImage, texture.textureImageMemory );
 
-		device->createImage ( texWidth, texHeight, VK_FORMAT_R32_SFLOAT, VK_IMAGE_TILING_OPTIMAL, VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, character.textureImage, character.textureImageMemory );
-
-		device->transitionImageLayout ( character.textureImage, VK_FORMAT_R32_SFLOAT, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL );
-		device->copyBufferToImage ( stagingBuffer, character.textureImage, static_cast<uint32_t>(texWidth), static_cast<uint32_t>(texHeight) );
-		device->transitionImageLayout ( character.textureImage, VK_FORMAT_R32_SFLOAT, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL );
-
-
+		// Transiciones de layouts y copia de buffer a imagen
+		device->transitionImageLayout ( texture.textureImage, format,
+			VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL );
+		device->copyBufferToImage ( stagingBuffer, texture.textureImage,
+			static_cast<uint32_t>(atlasWidth), static_cast<uint32_t>(atlasHeight) );
+		device->transitionImageLayout ( texture.textureImage, format,
+			VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL );
 
 		vkDestroyBuffer ( device->device, stagingBuffer, nullptr );
 		vkFreeMemory ( device->device, stagingBufferMemory, nullptr );
 
-
+		createImageView ( texture.textureImage, format, texture.imageView );
+		createTextureSampler ( texture.sampler );
+		return texture;
 	}
 
+	void TextEntity::updateUniformBuffer ( void* uniformBuffersMapped, glm::vec3 position,
+		Camera camera, uint32_t width, uint32_t height ) {
+		static auto startTime = std::chrono::high_resolution_clock::now ();
 
+		// Calcular el tiempo transcurrido
+		auto currentTime = std::chrono::high_resolution_clock::now ();
+		float time = std::chrono::duration<float, std::chrono::seconds::period> ( currentTime - startTime ).count ();
+
+		UniformBufferObject2 ubo {};
+
+		// Calcular el aspecto
+		float aspectRatio = width / static_cast<float>(height);
+
+		// Elegir el tipo de proyección (comentar/descomentar según se necesite)
+		// Proyección Perspectiva (comentada si usas ortográfica)
+		// ubo.proj = glm::perspective(glm::radians(45.0f), aspectRatio, 0.1f, 10.0f);
+		// ubo.proj[1][1] *= -1;  // Invertir el eje Y para el espacio de recorte de Vulkan
+		auto delta = 300.0f;
+		// Proyección Ortográfica (descomentada si usas ortográfica)
+		ubo.proj = glm::ortho ( -delta * aspectRatio, delta * aspectRatio, -delta, delta, 1.0f, 5.0f );
+		//ubo.proj = glm::ortho ( 0.0f, static_cast<float>(width), 0.0f, static_cast<float>(height) );
+		ubo.proj = glm::ortho ( -static_cast<float>(width), static_cast<float>(width), -static_cast<float>(height), static_cast<float>(height), 5.0f, -5.0f );
+		ubo.proj = glm::ortho ( -static_cast<float>(width), static_cast<float>(width), -static_cast<float>(height), static_cast<float>(height) );
+
+		auto deltaX = static_cast<float>(width) / 2;
+		auto deltaY = static_cast<float>(height) / 2;
+		ubo.proj = glm::ortho ( -deltaX, deltaX, -deltaY, deltaY, 1.0f, 25.0f );
+
+		ubo.proj = glm::ortho ( -deltaX, deltaX, -deltaY, deltaY );
+		// Sin invertir el eje Y para una proyección ortográfica
+		ubo.proj[1][1] *= -1;  // Solo se necesita si estás usando Vulkan o OpenGL con un espacio de recorte diferente
+
+		// Modelo y Vista (sin rotación en este caso)
+		ubo.model = glm::mat4 ( 1.0f );  // No hay rotación aplicada
+		ubo.view = glm::lookAt ( glm::vec3 ( 0.0f, 0.0f, 2.0f ),  // Cámara desde (0, 0, 2)
+			glm::vec3 ( 0.0f, 0.0f, 0.0f ),  // Mira al origen
+			glm::vec3 ( 0.0f, 1.0f, 0.0f ) ); // "Arriba" en la dirección Y
+
+		// Copiar los datos del UBO en la memoria mapeada
+		memcpy ( uniformBuffersMapped, &ubo, sizeof ( ubo ) );
+	}
 
 }

@@ -111,7 +111,7 @@
       <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <AdditionalLibraryDirectories>C:\source\lib\glfw-3.3.8\build\src\Release;C:\VulkanSDK\1.3.261.1\Lib;C:\source\lib\freetype-2.13.2\output\Release;C:\source\2024\Sevian\x64\Debug;C:\Users\yanny\Downloads\opencv\x\lib\Debug;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-      <AdditionalDependencies>glfw3.lib;freetype.lib;vulkan-1.lib;Vulkan.lib;opencv_core4100d.lib;opencv_dnn4100d.lib;opencv_highgui4100d.lib;opencv_imgcodecs4100d.lib;opencv_imgproc4100d.lib;opencv_ml4100d.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>glfw3.lib;freetype.lib;vulkan-1.lib;Vulkan.lib;opencv_core4100d.lib;opencv_dnn4100d.lib;opencv_highgui4100d.lib;opencv_imgcodecs4100d.lib;opencv_imgproc4100d.lib;opencv_ml4100d.lib;Sevian.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">

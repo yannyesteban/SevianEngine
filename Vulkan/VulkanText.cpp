@@ -360,7 +360,7 @@ namespace VULKAN {
 
 			for (auto c = text.begin (); c != text.end (); c++) {
 
-				std::vector<VertexText> vertices;
+				std::vector<VertexTextOld> vertices;
 				std::vector<uint32_t> indices;
 
 				
@@ -550,7 +550,7 @@ namespace VULKAN {
 		}
 	}
 
-	std::shared_ptr<Entity3D> VulkanText::init ( std::vector<VertexText> vertices, std::vector<uint32_t> indices, Character texture ) {
+	std::shared_ptr<Entity3D> VulkanText::init ( std::vector<VertexTextOld> vertices, std::vector<uint32_t> indices, Character texture ) {
 		auto vulkanProp = std::make_shared<VulkanProperty> ();
 		
 		std::vector<VulkanUBuffer>  x = device->createUniformBuffer ( frames, sizeof ( UniformBufferObject2 ) );

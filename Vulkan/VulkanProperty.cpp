@@ -6,10 +6,7 @@ namespace VULKAN {
 	}
 	void VulkanProperty::ShadowRender ( UniformBufferObject ubo ) {
 	}
-	void Glyph::render ( UniformBufferObject ubo ) {
-	}
-	void Glyph::ShadowRender ( UniformBufferObject ubo ) {
-	}
+	
 }
 
 

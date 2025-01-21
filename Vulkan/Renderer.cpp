@@ -120,6 +120,8 @@ namespace VULKAN {
 			textManager = new TextEntity (MSDF, 
 				"hola",
 				"C:\\source\\2024\\Sevian\\Engine\\fonts\\arial.ttf",
+				//"C:\\source\\2024\\Sevian\\Engine\\fonts\\hemi.otf",
+				
 				device,
 				frames,
 				descriptorPool
@@ -930,7 +932,7 @@ namespace VULKAN {
 		//fontText.draw (			text, currentFrame, commandBuffer, position, camera, extent.width, extent.height );
 		
 		
-		textManager->draw2 (			text, currentFrame, commandBuffer, position, camera, extent.width, extent.height );
+		textManager->draw (			text, currentFrame, commandBuffer, position, camera, extent.width, extent.height );
 
 	}
 	

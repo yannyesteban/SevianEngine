@@ -57,7 +57,7 @@ namespace SEVIAN {
 
 
 
-	struct VertexText
+	struct VertexTextOld
 	{
 		glm::vec2 pos;
 		glm::vec2 texCoord;

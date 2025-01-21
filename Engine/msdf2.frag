@@ -183,7 +183,7 @@ void main11()
 }
 
 void main12() {
-     pxRange = 8.0;
+     pxRange = 2.0;
     vec4 bgColor = vec4(1.0, 1.0, 1.0, 0.0);
     vec4 fgColor = vec4(0.0, 0.0, 0.0, 1.0);
 
@@ -203,8 +203,36 @@ void main12() {
     outColor = mix(bgColor, fgColor, opacity);
 }
 
+void main13() {
+    float borderThickness = 0.125; // Grosor del borde (en el espacio de distancia)
+
+    // Muestrear la textura MSDF
+    vec3 msdf = texture(textSampler, fragTexCoord).rgb;
+
+    // Calcular la distancia firmada
+    float sd = median(msdf.r, msdf.g, msdf.b);
+
+    // Escalar la distancia según el rango de píxeles
+    float pxRange = screenPxRange();
+    float screenPxDistance = pxRange * (sd - 0.5);
+
+    // Calcular las opacidades para el borde y el texto
+    float borderOpacity = 1.0 - smoothstep(-borderThickness - 0.1, -borderThickness + 0.1, screenPxDistance);
+    float textOpacity = smoothstep(0.0 - 0.1, 0.0 + 0.1, screenPxDistance);
+
+    // Combinar los colores del borde y el texto
+    vec4 bgColor = vec4(0.0, 1.0, 0.0, 1.0); // Fondo transparente
+    vec4 fgColor = vec4(0.0, 0.2, 0.4, 1.0); // Color del texto
+    vec4 borderColor = vec4(0.0, 0.0, 1.0, 1.0); // Color del borde
+
+    outColor = mix(bgColor, borderColor, borderOpacity);
+    outColor = mix(outColor, fgColor, textOpacity);
+    outColor.a = max(borderOpacity, textOpacity); // Mantener la transparencia correcta
+}
+
+
 void main(){
-    int x = 12;//12;//2;//7;
+    int x = fragColor;//12;//2;//7;
 
     if (x == 1) {
         main1();
@@ -241,6 +269,9 @@ void main(){
     }
     if (x == 12) {
         main12();
+    }
+    if (x == 13) {
+        main13();
     }
 
 }
