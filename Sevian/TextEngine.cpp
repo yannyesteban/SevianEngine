@@ -165,7 +165,7 @@ Font AtlasGenerator::create ( AtlasInfo info ) {
 
 	saveSDFAtlas2 ( msdfData, atlasWidth, atlasWidth, "atlas_2025.png", "atlas_2025c.png" );
 
-	Font font1 ( { characters, { msdfData, atlasWidth, atlasHeight } } );
+	Font font1 ( { characters, metrics.lineHeight, { msdfData, atlasWidth, atlasHeight } } );
 	
 	return font1;
 

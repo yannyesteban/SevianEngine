@@ -2,7 +2,6 @@
 #include <string>
 #include <map>
 #include <vector>
-
 struct AtlasGlyphInfo
 {
 public:
@@ -20,11 +19,31 @@ public:
 
 
 };
+struct QuadTexture
+{
+	float u0 = 0.0f;
+	float v0 = 0.0f;
+	float u1 = 0.0f;
+	float v1 = 0.0f;
+};
+struct Quad
+{
+	AtlasGlyphInfo ch;
+	float x = 0.0f;
+	float y = 0.0f;
+	float w = 0.0f;
+	float h = 0.0f;
+	int line = 0;
+	char c;
+	float xPos = 0.0f;
+	float yPos = 0.0f;
+};
+
 
 struct Font
 {
 	std::map<char, AtlasGlyphInfo> characters;
-	
+	double lineHeight;
 
 	struct Atlas
 	{

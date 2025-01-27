@@ -9,6 +9,7 @@
 #include <RenderInterface.h>
 #include "VulkanProperty.h"
 #include "TextEngine.h"
+#include "Text1.h"
 //#include "VulkanRenderer.h"
 using namespace SEVIAN;
 
@@ -41,44 +42,7 @@ namespace VULKAN {
 
 	
 
-	struct VertexText
-	{
-		glm::vec2 pos;
-		glm::vec2 texCoord;
-		int color = 1;
-
-		static VkVertexInputBindingDescription getBindingDescription () {
-			VkVertexInputBindingDescription bindingDescription {};
-			bindingDescription.binding = 0;
-			bindingDescription.stride = sizeof ( VertexText );
-			bindingDescription.inputRate = VK_VERTEX_INPUT_RATE_VERTEX;
-
-			return bindingDescription;
-		}
-
-		static std::array<VkVertexInputAttributeDescription, 3> getAttributeDescriptions () {
-
-			std::array<VkVertexInputAttributeDescription, 3> attributeDescriptions {};
-			
-			attributeDescriptions[0].binding = 0;
-			attributeDescriptions[0].location = 0;
-			attributeDescriptions[0].format = VK_FORMAT_R32G32_SFLOAT;
-			attributeDescriptions[0].offset = offsetof ( VertexText, pos );
-
-			attributeDescriptions[1].binding = 0;
-			attributeDescriptions[1].location = 1;
-			attributeDescriptions[1].format = VK_FORMAT_R32G32_SFLOAT;
-			attributeDescriptions[1].offset = offsetof ( VertexText, texCoord );
-
-			attributeDescriptions[2].binding = 0;
-			attributeDescriptions[2].location = 2;
-			attributeDescriptions[2].format = VK_FORMAT_R8_SINT;
-			attributeDescriptions[2].offset = offsetof ( VertexText, color );
-
-			return attributeDescriptions;
-
-		}
-	};
+	
 
 	enum FontRenderType
 	{
@@ -108,6 +72,9 @@ namespace VULKAN {
 
 	};
 	*/
+
+
+	
 	class TextEntity :
 		public Entity3D
 	{
@@ -174,7 +141,7 @@ namespace VULKAN {
 		void updateUniformBuffer ( void* uniformBuffersMapped, glm::vec3 position, Camera camera, uint32_t width, uint32_t height );
 
 	public:
-		void fontInit ( AtlasInfo info );
+		
 		
 		TextEntity (
 			FontRenderType type,
@@ -191,7 +158,13 @@ namespace VULKAN {
 		
 		//void fontInit4 ( std::string fontPath );
 		void draw ( std::string text, uint32_t currentFrame, VkCommandBuffer commandBuffer, glm::vec3 position, Camera camera, uint32_t width, uint32_t height );
-		std::shared_ptr<Entity3D> init ( std::vector<VertexTextOld> vertices, std::vector<uint32_t> indices, VulkanTexture texture );
+		std::shared_ptr<Entity3D> init ( std::vector<VertexText> vertices, std::vector<uint32_t> indices, VulkanTexture texture );
+	
+		Text * createText ( std::string text );
+
+			
+	
+	
 	};
 
 }

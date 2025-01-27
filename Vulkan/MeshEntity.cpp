@@ -119,7 +119,7 @@ namespace VULKAN {
 		auto currentFrame = device->currentFrame;
 
 		Frame frame = device->frames[currentFrame];
-		auto commandBuffer = frame.commandBuffers;
+		auto commandBuffer = frame.commandBuffer;
 
 		memcpy ( this->ubo1[currentFrame].buffersMapped, &ubo, sizeof ( ubo ) );
 
@@ -141,7 +141,7 @@ namespace VULKAN {
 		auto currentFrame = device->currentFrame;
 
 		Frame frame = device->frames[currentFrame];
-		auto commandBuffer = frame.commandBuffers;
+		auto commandBuffer = frame.commandBuffer;
 		
 		memcpy ( this->ubo[currentFrame].buffersMapped, &ubo, sizeof ( ubo ) );
 		

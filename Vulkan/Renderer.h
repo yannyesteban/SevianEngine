@@ -21,6 +21,7 @@
 #include <map>
 #include <algorithm>
 #include <unordered_map>
+#include "Text.h"
 #include "TextEntity.h"
 
 
@@ -110,6 +111,7 @@ namespace VULKAN {
         std::vector<Shader> shaders;
         std::vector<Item> items;
 
+        Text * texto;
         ShadowWorld * shadowWorld;
 
         const std::vector<const char*> validationLayers = {
@@ -273,7 +275,7 @@ namespace VULKAN {
         VkCommandBuffer commandBuffer;
 
         std::vector<Frame> frames;
-        uint32_t currentFrame = 0;
+        //uint32_t currentFrame = 0;
         uint32_t imageIndex;
         bool framebufferResized = false;
         VulkanText fontText;
@@ -321,6 +323,7 @@ namespace VULKAN {
 
         MeshManager * meshManager;
         //std::unique_ptr<MeshManager> meshManager;
+        
     };
 
     class VulkanTextureNO : public TextureInterface

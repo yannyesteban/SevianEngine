@@ -25,7 +25,7 @@ void saveSDFAtlas ( const std::vector<uint8_t>& atlasData, int atlasWidth, int a
 
 	cv::flip ( sdfImage, sdfImage, 0 ); // Invertir verticalmente
 	cv::imwrite ( filename2, sdfImage );
-	
+
 }
 const int FONT_SIZE = 32;
 
@@ -79,162 +79,6 @@ void printTest ( Bitmap<float, 3> msdf, char c ) {
 
 namespace VULKAN {
 
-	void TextEntity::fontInit ( AtlasInfo info ) {
-
-		// Inicializar msdfgen y cargar la fuente TTF
-		msdfgen::FreetypeHandle* ft = msdfgen::initializeFreetype ();
-		if (!ft) {
-			std::cerr << "No se pudo inicializar FreeType con msdfgen" << std::endl;
-			return;
-		}
-
-		msdfgen::FontHandle* font = msdfgen::loadFont ( ft, info.fontPath.c_str () );
-		if (!font) {
-			std::cerr << "No se pudo cargar la fuente: " << info.fontPath << std::endl;
-			msdfgen::deinitializeFreetype ( ft );
-			return;
-		}
-		msdfgen::FontMetrics metrics;
-
-		int deltaSize = ceil ( info.border * info.size * 2 );
-
-		int texWidth = info.size + deltaSize;
-		int texHeight = info.size + deltaSize;
-
-		float realScale = texWidth / info.size;
-		float pixelSize = 1 / info.size;
-		float padding = 4 * pixelSize;
-
-		int atlasWidth = texWidth * info.cols;
-		int atlasHeight = texHeight * info.rows;
-
-		msdfgen::getFontMetrics ( metrics, font, FONT_SCALING_EM_NORMALIZED );
-		std::vector<uint8_t> msdfData ( atlasWidth * atlasHeight * 4 );
-
-		int index = 0;
-		//VkDeviceSize imageSize = msdfData.size ();
-
-		for (unsigned char c = info.firstGlyph; c < info.lastGlyph; c++) {
-
-			int col = (index % info.cols);
-			int row = info.rows - floor ( index / info.rows ) - 1;
-			int row2 = floor ( index / info.rows );
-			
-			double advance = 0;
-
-			msdfgen::Shape shape;
-			msdfgen::Bitmap<float, 3> msdf ( texWidth, texHeight );
-			if (!msdfgen::loadGlyph ( shape, font, c, FONT_SCALING_EM_NORMALIZED, &advance )) {
-				std::cerr << "No se pudo cargar el glifo para el carácter: " << c << std::endl;
-				msdfgen::destroyFont ( font );
-				msdfgen::deinitializeFreetype ( ft );
-				return;
-			}
-
-			shape.normalize ();
-			if (info.edgeColoring) {
-				edgeColoringSimple ( shape, info.angleThreshold );
-			}
-
-			msdfgen::Shape::Bounds bounds = shape.getBounds ( info.border );
-
-			float width = bounds.r - bounds.l;
-			float height = bounds.t - bounds.b;
-
-			float left;
-			float bottom;
-
-			if (c == 'A') {
-				printf ( "" );
-
-			}
-
-			float factor = (float) info.size / texWidth;
-			float texel = (float) texWidth / atlasWidth;
-			float deltaX;
-			float deltaY;
-
-			if (info.centered) {
-				left = (realScale - width) / 2.0 - bounds.l;     // Centrar horizontalmente
-				bottom = (realScale - bounds.t + bounds.b) / 2.0 - bounds.b;   // Centrar verticalmente
-
-				deltaX = (realScale - width) / 2 * factor;
-				deltaY = (realScale - height) / 2 * factor;
-			}
-			else {
-				left = -bounds.l;
-				bottom = realScale - bounds.t;
-
-				deltaX = 0.0;
-				deltaY = 0.0;
-
-			}
-
-			float u0 = texel * (col + deltaX);
-			float u1 = u0 + texel * factor * width;
-			float v0 = texel * row2 + deltaY * texel;
-			float v1 = v0 + texel * height * factor;
-
-			AtlasGlyphInfo ch = { width, height, bounds.l, bounds.t, u0, v0, u1, v1, advance };
-			Characters[c] = ch;
-
-			Vector2 scale ( info.size, info.size );
-			Vector2 translation ( left, bottom );
-			msdfgen::SDFTransformation tr = msdfgen::SDFTransformation ( msdfgen::Projection ( scale, translation ), msdfgen::Range ( info.range ) );
-
-			generateMSDF ( msdf, shape, tr );
-
-			printTest ( msdf, c );
-			
-			int pos = row * atlasWidth * texWidth + col * texHeight;
-			
-			for (int y = 0; y < texHeight; ++y) {
-				for (int x = 0; x < texWidth; ++x) {
-					int pos0 = (pos + y * atlasWidth + x) * 4;
-					//int atlasIndex = ((startY + y) * atlasWidth + (startX + x)) * 4;
-					for (int channel = 0; channel < 3; ++channel) {
-						msdfData[pos0 + channel] = msdfgen::pixelFloatToByte ( msdf ( x, y )[channel] );
-					}
-					msdfData[pos0 + 3] = 255; // Canal alfa (opaco)
-				}
-			}
-
-			index++;
-
-		}
-
-		msdfgen::destroyFont ( font );
-		msdfgen::deinitializeFreetype ( ft );
-
-		saveSDFAtlas ( msdfData, atlasWidth, atlasWidth, "atlas_.png", "atlas_c.png" );
-
-		
-
-		//texture = *device->createTexture ( "char_test_g.png" );
-
-		texture = createAtlasTexture ( msdfData, atlasWidth, atlasHeight );
-
-		
-
-		std::vector<DSLInfo> bufDSLInfo;
-		bufDSLInfo.push_back ( { VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 0 } );
-		bufDSLInfo.push_back ( { VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 1 } );
-
-		descriptorSetLayout = device->createDescriptorSetLayout ( bufDSLInfo );
-		ubo = device->createUniformBuffer ( device->frames, sizeof ( UniformBufferObject ) );
-
-		std::vector<VkDescriptorSetLayout> layouts = { descriptorSetLayout };
-		pipelineLayout = device->createPipelineLayout ( layouts );
-
-		pipeline = createGraphPipeline (
-			VertexText::getBindingDescription (),
-			VertexText::getAttributeDescriptions (),
-			pipelineLayout,
-			"shaders/msdf.vert.spv",
-			"shaders/msdf.frag.spv"
-		);
-	}
-
 
 	void TextEntity::draw ( std::string text, uint32_t currentFrame, VkCommandBuffer commandBuffer, glm::vec3 position, Camera camera, uint32_t width, uint32_t height ) {
 
@@ -249,7 +93,7 @@ namespace VULKAN {
 			y = 400 - 200;
 			x = -400;
 			x = (width / 2.0) * -1;
-			y = 500 - size;
+			y = (height / 2.0) - size;
 			float scale = 1.0f * size;
 			uint32_t indexOffset = 0;
 			int i = 0;
@@ -258,7 +102,7 @@ namespace VULKAN {
 			if (mainText != "") {
 				text = mainText;
 			}
-			std::vector<VertexTextOld> vertices;
+			std::vector<VertexText> vertices;
 			std::vector<uint32_t> indices;
 			int step = 0;
 			for (auto c = text.begin (); c != text.end (); c++) {
@@ -292,7 +136,7 @@ namespace VULKAN {
 
 				indexOffset += 4;
 
-				
+
 				x += ch.advance * scale;
 				step++;
 			}
@@ -337,9 +181,9 @@ namespace VULKAN {
 		frames ( frames ),
 		descriptorPool ( descriptorPool ) {
 
-		
+
 		AtlasInfo info { font };
-		
+
 		//fontInit ( info );
 
 		AtlasGenerator atlas;
@@ -353,7 +197,7 @@ namespace VULKAN {
 		bufDSLInfo.push_back ( { VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 1 } );
 
 		descriptorSetLayout = device->createDescriptorSetLayout ( bufDSLInfo );
-		ubo = device->createUniformBuffer ( device->frames, sizeof ( UniformBufferObject ) );
+		//ubo = device->createUniformBuffer ( device->frames, sizeof ( UniformBufferObject ) );
 		Characters = f.characters;
 		std::vector<VkDescriptorSetLayout> layouts = { descriptorSetLayout };
 		pipelineLayout = device->createPipelineLayout ( layouts );
@@ -372,32 +216,32 @@ namespace VULKAN {
 	void TextEntity::render ( UniformBufferObject ubo ) {
 	}
 
-	
+
 
 	void TextEntity::ShadowRender ( UniformBufferObject ubo ) {
 	}
-	
 
-	
-	std::shared_ptr<Entity3D> TextEntity::init ( std::vector<VertexTextOld> vertices, std::vector<uint32_t> indices, VulkanTexture texture ) {
+
+
+	std::shared_ptr<Entity3D> TextEntity::init ( std::vector<VertexText> vertices, std::vector<uint32_t> indices, VulkanTexture texture ) {
 		auto vulkanProp = std::make_shared<VulkanProperty> ();
 
-		std::vector<VulkanUBuffer>  x = device->createUniformBuffer ( frames, sizeof ( UniformBufferObject2 ) );
+		std::vector<VulkanUBuffer>  vulkanBuffer = device->createUniformBuffer ( frames, sizeof ( UniformBufferObject2 ) );
 
 		//vulkanProp->descriptorSets = device->createDescriptorSets ( x, texture.textureImageView, texture.textureSampler, sizeof ( UniformBufferObject2 ) );
 
 		std::vector<DSInfo> bufDSInfo;
-		bufDSInfo.push_back ( { VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, x, sizeof ( x ), VK_NULL_HANDLE, VK_NULL_HANDLE, 0 } );
+		bufDSInfo.push_back ( { VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, vulkanBuffer, sizeof ( vulkanBuffer ), VK_NULL_HANDLE, VK_NULL_HANDLE, 0 } );
 
 		//std::vector<DSInfo> texDSInfo;
-		bufDSInfo.push_back ( { VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, x, sizeof ( x ), texture.imageView, texture.sampler, 1 } );
+		bufDSInfo.push_back ( { VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, vulkanBuffer, sizeof ( vulkanBuffer ), texture.imageView, texture.sampler, 1 } );
 		static int timer = 0;
 
 		std::cout << " timer ........ " << timer++ << "\n\n";
 		vulkanProp->descriptorSets = device->createDescriptorSets ( descriptorSetLayout, bufDSInfo );
 
 
-		auto attributeDescriptions = VertexText::getAttributeDescriptions ();
+		//auto attributeDescriptions = VertexText::getAttributeDescriptions ();
 		//auto pipeline = createGraphicsPipeline3 ( getBindingDescription2 (), attributeDescriptions, device->descriptorSetLayout );
 
 		vulkanProp->vertex = device->createDataBuffer ( (void*) vertices.data (), sizeof ( vertices[0] ) * vertices.size (), VK_BUFFER_USAGE_VERTEX_BUFFER_BIT );
@@ -407,16 +251,27 @@ namespace VULKAN {
 
 		//vulkanProp->pipeline = pipeline.pipeline;
 		//vulkanProp->pipelineLayout = pipeline.pipelineLayout;
-		vulkanProp->buffers = x;
+		vulkanProp->buffers = vulkanBuffer;
 
 		return vulkanProp;
 
 
 	}
 
-	
+	Text * TextEntity::createText ( std::string text ) {
 
-	
+		Propertys prop;
+		prop.pipelineLayout = pipelineLayout;
+		prop.pipeline = pipeline;
+		prop.bufDescriptorSetLayout = descriptorSetLayout;
+		auto t = new Text ( device, prop, texture, f, text );
+
+		return t;
+	}
+
+
+
+
 
 	void TextEntity::createImageView ( VkImage image, VkFormat format, VkImageView& imageView ) {
 		VkImageViewCreateInfo viewInfo {};
@@ -615,7 +470,7 @@ namespace VULKAN {
 	}
 
 
-	
+
 	VulkanTexture TextEntity::createAtlasTexture ( std::vector<uint8_t> msdfData, int atlasWidth, int atlasHeight ) {
 		VulkanTexture texture;
 		VkDeviceSize imageSize = msdfData.size ();
@@ -698,4 +553,5 @@ namespace VULKAN {
 		memcpy ( uniformBuffersMapped, &ubo, sizeof ( ubo ) );
 	}
 
+	
 }

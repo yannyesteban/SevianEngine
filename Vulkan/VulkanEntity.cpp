@@ -85,7 +85,7 @@ namespace VULKAN {
 
 
 		Frame frame = device->frames[currentFrame];
-		auto commandBuffer = frame.commandBuffers;
+		auto commandBuffer = frame.commandBuffer;
 		MeUBO me = {};
 		me.color = glm::vec3 ( 0.99f, 0.026f, 0.011f );
 		me.color2 = glm::vec3 ( 0.5f, 0.0f, 1.0f );

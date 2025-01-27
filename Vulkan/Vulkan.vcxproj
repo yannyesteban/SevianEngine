@@ -27,6 +27,7 @@
     <ClInclude Include="ShadowWorld.h" />
     <ClInclude Include="SpriteManager.h" />
     <ClInclude Include="SwapChain.h" />
+    <ClInclude Include="Text1.h" />
     <ClInclude Include="TextEntity.h" />
     <ClInclude Include="TextureManager.h" />
     <ClInclude Include="Vulkan.h" />
@@ -45,6 +46,7 @@
     <ClCompile Include="ShadowWorld.cpp" />
     <ClCompile Include="SpriteManager.cpp" />
     <ClCompile Include="SwapChain.cpp" />
+    <ClCompile Include="Text1.cpp" />
     <ClCompile Include="TextEntity.cpp" />
     <ClCompile Include="TextureManager.cpp" />
     <ClCompile Include="VulkanEntity.cpp" />

@@ -270,6 +270,21 @@ namespace VULKAN {
 		return buffers;
 	}
 
+	std::vector<VulkanUBuffer> Device::createUniformBuffer ( VkDeviceSize bufferSize ) {
+
+		std::vector<VulkanUBuffer> buffers;
+		buffers.resize ( frames.size () );
+
+		for (size_t i = 0; i < frames.size (); ++i) { 
+			createBuffer ( bufferSize, VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, buffers[i].buffers, buffers[i].buffersMemory );
+
+			vkMapMemory ( device, buffers[i].buffersMemory, 0, bufferSize, 0, &buffers[i].buffersMapped );
+		}
+
+
+		return buffers;
+	}
+
 	void Device::createCommandBuffers ( std::vector<Frame>& frames, VkCommandPool commandPool ) {
 		std::vector<VkCommandBuffer> commandBuffers;
 		commandBuffers.resize ( frames.size () );
@@ -287,7 +302,7 @@ namespace VULKAN {
 
 
 		for (size_t i = 0; i < frames.size (); i++) {
-			frames[i].commandBuffers = commandBuffers[i];
+			frames[i].commandBuffer = commandBuffers[i];
 		}
 	}
 
@@ -1086,6 +1101,19 @@ namespace VULKAN {
 		vkDestroyShaderModule ( device, vertShaderModule, nullptr );
 
 		return pipe;
+	}
+
+	uint32_t Device::currentIndex () {
+		return currentFrame;
+	}
+
+	Frame Device::getFrame () {
+		return frames[currentFrame];
+	}
+
+	Frame Device::nextFrame () {
+		currentFrame = (currentFrame + 1) % MAX_FRAMES_IN_FLIGHT;
+		return frames[currentFrame];
 	}
 
 }

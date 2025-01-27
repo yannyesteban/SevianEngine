@@ -12,7 +12,7 @@ namespace SEVIAN {
 			auto texture = entity->getComponent<TextureComponent> ();
 			auto sprite = entity->getComponent<SpriteComponent> ();
 			auto model = entity->getComponent<ModelComponent> ();
-			//auto transform = entity->getComponent<TransformComponent> ();
+			auto transform = entity->getComponent<TransformComponent> ();
 
 			if (mesh /* && t == "diffuse1"*/ && texture) {
 				Info3D info;

@@ -48,7 +48,7 @@ namespace VULKAN {
         VkFence inFlightFences;
         VkSemaphore imageAvailableSemaphores;
         VkSemaphore renderFinishedSemaphores;
-        VkCommandBuffer commandBuffers;
+        VkCommandBuffer commandBuffer;
 
         VkBuffer uniformBuffers;
         VkDeviceMemory uniformBuffersMemory;

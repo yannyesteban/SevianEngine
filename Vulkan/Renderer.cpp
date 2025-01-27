@@ -127,6 +127,8 @@ namespace VULKAN {
 				descriptorPool
 
 			);
+
+			texto = textManager->createText ( "hello!" );
 		}
 		
 		meshManager = new MeshManager ( device, textureManager.get() );
@@ -197,6 +199,7 @@ namespace VULKAN {
 		fontText.descriptorPool = descriptorPool;
 		fontText.initialize ();
 
+		
 		std::cout << "Hello";
 	}
 
@@ -450,8 +453,8 @@ namespace VULKAN {
 
 		if (entity) {
 
-			Frame frame = frames[currentFrame];
-			updateUniformBuffer (entity->ubo[currentFrame].buffersMapped, position, camera );
+			Frame frame = frames[device->currentFrame];
+			updateUniformBuffer (entity->ubo[device->currentFrame].buffersMapped, position, camera );
 
 
 
@@ -463,7 +466,7 @@ namespace VULKAN {
 			//vkCmdBindIndexBuffer(commandBuffer, indices.buffer, 0, VK_INDEX_TYPE_UINT16);
 			vkCmdBindIndexBuffer ( commandBuffer, entity->indices.buffer, 0, VK_INDEX_TYPE_UINT32 );
 
-			vkCmdBindDescriptorSets ( commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, entity->pipelineLayout, 0, 1, &entity->descriptorSets[currentFrame], 0, nullptr );
+			vkCmdBindDescriptorSets ( commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, entity->pipelineLayout, 0, 1, &entity->descriptorSets[device->currentFrame], 0, nullptr );
 			vkCmdDrawIndexed ( commandBuffer, static_cast<uint32_t>(entity->indicesSizes), 1, 0, 0, 0 );
 		}
 		else {
@@ -612,9 +615,9 @@ namespace VULKAN {
 	}
 
 	void VulkanRenderer::beginFrame () {
+		Frame frame = device->nextFrame ();
 
-		Frame frame = device->frames[device->currentFrame];
-
+		
 		vkWaitForFences ( device->device, 1, &frame.inFlightFences, VK_TRUE, UINT64_MAX );
 
 		//uint32_t imageIndex;
@@ -629,15 +632,15 @@ namespace VULKAN {
 		}
 
 		vkResetFences ( device->device, 1, &frame.inFlightFences );
-		vkResetCommandBuffer ( frame.commandBuffers, /*VkCommandBufferResetFlagBits*/ 0 );
+		vkResetCommandBuffer ( frame.commandBuffer, /*VkCommandBufferResetFlagBits*/ 0 );
 
-		commandBuffer = frame.commandBuffers;
+		commandBuffer = frame.commandBuffer;
 
 		/* record command buffer */
 		VkCommandBufferBeginInfo beginInfo {};
 		beginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
 		beginInfo.flags = VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT;
-		if (vkBeginCommandBuffer ( frame.commandBuffers, &beginInfo ) != VK_SUCCESS) {
+		if (vkBeginCommandBuffer ( frame.commandBuffer, &beginInfo ) != VK_SUCCESS) {
 			throw std::runtime_error ( "failed to begin recording command buffer!" );
 		}
 
@@ -647,8 +650,8 @@ namespace VULKAN {
 
 	void VulkanRenderer::endFrame () {
 
-		Frame frame = device->frames[device->currentFrame];
-		auto commandBuffer = frame.commandBuffers;
+		Frame frame = device->getFrame();
+		auto commandBuffer = frame.commandBuffer;
 		
 
 		if (vkEndCommandBuffer ( commandBuffer ) != VK_SUCCESS) {
@@ -666,7 +669,7 @@ namespace VULKAN {
 		submitInfo.pWaitDstStageMask = waitStages;
 
 		submitInfo.commandBufferCount = 1;
-		submitInfo.pCommandBuffers = &frame.commandBuffers;
+		submitInfo.pCommandBuffers = &frame.commandBuffer;
 
 		VkSemaphore signalSemaphores[] = { frame.renderFinishedSemaphores };
 		submitInfo.signalSemaphoreCount = 1;
@@ -701,11 +704,11 @@ namespace VULKAN {
 			throw std::runtime_error ( "failed to present swap chain image!" );
 		}
 
-		currentFrame = (currentFrame + 1) % MAX_FRAMES_IN_FLIGHT;
+		//device->currentFrame = (device->currentFrame + 1) % MAX_FRAMES_IN_FLIGHT;
 	}
 
 	void VulkanRenderer::beginRenderPass ( int index ) {
-		Frame frame = device->frames[device->currentFrame];
+		Frame frame = device->getFrame ();
 
 
 		if (index == 0) {
@@ -724,7 +727,7 @@ namespace VULKAN {
 			renderPassInfo.clearValueCount = 1;// static_cast<uint32_t>(clearValues.size ());
 			renderPassInfo.pClearValues = clearValues.data ();
 
-			vkCmdBeginRenderPass ( frame.commandBuffers, &renderPassInfo, VK_SUBPASS_CONTENTS_INLINE );
+			vkCmdBeginRenderPass ( frame.commandBuffer, &renderPassInfo, VK_SUBPASS_CONTENTS_INLINE );
 
 			VkViewport viewport {};
 			viewport.x = 0.0f;
@@ -733,12 +736,12 @@ namespace VULKAN {
 			viewport.height = (float) shadowExtent.height;
 			viewport.minDepth = 0.0f;
 			viewport.maxDepth = 1.0f;
-			vkCmdSetViewport ( frame.commandBuffers, 0, 1, &viewport );
+			vkCmdSetViewport ( frame.commandBuffer, 0, 1, &viewport );
 
 			VkRect2D scissor {};
 			scissor.offset = { 0, 0 };
 			scissor.extent = shadowExtent;
-			vkCmdSetScissor ( frame.commandBuffers, 0, 1, &scissor );
+			vkCmdSetScissor ( frame.commandBuffer, 0, 1, &scissor );
 
 			// Establecer el depth bias dinámico
 			float depthBiasConstantFactor = 1.25f; // Cambia según tu necesidad
@@ -763,7 +766,7 @@ namespace VULKAN {
 			renderPassInfo.clearValueCount = static_cast<uint32_t>(clearValues.size ());
 			renderPassInfo.pClearValues = clearValues.data ();
 
-			vkCmdBeginRenderPass ( frame.commandBuffers, &renderPassInfo, VK_SUBPASS_CONTENTS_INLINE );
+			vkCmdBeginRenderPass ( frame.commandBuffer, &renderPassInfo, VK_SUBPASS_CONTENTS_INLINE );
 
 
 			VkViewport viewport {};
@@ -773,12 +776,12 @@ namespace VULKAN {
 			viewport.height = (float) swapChain.extent.height;
 			viewport.minDepth = 0.0f;
 			viewport.maxDepth = 1.0f;
-			vkCmdSetViewport ( frame.commandBuffers, 0, 1, &viewport );
+			vkCmdSetViewport ( frame.commandBuffer, 0, 1, &viewport );
 
 			VkRect2D scissor {};
 			scissor.offset = { 0, 0 };
 			scissor.extent = swapChain.extent;
-			vkCmdSetScissor ( frame.commandBuffers, 0, 1, &scissor );
+			vkCmdSetScissor ( frame.commandBuffer, 0, 1, &scissor );
 		}
 
 		
@@ -786,9 +789,9 @@ namespace VULKAN {
 	}
 
 	void VulkanRenderer::endRenderPass () {
-		Frame frame = device->frames[device->currentFrame];
-		auto commandBuffer = frame.commandBuffers;
-		vkCmdEndRenderPass ( commandBuffer );
+		Frame frame = device->getFrame ();
+		
+		vkCmdEndRenderPass ( frame.commandBuffer );
 	}
 
 	void VulkanRenderer::draw ( std::shared_ptr<Entity3D> prop, glm::vec3 position, Camera camera ) {
@@ -799,8 +802,8 @@ namespace VULKAN {
 
 		if (entity) {
 
-			Frame frame = frames[currentFrame];
-			updateUniformBuffer ( entity->ubo[currentFrame].buffersMapped, position, camera );
+			Frame frame = device->getFrame ();
+			updateUniformBuffer ( entity->ubo[device->currentFrame].buffersMapped, position, camera );
 
 			VkBuffer vertexBuffers[] = { entity->vertex.buffer };
 			VkDeviceSize offsets[] = { 0 };
@@ -810,7 +813,7 @@ namespace VULKAN {
 			//vkCmdBindIndexBuffer(commandBuffer, indices.buffer, 0, VK_INDEX_TYPE_UINT16);
 			vkCmdBindIndexBuffer ( commandBuffer, entity->indices.buffer, 0, VK_INDEX_TYPE_UINT32 );
 
-			vkCmdBindDescriptorSets ( commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, entity->pipelineLayout, 0, 1, &entity->descriptorSets[currentFrame], 0, nullptr );
+			vkCmdBindDescriptorSets ( commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, entity->pipelineLayout, 0, 1, &entity->descriptorSets[device->currentFrame], 0, nullptr );
 			vkCmdDrawIndexed ( commandBuffer, static_cast<uint32_t>(entity->indicesSizes), 1, 0, 0, 0 );
 		}
 		else {
@@ -855,7 +858,7 @@ namespace VULKAN {
 
 		if (entity) {
 
-			Frame frame = device->frames[currentFrame];
+			Frame frame = device->getFrame ();
 			
 			MeUBO me = {};
 			me.color = glm::vec3 (  0.99f, 0.026f, 0.011f );
@@ -902,9 +905,9 @@ namespace VULKAN {
 			ubo2.proj = glm::perspective ( glm::radians ( 45.0f ), 1300 / (float) 600, 0.1f, 100.0f );
 
 			
-			memcpy ( entity->light[currentFrame].buffersMapped, &l, sizeof ( l ) );
-			memcpy ( entity->me[currentFrame].buffersMapped, &me, sizeof(me) );
-			memcpy ( entity->ubo[currentFrame].buffersMapped, &ubo, sizeof ( ubo ) );
+			memcpy ( entity->light[device->currentFrame].buffersMapped, &l, sizeof ( l ) );
+			memcpy ( entity->me[device->currentFrame].buffersMapped, &me, sizeof(me) );
+			memcpy ( entity->ubo[device->currentFrame].buffersMapped, &ubo, sizeof ( ubo ) );
 			//memcpy ( entity->ubo2[currentFrame].buffersMapped, &ubo2, sizeof ( ubo2 ) );
 			
 
@@ -916,7 +919,7 @@ namespace VULKAN {
 			//vkCmdBindIndexBuffer(commandBuffer, indices.buffer, 0, VK_INDEX_TYPE_UINT16);
 			vkCmdBindIndexBuffer ( commandBuffer, entity->indices.buffer, 0, VK_INDEX_TYPE_UINT32 );
 
-			vkCmdBindDescriptorSets ( commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, entity->pipelineLayout, 0, 1, &entity->descriptorSets[currentFrame], 0, nullptr );
+			vkCmdBindDescriptorSets ( commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, entity->pipelineLayout, 0, 1, &entity->descriptorSets[device->currentFrame], 0, nullptr );
 			vkCmdDrawIndexed ( commandBuffer, static_cast<uint32_t>(entity->indicesSizes), 1, 0, 0, 0 );
 
 			entity->render (ubo);
@@ -932,7 +935,8 @@ namespace VULKAN {
 		//fontText.draw (			text, currentFrame, commandBuffer, position, camera, extent.width, extent.height );
 		
 		
-		textManager->draw (			text, currentFrame, commandBuffer, position, camera, extent.width, extent.height );
+		textManager->draw (			text, device->currentFrame, commandBuffer, position, camera, extent.width, extent.height );
+		texto->render ( extent.width, extent.height );
 
 	}
 	

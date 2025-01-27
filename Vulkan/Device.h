@@ -56,6 +56,7 @@ namespace VULKAN {
 		VkDescriptorPool createDescriptorPool ();
 		void createUniformBuffers ( Frame& frame, VkDeviceSize bufferSize );
 		std::vector<VulkanUBuffer> createUniformBuffer ( std::vector<Frame>& frames, VkDeviceSize bufferSize );
+		std::vector<VulkanUBuffer> createUniformBuffer ( VkDeviceSize bufferSize );
 		void createCommandBuffers ( std::vector<Frame>& frames, VkCommandPool commandPool );
 		void createSyncObjects ( Frame& frames );
 
@@ -191,19 +192,6 @@ namespace VULKAN {
 		VertexBuffer createDataBuffer ( void* points, VkDeviceSize bufferSize, VkBufferUsageFlagBits f ) {
 
 			VertexBuffer buffer;
-
-			//VkBuffer vertexBuffer;
-			//VkDeviceMemory vertexBufferMemory;
-
-
-			/*const std::vector<Vertex2> vertices = {
-		{{-0.5f, -0.5f}, {1.0f, 0.0f, 0.0f}, {1.0f, 0.0f}},
-		{{0.5f, -0.5f}, {0.0f, 1.0f, 0.0f}, {0.0f, 0.0f}},
-		{{0.5f, 0.5f}, {0.0f, 0.0f, 1.0f}, {0.0f, 1.0f}},
-		{{-0.5f, 0.5f}, {1.0f, 1.0f, 1.0f}, {1.0f, 1.0f}}
-			};
-			*/
-			//VkDeviceSize bufferSize = sizeof(vertices[0]) * vertices.size();
 
 			VkBuffer stagingBuffer;
 			VkDeviceMemory stagingBufferMemory;
@@ -988,7 +976,9 @@ namespace VULKAN {
 			std::vector <VkDescriptorSetLayout> descriptorSetLayouts, std::string vertSource, std::string fragSource );
 
 		std::vector<Frame> frames;
-
+		uint32_t currentIndex ();
+		Frame getFrame ();
+		Frame nextFrame ();
 	private:
 		VkDescriptorPool descriptorPool;
 
