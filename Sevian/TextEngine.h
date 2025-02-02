@@ -31,12 +31,17 @@ struct Quad
 	AtlasGlyphInfo ch;
 	float x = 0.0f;
 	float y = 0.0f;
-	float w = 0.0f;
-	float h = 0.0f;
-	int line = 0;
-	char c;
+	float width = 0.0f;
+	float height = 0.0f;
+	
+	float offsetX = 0.0f;
+	float offsetY = 0.0f;
+	
 	float xPos = 0.0f;
 	float yPos = 0.0f;
+	float scale = 1.0f;
+	float lineHeight = 0.0f;
+	char c;
 };
 
 
@@ -79,4 +84,13 @@ private:
 	
 public:
 	Font create ( AtlasInfo info );
+};
+
+enum TextAlignment
+{
+	LEFT,
+	RIGHT,
+	CENTER,
+	JUSTIFY
+
 };

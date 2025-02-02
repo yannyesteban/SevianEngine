@@ -136,7 +136,7 @@ namespace VULKAN {
 
 		void createGlyph ( AtlasGlyphInfo );
 
-		void Text2 ( std::vector<std::vector<Quad>> lines );
+		void Text2 ( float x, float y, std::vector<Quad> quads );
 
 		Text ( Device* device, Propertys propertys, VulkanTexture texture, Font font, std::string text );
 		void render ( uint32_t width, uint32_t height );

@@ -5,59 +5,59 @@
 
 namespace VULKAN {
 
-	void Text::Text2 ( std::vector<std::vector<Quad>> lines ) {
+	void Text::Text2 ( float x, float y, std::vector<Quad> quads ) {
 
 		int size = 100;
 
 
 
-		
+
 		float scale = 1.0f * size;
 		uint32_t indexOffset = 0;
-		float x = 0.0f;
-		float y = 0.0f;
+		//float x = 0.0f;
+		//float y = 0.0f;
 		std::vector<VertexText> vertices;
 		std::vector<uint32_t> indices;
-		for (auto& line : lines) {
-			
-			for (auto& quad : line) {
 
 
-				AtlasGlyphInfo ch = font.characters[quad.c];
-				float xpos = quad.xPos ;
-				float ypos = quad.yPos ;
-
-				float u0 = ch.u0;
-				float v0 = ch.v0;
-				float u1 = ch.u1;
-				float v1 = ch.v1;
-
-				float w = quad.w;
-				float h = quad.h;
+		for (auto& quad : quads) {
 
 
-				int color =5;
-			
-				vertices.push_back ( { {xpos, ypos}, {u0, v1}, color } );             // Bottom-left
-				vertices.push_back ( { {xpos + w, ypos}, {u1, v1}, color } );         // Bottom-right
-				vertices.push_back ( { {xpos, ypos + h}, {u0, v0}, color } );         // Top-left
-				vertices.push_back ( { {xpos + w, ypos + h}, {u1, v0}, color } );     // Top-right
+			AtlasGlyphInfo ch = font.characters[quad.c];
+			float xpos = x + quad.xPos;
+			float ypos = y + quad.yPos;
 
-				// Definir los índices del quad
-				indices.push_back ( indexOffset + 0 );
-				indices.push_back ( indexOffset + 1 );
-				indices.push_back ( indexOffset + 2 );
-				indices.push_back ( indexOffset + 1 );
-				indices.push_back ( indexOffset + 3 );
-				indices.push_back ( indexOffset + 2 );
+			float u0 = ch.u0;
+			float v0 = ch.v0;
+			float u1 = ch.u1;
+			float v1 = ch.v1;
 
-				indexOffset += 4;
-			}
+			float w = quad.width;
+			float h = quad.height;
+
+
+			int color = 5;
+
+			vertices.push_back ( { {xpos, ypos}, {u0, v1}, color } );             // Bottom-left
+			vertices.push_back ( { {xpos + w, ypos}, {u1, v1}, color } );         // Bottom-right
+			vertices.push_back ( { {xpos, ypos + h}, {u0, v0}, color } );         // Top-left
+			vertices.push_back ( { {xpos + w, ypos + h}, {u1, v0}, color } );     // Top-right
+
+			// Definir los índices del quad
+			indices.push_back ( indexOffset + 0 );
+			indices.push_back ( indexOffset + 1 );
+			indices.push_back ( indexOffset + 2 );
+			indices.push_back ( indexOffset + 1 );
+			indices.push_back ( indexOffset + 3 );
+			indices.push_back ( indexOffset + 2 );
+
+			indexOffset += 4;
 		}
+
 		elements.push_back ( init ( vertices, indices, texture ) );
 
 
-		
+
 
 
 
@@ -73,12 +73,34 @@ namespace VULKAN {
 
 		auto word = layout.addText ( "yanny esteban nunez jimenez hoy es un gran dia" );
 
-		SEVIAN::TEXT::Box box { 500, 600 };
+		//SEVIAN::TEXT::Box box { 500, 600 };
 		//Text2 ( word );
-		box.addText ( "ahora que tengo terminado mi render text, mi nueva caja esta demasiado pequena ", font, 32 );
-		box.addText ( "ahora mi old caja es demasiado grande.", font, 48 );
+		//box.addText ( "ahora que tengo terminado mi render text, mi nueva caja esta demasiado pequena, ahora que tengo terminado mi render text, mi nueva caja esta demasiado pequena ", font, 32 );
+		//box.addText ( "wiega mi old caja es game ", font, 64 );
+		//box.addText ( "niega mi old caja es gama ", font, 32 );
+		//box.addText ( "ahora ", font, 32 );
+		//box.addText ( "desde ", font, 32 );
+		//box.addText ( "siempre ", font, 32 );
+		//box.addText ( "bienvenidos a mi casa de VERANO. espero que disfrute la estancia", font, 32 );
+		//box.format ( LEFT );
+		//Text2 ( 0, -50, box.getQuads () );
+
+
+		SEVIAN::TEXT::Box box2 { 500, 600 };
+		//Text2 ( word );
 		
-		Text2 ( box.getLines () );
+		//box2.addText2 ( "a a a a a a a a a a b b b b b c c c c c c c c d d d d d d e manan es un gran dia para hacer calculos y ", font, 32 );
+		//box2.addText2 ( "renderizados de texto para ubicar el diferentes lineas ahora es Mej", font, 32 );
+		//box2.addText2 ( "or aHora mej", font, 32 );
+		//box2.addText2 ( "or que nunca ", font, 32 );
+		box2.addText2 ( "yanny esteban nunes jimenez wrogramadorprogramadorprogramadorprogramador", font, 32 );
+		box2.render2 ();
+		//box2.addText ( "desde ", font, 32 );
+		//box2.addText ( "siempre ", font, 32 );
+
+
+		//box2.format ( JUSTIFY );
+		Text2 ( -800, -0, box2.getQuads () );
 
 		return;
 		int size = 100;
@@ -283,7 +305,7 @@ std::vector<std::vector<Quad>> TextLayout::addText ( std::string text ) {
 	float width = 500.0f;
 
 	float lineWidth = 0.0f;
-	
+
 	int line = 0;
 	float x = 0.0f;
 	float y = 0.0f;
@@ -318,7 +340,7 @@ std::vector<std::vector<Quad>> TextLayout::addText ( std::string text ) {
 		AtlasGlyphInfo ch = font.characters[c];
 		q.c = c;
 		q.ch = ch;
-		q.line = line;
+		//q.line = line;
 		float xpos = x + ch.bearingX * scale;
 		float ypos = y - (ch.height - ch.bearingY) * scale;
 
