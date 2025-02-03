@@ -89,11 +89,11 @@ namespace VULKAN {
 		SEVIAN::TEXT::Box box2 { 500, 600 };
 		//Text2 ( word );
 		
-		//box2.addText2 ( "a a a a a a a a a a b b b b b c c c c c c c c d d d d d d e manan es un gran dia para hacer calculos y ", font, 32 );
+		box2.addText2 ( "a a a a a a a a a a b b b b b c c c c c c c c d d d d d d e manan es un gran dia para hacer calculos y ", font, 32 );
 		//box2.addText2 ( "renderizados de texto para ubicar el diferentes lineas ahora es Mej", font, 32 );
 		//box2.addText2 ( "or aHora mej", font, 32 );
-		//box2.addText2 ( "or que nunca ", font, 32 );
-		box2.addText2 ( "yanny esteban nunes jimenez wrogramadorprogramadorprogramadorprogramador", font, 32 );
+		//box2.addText2 ( "or que nunca ", font, 32 ); 
+		box2.addText2 ( "yanny esteban nunes jimenez wrogramador programador pro wr ogramadorprogramadorpro gramadorprogramador wrogra madorprogramadorprowrogramadorprogramador pro", font, 32 );
 		box2.render2 ();
 		//box2.addText ( "desde ", font, 32 );
 		//box2.addText ( "siempre ", font, 32 );

@@ -119,34 +119,21 @@ namespace SEVIAN {
 				for (auto& c: fragment.text) {
 
 					//AtlasGlyphInfo ch = font.characters[c];
-					std::cout << " char " << c << "  : " << x << " n: " << n << "\n";
-					if (c == 'w') {
-						int p = 0;
-
-						
-						//AtlasGlyphInfo ch = font.characters[c];
-					}
-
+					
 					if (x > maxWidth || c == '\n') {
-						if (n > 70) {
-							int p = 0;
-
-
-							//AtlasGlyphInfo ch = font.characters[c];
+						
+						bool isNewLine = std::isspace ( c ) || c == '\n';
+						
+						if (isNewLine && wordWidth > maxWidth) {
+							lineQuads.insert ( lineQuads.end (), quads.begin (), quads.end () );
 						}
-						std::cout << " char ------> " << c << "  : " << x << " n-> " << n << "\n";
-						if (std::isspace ( c ) || c == '\n') {
 
-							if ( wordWidth > maxWidth ) {
-								lineQuads.insert ( lineQuads.end (), quads.begin (), quads.end () );
-							}
-							
 
+						if (isNewLine || wordWidth < maxWidth) {
 							//new line
 							y -= lineHeight;
 							float w = 0.0f;
 							float lineWidth = 0.0f;
-
 
 							for (auto& q : lineQuads) {
 
@@ -158,58 +145,26 @@ namespace SEVIAN {
 
 							lines.emplace_back ( std::move ( lineQuads ), y, lineWidth, lineHeight, 1.0f, true );
 							lineQuads.clear ();
-							quads.clear ();
-							wordWidth = 0.0f;
-							x = 0.0f;
-							
-						}
-						else if(wordWidth < maxWidth){
 
-							if (n > 71) {
-								int p = 0;
-
-
-								//AtlasGlyphInfo ch = font.characters[c];
+							if (isNewLine) {
+								quads.clear ();
+								wordWidth = 0.0f;
+								x = 0.0f;
 							}
-							
-							// move word to new line
-							//new line
-							y -= lineHeight;
-							float w = 0.0f;
-							float lineWidth = 0.0f;
-							for (auto& q : lineQuads) {
-
-								q.yPos = y - (q.ch.height - q.ch.bearingY) * scale;
-								q.xPos = w + q.ch.bearingX * scale;
-								lineWidth += q.ch.advance * scale;
-								w += q.ch.advance * scale;
-							}
-
-							lines.emplace_back ( std::move ( lineQuads ), y, lineWidth, lineHeight, 1.0f, true );
-							lineQuads.clear ();
-							
-							if (!quads.empty ()) {
-								if (quads[0].c == ' ') {
-									quads.erase ( quads.begin () );
+							else {
+								if (!quads.empty ()) {
+									if (quads[0].c == ' ') {
+										quads.erase ( quads.begin () );
+									}
 								}
-							}
-							x = 0.0f;
-
-							
-							for (auto& q : quads) {
-
 								
-								x+= q.ch.advance * scale;
+								x = wordWidth;
 							}
-
-							x = wordWidth;
-							
 						}
 						
 						if (c == '\n' || std::isspace ( c )) {
 							continue;
 						}
-
 					}
 					else {
 
