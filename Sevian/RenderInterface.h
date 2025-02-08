@@ -5,6 +5,95 @@
 #include <memory>
 
 namespace SEVIAN {
+
+    namespace RENDERER {
+
+        struct iElement
+        {
+            void* handle;
+            bool visible = true;
+            bool shadow = true;
+            /*
+            implementacion en Vulkan
+            VkPipeline pipeline = VK_NULL_HANDLE;
+            VkPipelineLayout pipelineLayout = VK_NULL_HANDLE;
+
+        
+
+            std::vector<VkDescriptorSet> descriptorSets;
+
+            size_t indicesSizes;
+
+            VkBuffer vertexBuffer = VK_NULL_HANDLE;
+            VkBuffer indexBuffer = VK_NULL_HANDLE;
+        
+
+
+            VkDescriptorSetLayout bufDescriptorSetLayout = VK_NULL_HANDLE;
+        
+            */
+        };
+
+        class iObject
+        {
+        private:
+            std::vector<iElement> elements;
+        public:
+            void addElement ( iElement element );
+
+            void render ();
+        };
+
+        class iMeshManager
+        {
+            
+            iObject createMesh ( SEVIAN::Info3D info );
+
+        };
+
+        class iTextManager
+        {
+
+            iObject createText ( SEVIAN::Info3D info );
+
+        };
+
+        class iSpriteManager
+        {
+
+            virtual iObject createSprite ( SEVIAN::SpriteInfo info ) = 0;
+
+        };
+        class iParticleManager
+        {
+        public:
+            iObject createParticleSystem ( const glm::vec3& position, int maxParticles );
+        };
+
+        class iSkyboxManager
+        {
+        public:
+            iObject createSkybox ( const std::vector<std::string>& texturePaths );
+        };
+
+        class iPostProcessingManager
+        {
+        public:
+            iObject createPostProcessingEffect ( const std::string& effectName );
+        };
+
+        class iUIManager
+        {
+        public:
+            iObject createButton ( const std::string& label, const glm::vec2& position, const glm::vec2& size );
+            iObject createText ( const std::string& text, const glm::vec2& position );
+        };
+
+    }
+
+
+
+
     class GameApp
     {
     public:
@@ -76,6 +165,7 @@ namespace SEVIAN {
 
         virtual std::unique_ptr<Entity3D> createModel ( Model3D info ) = 0;
 
+        //virtual void draw ( std::vector<RENDERER::iObject> components ) = 0;
     };
 
     // TextureInterface.h

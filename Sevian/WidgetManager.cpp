@@ -1,0 +1,1 @@
+#include "WidgetManager.h"

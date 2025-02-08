@@ -12,6 +12,16 @@ namespace SEVIAN {
 			NEWLINE
 		};
 
+		struct CharInfo
+		{
+			char c;
+			float advance = 0.0f;
+			float scale = 1.0f;
+			float lineHeight = 0.0f;
+			AtlasGlyphInfo ch;
+			
+		};
+
 		struct Token
 		{
 			
@@ -82,16 +92,15 @@ namespace SEVIAN {
 
 			std::vector<Fragment> fragments;
 
-
+			void addLine ( float& posY, std::vector<CharInfo> words, bool full );
 		public:
 			Box ( float width, float height ) :maxWidth ( width ), maxHeight ( height ) { }
-			void addText ( const std::string& text, Font font, float scale );
+			
 			std::vector<Line> getLines ();
 			std::vector<Quad> getQuads ();
 			void format ( TextAlignment alignment );
-			void addWord ( std::vector<Quad>, float wordWidth );
-			void addText2 ( const std::string& text, Font font, float scale );
-			void render2 ();
+			void addText ( const std::string& text, Font font, float scale );
+			
 			void render ();
 		};
 		class Layout

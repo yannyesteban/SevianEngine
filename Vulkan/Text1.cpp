@@ -1,40 +1,28 @@
 #include "Text1.h"
-
+#include "ElapsedTimer.h"
 
 
 
 namespace VULKAN {
 
-	void Text::Text2 ( float x, float y, std::vector<Quad> quads ) {
+	void Text::paint ( float x, float y, std::vector<Quad> quads ) {
 
-		int size = 100;
-
-
-
-
-		float scale = 1.0f * size;
 		uint32_t indexOffset = 0;
-		//float x = 0.0f;
-		//float y = 0.0f;
 		std::vector<VertexText> vertices;
 		std::vector<uint32_t> indices;
 
-
 		for (auto& quad : quads) {
 
-
-			AtlasGlyphInfo ch = font.characters[quad.c];
 			float xpos = x + quad.xPos;
 			float ypos = y + quad.yPos;
 
-			float u0 = ch.u0;
-			float v0 = ch.v0;
-			float u1 = ch.u1;
-			float v1 = ch.v1;
+			float u0 = quad.u0;
+			float v0 = quad.v0;
+			float u1 = quad.u1;
+			float v1 = quad.v1;
 
 			float w = quad.width;
 			float h = quad.height;
-
 
 			int color = 5;
 
@@ -43,7 +31,6 @@ namespace VULKAN {
 			vertices.push_back ( { {xpos, ypos + h}, {u0, v0}, color } );         // Top-left
 			vertices.push_back ( { {xpos + w, ypos + h}, {u1, v0}, color } );     // Top-right
 
-			// Definir los índices del quad
 			indices.push_back ( indexOffset + 0 );
 			indices.push_back ( indexOffset + 1 );
 			indices.push_back ( indexOffset + 2 );
@@ -55,111 +42,23 @@ namespace VULKAN {
 		}
 
 		elements.push_back ( init ( vertices, indices, texture ) );
-
-
-
-
-
-
 	}
+
 
 	Text::Text ( Device* device, Propertys propertys, VulkanTexture texture, Font font, std::string text ) :
 		device ( device ), propertys ( propertys ), texture ( texture ), font ( font ), text ( text ) {
 
-
-
-
-		TextLayout layout ( font, 800, 800 );
-
-		auto word = layout.addText ( "yanny esteban nunez jimenez hoy es un gran dia" );
-
-		//SEVIAN::TEXT::Box box { 500, 600 };
-		//Text2 ( word );
-		//box.addText ( "ahora que tengo terminado mi render text, mi nueva caja esta demasiado pequena, ahora que tengo terminado mi render text, mi nueva caja esta demasiado pequena ", font, 32 );
-		//box.addText ( "wiega mi old caja es game ", font, 64 );
-		//box.addText ( "niega mi old caja es gama ", font, 32 );
-		//box.addText ( "ahora ", font, 32 );
-		//box.addText ( "desde ", font, 32 );
-		//box.addText ( "siempre ", font, 32 );
-		//box.addText ( "bienvenidos a mi casa de VERANO. espero que disfrute la estancia", font, 32 );
-		//box.format ( LEFT );
-		//Text2 ( 0, -50, box.getQuads () );
-
-
-		SEVIAN::TEXT::Box box2 { 500, 600 };
-		//Text2 ( word );
+		auto timer = ElapsedTimer ();
+		timer.start ();
 		
-		box2.addText2 ( "a a a a a a a a a a b b b b b c c c c c c c c d d d d d d e manan es un gran dia para hacer calculos y ", font, 32 );
-		//box2.addText2 ( "renderizados de texto para ubicar el diferentes lineas ahora es Mej", font, 32 );
-		//box2.addText2 ( "or aHora mej", font, 32 );
-		//box2.addText2 ( "or que nunca ", font, 32 ); 
-		box2.addText2 ( "yanny esteban nunes jimenez wrogramador programador pro wr ogramadorprogramadorpro gramadorprogramador wrogra madorprogramadorprowrogramadorprogramador pro", font, 32 );
-		box2.render2 ();
-		//box2.addText ( "desde ", font, 32 );
-		//box2.addText ( "siempre ", font, 32 );
+		SEVIAN::TEXT::Box box { 800, 500 };
+		box.addText ( "En lugar de crear un objeto temporal y luego copiarlo o moverlo al contenedor, emplace_back construye el objeto directamente dentro del contenedor, utilizando los argumentos que se le pasan.  Esto puede ser significativamente mas eficiente, ", font, 36 );
 
-
-		//box2.format ( JUSTIFY );
-		Text2 ( -800, -0, box2.getQuads () );
-
-		return;
-		int size = 100;
-
-
-
-		float x = 0.0f;
-		float y = 0.0f;
-
-		float scale = 1.0f * size;
-		uint32_t indexOffset = 0;
-		int i = 0;
-		//text = "BYan";
-
-
-		std::vector<VertexText> vertices;
-		std::vector<uint32_t> indices;
-		int step = 0;
-		for (auto c = text.begin (); c != text.end (); c++) {
-			AtlasGlyphInfo ch = font.characters[*c];
-			float xpos = x + ch.bearingX * scale;
-			float ypos = y - (ch.height - ch.bearingY) * scale;
-
-			float u0 = ch.u0;
-			float v0 = ch.v0;
-			float u1 = ch.u1;
-			float v1 = ch.v1;
-
-			float w = ch.width * scale;
-			float h = ch.height * scale;
-
-
-			int color = step % 1;
-			color = 5;
-			vertices.push_back ( { {xpos, ypos}, {u0, v1}, color } );             // Bottom-left
-			vertices.push_back ( { {xpos + w, ypos}, {u1, v1}, color } );         // Bottom-right
-			vertices.push_back ( { {xpos, ypos + h}, {u0, v0}, color } );         // Top-left
-			vertices.push_back ( { {xpos + w, ypos + h}, {u1, v0}, color } );     // Top-right
-
-			// Definir los índices del quad
-			indices.push_back ( indexOffset + 0 );
-			indices.push_back ( indexOffset + 1 );
-			indices.push_back ( indexOffset + 2 );
-			indices.push_back ( indexOffset + 1 );
-			indices.push_back ( indexOffset + 3 );
-			indices.push_back ( indexOffset + 2 );
-
-			indexOffset += 4;
-
-
-			x += ch.advance * scale;
-			step++;
-		}
-
-		elements.push_back ( init ( vertices, indices, texture ) );
-		//prop = init ( vertices, indices, texture );
-		//tx.push_back ( prop );
-
-
+		box.addText ( "especialmente para tipos de datos complejos o cuando se trabaja con grandes contenedores.", font, 36 );
+		box.render ();
+		paint ( -400, -0, box.getQuads () );
+		box.format ( JUSTIFY );
+		timer.mark ();
 
 	}
 
@@ -201,13 +100,11 @@ namespace VULKAN {
 		//vulkanProp->descriptorSets = device->createDescriptorSets ( x, texture.textureImageView, texture.textureSampler, sizeof ( UniformBufferObject2 ) );
 
 		std::vector<DSInfo> bufDSInfo;
-		bufDSInfo.push_back ( { VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, vulkanBuffer, sizeof ( vulkanBuffer ), VK_NULL_HANDLE, VK_NULL_HANDLE, 0 } );
+		bufDSInfo.push_back ( { VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, vulkanBuffer, sizeof ( UniformBufferObject2 ), VK_NULL_HANDLE, VK_NULL_HANDLE, 0 } );
 
 		//std::vector<DSInfo> texDSInfo;
-		bufDSInfo.push_back ( { VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, vulkanBuffer, sizeof ( vulkanBuffer ), texture.imageView, texture.sampler, 1 } );
-		static int timer = 0;
-
-		std::cout << " timer ........ " << timer++ << "\n\n";
+		bufDSInfo.push_back ( { VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, vulkanBuffer, sizeof ( UniformBufferObject2 ), texture.imageView, texture.sampler, 1 } );
+		
 		//auto g = device->createDescriptorSets ( propertys.bufDescriptorSetLayout, bufDSInfo );
 
 
@@ -273,152 +170,4 @@ namespace VULKAN {
 	}
 }
 
-static std::vector<std::string> split ( const std::string& s ) {
-	std::vector<std::string> words;
-	std::string word;
 
-	for (char c : s) {
-
-
-
-		if (std::isspace ( c )) {
-			if (!word.empty ()) {
-				words.push_back ( word );
-				word.clear ();
-			}
-		}
-		else {
-			word += c;
-		}
-	}
-
-	if (!word.empty ()) {
-		words.push_back ( word );
-	}
-
-	return words;
-}
-
-std::vector<std::vector<Quad>> TextLayout::addText ( std::string text ) {
-
-
-	float width = 500.0f;
-
-	float lineWidth = 0.0f;
-
-	int line = 0;
-	float x = 0.0f;
-	float y = 0.0f;
-
-	float w = 0.0f;
-	std::vector<Quad> quads {};
-
-	std::vector<std::vector<Quad>> lines {};
-
-	int size = 100;
-
-
-
-
-	float scale = 1.0f * size;
-
-	for (char c : text) {
-
-		if (c == '\n') { // Si es un carácter de nueva línea
-			// Almacenar la línea actual en la lista de líneas
-			lines.push_back ( quads );
-			quads.clear (); // Limpiar los quads para la nueva línea
-
-			// Reiniciar la posición horizontal y mover la posición vertical hacia abajo
-			x = 0.0f;
-			y -= font.lineHeight * scale; // Mover hacia abajo (ajusta según la altura de la línea)
-			line++; // Incrementar el número de línea
-			continue; // Saltar al siguiente carácter
-		}
-
-		Quad q;
-		AtlasGlyphInfo ch = font.characters[c];
-		q.c = c;
-		q.ch = ch;
-		//q.line = line;
-		float xpos = x + ch.bearingX * scale;
-		float ypos = y - (ch.height - ch.bearingY) * scale;
-
-		q.xPos = xpos;
-		q.yPos = ypos;
-
-
-
-		x += ch.advance * scale;
-		w += x;
-
-		if (std::isspace ( c ) && x > width) {
-			lines.push_back ( quads );
-			quads.clear ();
-			y -= font.lineHeight * scale;
-			x = 0.0;
-			line++;
-
-
-
-		}
-
-		quads.push_back ( q );
-
-	}
-
-	if (!quads.empty ()) {
-		lines.push_back ( quads );
-	}
-
-	std::vector words = split ( text );
-
-	for (auto& word : words) {
-		std::cout << "palabra " << word << " tiene: " << wordSize ( word ) << "\n";
-
-	}
-
-	return lines;
-}
-
-struct Palabra
-{
-	std::vector<Quad> quads {};
-};
-
-float TextLayout::wordSize ( std::string text ) {
-
-	float x = 0.0f;
-	float y = 0.0f;
-	float scale = 1.0f;
-
-	float width = 0.0f;
-
-
-	for (auto c = text.begin (); c != text.end (); c++) {
-
-		Quad q;
-		AtlasGlyphInfo ch = font.characters[*c];
-		float xpos = x + ch.bearingX * scale;
-		float ypos = y - (ch.height - ch.bearingY) * scale;
-
-		float u0 = ch.u0;
-		float v0 = ch.v0;
-		float u1 = ch.u1;
-		float v1 = ch.v1;
-
-		float w = ch.width * scale;
-		float h = ch.height * scale;
-
-
-
-
-		x += ch.advance * scale;
-		width += x;
-
-
-
-	}
-
-	return width;
-}

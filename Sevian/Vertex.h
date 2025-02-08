@@ -211,6 +211,37 @@ namespace SEVIAN {
 		TextureInfo text;
 	};
 
+	struct Sprite2DInfo
+	{
+		std::string texture;
+		glm::vec2 position = glm::vec2 ( 0.0f, 0.0f );
+		glm::vec2 size = glm::vec2 ( 0.0f, 0.0f );
+		glm::vec3 color = glm::vec3 ( 0.0f, 0.0f, 0.0f );
+
+	};
+
+	struct SpriteInfo
+	{
+		std::string texture;
+		glm::vec3 position = glm::vec3 ( 0.0f, 0.0f, 0.0f );
+		glm::vec2 size = glm::vec2 ( 0.0f, 0.0f );
+		glm::vec3 color = glm::vec3 ( 0.0f, 0.0f, 0.0f );
+		
+	};
+
+	struct MeshInfo
+	{
+		std::vector<Vertex> vertices;
+		std::vector<uint32_t> indices;
+		std::string texture;
+	};
+
+	struct GeometricInfo
+	{
+		std::vector<Vertex> vertices;
+		std::vector<uint32_t> indices;
+		std::string texture;
+	};
 
 	struct Sprite3D
 	{

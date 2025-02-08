@@ -66,7 +66,7 @@ namespace VULKAN {
 
 		
 
-		int selectedDevice = 1;
+		int selectedDevice = 0;
 
 		device = physicalDevices.at ( selectedDevice ).createDevice ();
 		commandPool = physicalDevices.at ( selectedDevice ).createCommandPool ();

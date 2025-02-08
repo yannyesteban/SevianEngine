@@ -152,6 +152,7 @@
     <ClCompile Include="MovementSystem.cpp" />
     <ClCompile Include="RaceSystem.cpp" />
     <ClCompile Include="RenderSystem.cpp" />
+    <ClCompile Include="RenderSystem2.cpp" />
     <ClCompile Include="Rinconada.cpp" />
     <ClCompile Include="Scene.cpp" />
     <ClCompile Include="createSquareEntity.cpp" />
@@ -187,6 +188,7 @@
     <ClInclude Include="MovementSystem.h" />
     <ClInclude Include="RaceSystem.h" />
     <ClInclude Include="RenderSystem.h" />
+    <ClInclude Include="RenderSystem2.h" />
     <ClInclude Include="Rinconada.h" />
     <ClInclude Include="Scene.h" />
     <ClInclude Include="SceneData.h" />
@@ -200,6 +202,8 @@
   <ItemGroup>
     <None Include="bone.frag" />
     <None Include="bone.vert" />
+    <None Include="button.frag" />
+    <None Include="button.vert" />
     <None Include="Final.frag" />
     <None Include="Final.vert" />
     <None Include="lights.frag" />

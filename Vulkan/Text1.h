@@ -27,8 +27,6 @@ private:
 public:
 	TextLayout ( Font font, uint32_t width, uint32_t height ) : width ( width ), height ( height ), x(0), y(0), font(font) { };
 
-	std::vector<std::vector<Quad>> addText ( std::string text );
-	float wordSize ( std::string );
 	void createTextBox ( std::string text, uint32_t width, uint32_t height ) {
 
 	}
@@ -134,16 +132,13 @@ namespace VULKAN {
 		std::vector<std::shared_ptr<Entity3D>> elements;
 	public:
 
-		void createGlyph ( AtlasGlyphInfo );
 
-		void Text2 ( float x, float y, std::vector<Quad> quads );
+		void paint ( float x, float y, std::vector<Quad> quads );
 
 		Text ( Device* device, Propertys propertys, VulkanTexture texture, Font font, std::string text );
 		void render ( uint32_t width, uint32_t height );
 		std::shared_ptr<Entity3D> init ( std::vector<VertexText> vertices, std::vector<uint32_t> indices, VulkanTexture texture );
 		void updateUniformBuffer ( void* uniformBuffersMapped, glm::vec3 position, uint32_t width, uint32_t height );
-		void setText ( std::string text );
-		void setScale ( float scale );
 
 
 	};

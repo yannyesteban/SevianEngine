@@ -7,7 +7,7 @@
 
 
 
-const std::string mainText = "Yanny@A.com";
+const std::string mainText = "deekseek vs chatgpt";
 
 
 // Función para guardar el atlas SDF como imagen

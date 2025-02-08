@@ -36,11 +36,16 @@ struct Quad
 	
 	float offsetX = 0.0f;
 	float offsetY = 0.0f;
+	float advance = 0.0f;
 	
 	float xPos = 0.0f;
 	float yPos = 0.0f;
 	float scale = 1.0f;
 	float lineHeight = 0.0f;
+	float u0 = 0.0f;
+	float u1 = 0.0f;
+	float v0 = 0.0f;
+	float v1 = 0.0f;
 	char c;
 };
 

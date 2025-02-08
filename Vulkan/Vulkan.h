@@ -7,9 +7,35 @@
 #include <glm/gtc/matrix_transform.hpp>
 #include <optional>
 
-
+#include "RenderInterface.h"
 
 namespace VULKAN {
+
+
+    struct Element1: public SEVIAN::RENDERER::iElement
+    {
+        void* handle;
+        bool visible = true;
+        bool shadow = true;
+        
+        VkPipeline pipeline = VK_NULL_HANDLE;
+        VkPipelineLayout pipelineLayout = VK_NULL_HANDLE;
+
+
+
+        std::vector<VkDescriptorSet> descriptorSets;
+
+        size_t indicesSizes;
+
+        VkBuffer vertexBuffer = VK_NULL_HANDLE;
+        VkBuffer indexBuffer = VK_NULL_HANDLE;
+
+
+
+        VkDescriptorSetLayout bufDescriptorSetLayout = VK_NULL_HANDLE;
+
+        
+    };
 
     struct Character
     {
@@ -132,6 +158,8 @@ namespace VULKAN {
         VkPipeline pipeline;
     };
 
+    
+
     struct Propertys
     {
         VertexBuffer vertex;
@@ -159,6 +187,65 @@ namespace VULKAN {
         VkDescriptorSetLayout shadowDescriptorSetLayout = VK_NULL_HANDLE;
         //VkPipelineLayout shadowPipelineLayout = VK_NULL_HANDLE;
     };
+
+    
+
+
+    struct QVertex
+    {
+        glm::vec3 position;
+        glm::vec3 normal;
+        glm::vec2 texCoords;
+        glm::vec3 color;
+
+
+        
+
+        static VkVertexInputBindingDescription getBindingDescription () {
+            VkVertexInputBindingDescription bindingDescription {};
+            bindingDescription.binding = 0;
+            bindingDescription.stride = sizeof ( QVertex );
+            bindingDescription.inputRate = VK_VERTEX_INPUT_RATE_VERTEX;
+
+            return bindingDescription;
+        }
+
+        static std::vector<VkVertexInputAttributeDescription> getAttributeDescriptions () {
+
+            std::vector<VkVertexInputAttributeDescription> attributeDescriptions {};
+           
+            attributeDescriptions[0].binding = 0;
+            attributeDescriptions[0].location = 0;
+            attributeDescriptions[0].format = VK_FORMAT_R32G32B32_SFLOAT;
+            attributeDescriptions[0].offset = offsetof ( QVertex, position );
+
+            attributeDescriptions[1].binding = 0;
+            attributeDescriptions[1].location = 1;
+            attributeDescriptions[1].format = VK_FORMAT_R32G32B32_SFLOAT;
+            attributeDescriptions[1].offset = offsetof ( QVertex, normal );
+
+            attributeDescriptions[2].binding = 0;
+            attributeDescriptions[2].location = 2;
+            attributeDescriptions[2].format = VK_FORMAT_R32G32_SFLOAT;
+            attributeDescriptions[2].offset = offsetof ( QVertex, texCoords );
+
+            attributeDescriptions[3].binding = 0;
+            attributeDescriptions[3].location = 3;
+            attributeDescriptions[3].format = VK_FORMAT_R32G32B32_SFLOAT;
+            attributeDescriptions[3].offset = offsetof ( QVertex, color );
+
+
+            return attributeDescriptions;
+
+        }
+
+        bool operator==( const QVertex& other ) const {
+            return position == other.position && color == other.color && texCoords == other.texCoords;
+        }
+
+    };
+
+  
 
     
 }

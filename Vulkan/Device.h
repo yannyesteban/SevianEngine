@@ -39,6 +39,9 @@ void db ( std::string message );
 
 
 namespace VULKAN {
+
+	
+
 	class Device
 	{
 	public:
@@ -983,6 +986,15 @@ namespace VULKAN {
 		VkDescriptorPool descriptorPool;
 
 	};
+
+
+	struct VulkanInfo
+	{
+		Device* device;
+		std::vector<Frame> frames;
+		VkDescriptorPool descriptorPool;
+	};
+
 }
 
 
