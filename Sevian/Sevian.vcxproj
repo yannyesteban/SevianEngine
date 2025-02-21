@@ -138,23 +138,27 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClInclude Include="ElapsedTimer.h" />
+    <ClInclude Include="FontManager.h" />
+    <ClInclude Include="IInputManager.h" />
+    <ClInclude Include="iRenderManager.h" />
     <ClInclude Include="Render.h" />
     <ClInclude Include="RendererFactory.h" />
     <ClInclude Include="RenderInterface.h" />
     <ClInclude Include="Text.h" />
     <ClInclude Include="TextEngine.h" />
+    <ClInclude Include="UNIT.h" />
     <ClInclude Include="Vertex.h" />
-    <ClInclude Include="Widget.h" />
-    <ClInclude Include="WidgetManager.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="ElapsedTimer.cpp" />
+    <ClCompile Include="FontManager.cpp" />
+    <ClCompile Include="IInputManager.cpp" />
+    <ClCompile Include="iRenderManager.cpp" />
     <ClCompile Include="maincpp.cpp" />
     <ClCompile Include="Render.cpp" />
     <ClCompile Include="Text.cpp" />
     <ClCompile Include="TextEngine.cpp" />
-    <ClCompile Include="Widget.cpp" />
-    <ClCompile Include="WidgetManager.cpp" />
+    <ClCompile Include="UNIT.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

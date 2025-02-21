@@ -10,8 +10,8 @@ namespace SEVIAN {
 			fragments.push_back ( { font, text, scale } );
 		}
 
-		
-		void Box::addLine ( float& y, std::vector<CharInfo> words, bool full ) {
+
+		void Box::addLine2 ( float& y, std::vector<CharInfo> words, bool full ) {
 
 			float lineHeight = 0.0f;
 			float lineWidth = 0.0f;
@@ -49,9 +49,53 @@ namespace SEVIAN {
 			}
 
 			lines.emplace_back ( std::move ( quads ), y, lineWidth, lineHeight, 1.0f, full );
+			y += lineHeight;
+		}
+		
+		void Box::addLine ( float& y, std::vector<CharInfo> words, bool full ) {
+
+			float lineHeight = 0.0f;
+			float lineWidth = 0.0f;
+			float scale = 1.0f;
+			for (auto& info : words) {
+				lineWidth += info.advance;
+				lineHeight = std::max ( info.lineHeight, lineHeight );
+				scale = std::max ( info.scale, scale );
+			}
+
+			
+			float x = 0.0f;
+			y += scale;
+			std::vector <Quad> quads;
+			for (auto& info : words) {
+				AtlasGlyphInfo ch = info.ch;
+				Quad q;
+				q.c = info.c;
+				q.u0 = ch.u0;
+				q.u1 = ch.u1;
+				q.v0 = ch.v0;
+				q.v1 = ch.v1;
+				q.ch = ch;
+
+				q.width = ch.width * info.scale;
+				q.height = ch.height * info.scale;
+				//lineWidth += ch.advance * info.scale;
+				q.offsetX = ch.bearingX * info.scale;
+				q.offsetY = (ch.height - ch.bearingY) * info.scale;
+
+				q.xPos = x + q.offsetX;
+				q.yPos = y - ch.bearingY * info.scale;
+
+				q.advance = ch.advance * info.scale;
+				x += ch.advance * info.scale;
+				quads.push_back ( q );
+			}
+
+			lines.emplace_back ( std::move ( quads ), y, lineWidth, lineHeight, 1.0f, full );
+			
 		}
 
-		
+
 		void Box::render () {
 
 			Font font;
@@ -145,12 +189,12 @@ namespace SEVIAN {
 			}
 		}
 
-		
+
 		std::vector<Line> Box::getLines () {
 			return lines;
 		}
 
-		
+
 		std::vector<Quad> Box::getQuads () {
 
 			std::vector<Quad> quads;
@@ -163,7 +207,7 @@ namespace SEVIAN {
 			return quads;
 		}
 
-		
+
 		void Box::format ( TextAlignment alignment ) {
 
 			for (auto& line : lines) {
@@ -172,11 +216,12 @@ namespace SEVIAN {
 			}
 		}
 
-		
-		Line::Line ( std::vector<Quad>&& quads, float y, float lineWidth, float lineHeight, float scale, bool full )
-			: quads ( std::move ( quads ) ), y ( y ), lineWidth ( lineWidth ), lineHeight ( lineHeight ), scale ( scale ), full ( full ) { 	}
 
-		
+		Line::Line ( std::vector<Quad>&& quads, float y, float lineWidth, float lineHeight, float scale, bool full )
+			: quads ( std::move ( quads ) ), y ( y ), lineWidth ( lineWidth ), lineHeight ( lineHeight ), scale ( scale ), full ( full ) {
+		}
+
+
 		void Line::format ( TextAlignment alignment, float maxWidth ) {
 			if (quads.empty ()) return;
 
@@ -236,12 +281,12 @@ namespace SEVIAN {
 			}
 		}
 
-		
+
 		bool Line::isCompleted () {
 			return full;
 		}
 
-		
+
 		float Line::resetPositionY ( float newLineHeight ) {
 
 			y += lineHeight - newLineHeight;

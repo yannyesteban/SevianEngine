@@ -79,7 +79,7 @@ void SEVIAN::App1::onKeyPress ( int key ) {
 
 
 void SEVIAN::App1::onKeyRelease ( int key ) {
-	Tools::setLastKey ( Key::NONE );
+	Tools::setLastKey ( Key::UNKNOWN );
 	std::cout << key << "Tecla DES presionada\n";
 }
 
@@ -89,7 +89,7 @@ void App1::run () {
 
 	
 
-	renderer->initialize ( this );
+	renderer->initialize (  );
 
 	//renderer->doLoop ();
 

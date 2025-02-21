@@ -52,6 +52,7 @@ struct Quad
 
 struct Font
 {
+	std::string name = "";
 	std::map<char, AtlasGlyphInfo> characters;
 	double lineHeight;
 
@@ -69,7 +70,8 @@ struct Font
 
 struct AtlasInfo
 {
-	std::string fontPath;
+	
+	std::string fontPath = "";
 	double size = 32;
 	int cols = 10;
 	int rows = 10;
@@ -88,7 +90,7 @@ class AtlasGenerator
 private:
 	
 public:
-	Font create ( AtlasInfo info );
+	Font create ( std::string name, AtlasInfo info );
 };
 
 enum TextAlignment

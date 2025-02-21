@@ -40,3 +40,9 @@ void SEVIAN::LightComponent::update ( float deltaTime ) {
 
 void SEVIAN::MeshesComponent::update ( float deltaTime ) {
 }
+
+void SEVIAN::RenderComponent::update ( float deltaTime ) {
+}
+
+void SEVIAN::Camera2DComponent::update ( float deltaTime ) {
+}

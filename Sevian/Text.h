@@ -93,6 +93,7 @@ namespace SEVIAN {
 			std::vector<Fragment> fragments;
 
 			void addLine ( float& posY, std::vector<CharInfo> words, bool full );
+			void addLine2 ( float& y, std::vector<CharInfo> words, bool full );
 		public:
 			Box ( float width, float height ) :maxWidth ( width ), maxHeight ( height ) { }
 			
@@ -102,6 +103,7 @@ namespace SEVIAN {
 			void addText ( const std::string& text, Font font, float scale );
 			
 			void render ();
+			void render2 ();
 		};
 		class Layout
 		{

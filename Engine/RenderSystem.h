@@ -18,12 +18,12 @@ namespace SEVIAN {
     class RenderSystem : public System
     {
         //int device;
-        std::shared_ptr<RenderInterface> renderer;
+        std::shared_ptr<RENDERER::RenderInterface> renderer;
 
-        std::unordered_map<uint32_t, std::shared_ptr<Entity3D>> units;
+        std::unordered_map<uint32_t, std::shared_ptr<RENDERER::Entity3D>> units;
 
     public:
-        RenderSystem ( std::shared_ptr<RenderInterface>  r ) : renderer ( r ) { }
+        RenderSystem ( std::shared_ptr<RENDERER::RenderInterface>  r ) : renderer ( r ) { }
         void init ( std::vector<std::shared_ptr<Entity>>& entitie, float deltaTimes ) override;
         void update ( std::vector<std::shared_ptr<Entity>>& entities, float deltaTime ) override;
 

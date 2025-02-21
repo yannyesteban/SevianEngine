@@ -76,482 +76,484 @@ void printTest ( Bitmap<float, 3> msdf, char c ) {
 
 
 
+namespace SEVIAN {
+	namespace VULKAN {
 
-namespace VULKAN {
+
+		void TextEntity::draw ( std::string text, uint32_t currentFrame, VkCommandBuffer commandBuffer, glm::vec3 position, Camera camera, uint32_t width, uint32_t height ) {
+
+			static bool play = false;
+
+			int size = 100;
+
+			if (!play) {
+				play = true;
+				float x = -size * 2 + 50;
+				float y = -size * 2 + 150;
+				y = 400 - 200;
+				x = -400;
+				x = (width / 2.0) * -1;
+				y = (height / 2.0) - size;
+				float scale = 1.0f * size;
+				uint32_t indexOffset = 0;
+				int i = 0;
+				text = "BYan";
+
+				if (mainText != "") {
+					text = mainText;
+				}
+				std::vector<VertexText> vertices;
+				std::vector<uint32_t> indices;
+				int step = 0;
+				for (auto c = text.begin (); c != text.end (); c++) {
+					AtlasGlyphInfo ch = Characters[*c];
+					float xpos = x + ch.bearingX * scale;
+					float ypos = y - (ch.height - ch.bearingY) * scale;
+
+					float u0 = ch.u0;
+					float v0 = ch.v0;
+					float u1 = ch.u1;
+					float v1 = ch.v1;
+
+					float w = ch.width * scale;
+					float h = ch.height * scale;
 
 
-	void TextEntity::draw ( std::string text, uint32_t currentFrame, VkCommandBuffer commandBuffer, glm::vec3 position, Camera camera, uint32_t width, uint32_t height ) {
+					int color = step % 1;
+					color = 5;
+					vertices.push_back ( { {xpos, ypos}, {u0, v1}, color } );             // Bottom-left
+					vertices.push_back ( { {xpos + w, ypos}, {u1, v1}, color } );         // Bottom-right
+					vertices.push_back ( { {xpos, ypos + h}, {u0, v0}, color } );         // Top-left
+					vertices.push_back ( { {xpos + w, ypos + h}, {u1, v0}, color } );     // Top-right
 
-		static bool play = false;
+					// Definir los índices del quad
+					indices.push_back ( indexOffset + 0 );
+					indices.push_back ( indexOffset + 1 );
+					indices.push_back ( indexOffset + 2 );
+					indices.push_back ( indexOffset + 1 );
+					indices.push_back ( indexOffset + 3 );
+					indices.push_back ( indexOffset + 2 );
 
-		int size = 100;
+					indexOffset += 4;
 
-		if (!play) {
-			play = true;
-			float x = -size * 2 + 50;
-			float y = -size * 2 + 150;
-			y = 400 - 200;
-			x = -400;
-			x = (width / 2.0) * -1;
-			y = (height / 2.0) - size;
-			float scale = 1.0f * size;
-			uint32_t indexOffset = 0;
-			int i = 0;
-			text = "BYan";
 
-			if (mainText != "") {
-				text = mainText;
+					x += ch.advance * scale;
+					step++;
+				}
+
+
+				prop = init ( vertices, indices, texture );
+				tx.push_back ( prop );
 			}
-			std::vector<VertexText> vertices;
-			std::vector<uint32_t> indices;
-			int step = 0;
-			for (auto c = text.begin (); c != text.end (); c++) {
-				AtlasGlyphInfo ch = Characters[*c];
-				float xpos = x + ch.bearingX * scale;
-				float ypos = y - (ch.height - ch.bearingY) * scale;
-
-				float u0 = ch.u0;
-				float v0 = ch.v0;
-				float u1 = ch.u1;
-				float v1 = ch.v1;
-
-				float w = ch.width * scale;
-				float h = ch.height * scale;
 
 
-				int color = step % 1;
-				color = 5;
-				vertices.push_back ( { {xpos, ypos}, {u0, v1}, color } );             // Bottom-left
-				vertices.push_back ( { {xpos + w, ypos}, {u1, v1}, color } );         // Bottom-right
-				vertices.push_back ( { {xpos, ypos + h}, {u0, v0}, color } );         // Top-left
-				vertices.push_back ( { {xpos + w, ypos + h}, {u1, v0}, color } );     // Top-right
 
-				// Definir los índices del quad
-				indices.push_back ( indexOffset + 0 );
-				indices.push_back ( indexOffset + 1 );
-				indices.push_back ( indexOffset + 2 );
-				indices.push_back ( indexOffset + 1 );
-				indices.push_back ( indexOffset + 3 );
-				indices.push_back ( indexOffset + 2 );
+			auto vulkanProp = std::dynamic_pointer_cast<VulkanProperty>(prop);
+			if (vulkanProp) {
 
-				indexOffset += 4;
+				Frame frame = frames[currentFrame];
+				updateUniformBuffer ( vulkanProp->buffers[currentFrame].buffersMapped, position, camera, width, height );
 
 
-				x += ch.advance * scale;
-				step++;
+
+				VkBuffer vertexBuffers[] = { vulkanProp->vertex.buffer };
+				VkDeviceSize offsets[] = { 0 };
+
+				vkCmdBindPipeline ( commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline );
+				vkCmdBindVertexBuffers ( commandBuffer, 0, 1, vertexBuffers, offsets );
+				//vkCmdBindIndexBuffer(commandBuffer, indices.buffer, 0, VK_INDEX_TYPE_UINT16);
+				vkCmdBindIndexBuffer ( commandBuffer, vulkanProp->indices.buffer, 0, VK_INDEX_TYPE_UINT32 );
+
+				vkCmdBindDescriptorSets ( commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipelineLayout, 0, 1, &vulkanProp->descriptorSets[currentFrame], 0, nullptr );
+				vkCmdDrawIndexed ( commandBuffer, static_cast<uint32_t>(vulkanProp->indicesSizes), 1, 0, 0, 0 );
+			}
+			else {
+				std::cerr << "Error: PropertyRender no es una instancia de VulkanProperty" << std::endl;
 			}
 
 
-			prop = init ( vertices, indices, texture );
-			tx.push_back ( prop );
+		}
+
+		TextEntity::TextEntity ( FontRenderType type, std::string text, std::string font, Device* device, std::vector<Frame> frames, VkDescriptorPool descriptorPool ) :
+			text ( text ),
+			font ( font ),
+			device ( device ),
+			frames ( frames ),
+			descriptorPool ( descriptorPool ) {
+
+
+			AtlasInfo info { font };
+
+			//fontInit ( info );
+
+			AtlasGenerator atlas;
+
+			f = atlas.create ( "", { info.fontPath });
+
+			texture = createAtlasTexture ( f.atlas.data, f.atlas.width, f.atlas.height );
+
+			std::vector<DescriptorSetLayoutInfo> bufDSLInfo;
+			bufDSLInfo.push_back ( { VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 0 } );
+			bufDSLInfo.push_back ( { VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 1 } );
+
+			descriptorSetLayout = device->createDescriptorSetLayout ( bufDSLInfo );
+			//ubo = device->createUniformBuffer ( device->frames, sizeof ( UniformBufferObject ) );
+			Characters = f.characters;
+			std::vector<VkDescriptorSetLayout> layouts = { descriptorSetLayout };
+			pipelineLayout = device->createPipelineLayout ( layouts );
+
+			pipeline = createGraphPipeline (
+				VertexText::getBindingDescription (),
+				VertexText::getAttributeDescriptions (),
+				pipelineLayout,
+				"shaders/msdf.vert.spv",
+				"shaders/msdf.frag.spv"
+			);
 		}
 
 
 
-		auto vulkanProp = std::dynamic_pointer_cast<VulkanProperty>(prop);
-		if (vulkanProp) {
-
-			Frame frame = frames[currentFrame];
-			updateUniformBuffer ( vulkanProp->buffers[currentFrame].buffersMapped, position, camera, width, height );
-
-
-
-			VkBuffer vertexBuffers[] = { vulkanProp->vertex.buffer };
-			VkDeviceSize offsets[] = { 0 };
-
-			vkCmdBindPipeline ( commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline );
-			vkCmdBindVertexBuffers ( commandBuffer, 0, 1, vertexBuffers, offsets );
-			//vkCmdBindIndexBuffer(commandBuffer, indices.buffer, 0, VK_INDEX_TYPE_UINT16);
-			vkCmdBindIndexBuffer ( commandBuffer, vulkanProp->indices.buffer, 0, VK_INDEX_TYPE_UINT32 );
-
-			vkCmdBindDescriptorSets ( commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipelineLayout, 0, 1, &vulkanProp->descriptorSets[currentFrame], 0, nullptr );
-			vkCmdDrawIndexed ( commandBuffer, static_cast<uint32_t>(vulkanProp->indicesSizes), 1, 0, 0, 0 );
-		}
-		else {
-			std::cerr << "Error: PropertyRender no es una instancia de VulkanProperty" << std::endl;
+		void TextEntity::render ( UniformBufferObject ubo ) {
 		}
 
 
-	}
 
-	TextEntity::TextEntity ( FontRenderType type, std::string text, std::string font, Device* device, std::vector<Frame> frames, VkDescriptorPool descriptorPool ) :
-		text ( text ),
-		font ( font ),
-		device ( device ),
-		frames ( frames ),
-		descriptorPool ( descriptorPool ) {
-
-
-		AtlasInfo info { font };
-
-		//fontInit ( info );
-
-		AtlasGenerator atlas;
-
-		f = atlas.create ( { info.fontPath } );
-
-		texture = createAtlasTexture ( f.atlas.data, f.atlas.width, f.atlas.height );
-
-		std::vector<DSLInfo> bufDSLInfo;
-		bufDSLInfo.push_back ( { VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 0 } );
-		bufDSLInfo.push_back ( { VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 1 } );
-
-		descriptorSetLayout = device->createDescriptorSetLayout ( bufDSLInfo );
-		//ubo = device->createUniformBuffer ( device->frames, sizeof ( UniformBufferObject ) );
-		Characters = f.characters;
-		std::vector<VkDescriptorSetLayout> layouts = { descriptorSetLayout };
-		pipelineLayout = device->createPipelineLayout ( layouts );
-
-		pipeline = createGraphPipeline (
-			VertexText::getBindingDescription (),
-			VertexText::getAttributeDescriptions (),
-			pipelineLayout,
-			"shaders/msdf.vert.spv",
-			"shaders/msdf.frag.spv"
-		);
-	}
-
-
-
-	void TextEntity::render ( UniformBufferObject ubo ) {
-	}
-
-
-
-	void TextEntity::ShadowRender ( UniformBufferObject ubo ) {
-	}
-
-
-
-	std::shared_ptr<Entity3D> TextEntity::init ( std::vector<VertexText> vertices, std::vector<uint32_t> indices, VulkanTexture texture ) {
-		auto vulkanProp = std::make_shared<VulkanProperty> ();
-
-		std::vector<VulkanUBuffer>  vulkanBuffer = device->createUniformBuffer ( frames, sizeof ( UniformBufferObject2 ) );
-
-		//vulkanProp->descriptorSets = device->createDescriptorSets ( x, texture.textureImageView, texture.textureSampler, sizeof ( UniformBufferObject2 ) );
-
-		std::vector<DSInfo> bufDSInfo;
-		bufDSInfo.push_back ( { VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, vulkanBuffer, sizeof ( vulkanBuffer ), VK_NULL_HANDLE, VK_NULL_HANDLE, 0 } );
-
-		//std::vector<DSInfo> texDSInfo;
-		bufDSInfo.push_back ( { VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, vulkanBuffer, sizeof ( vulkanBuffer ), texture.imageView, texture.sampler, 1 } );
-		static int timer = 0;
-
-		std::cout << " timer ........ " << timer++ << "\n\n";
-		vulkanProp->descriptorSets = device->createDescriptorSets ( descriptorSetLayout, bufDSInfo );
-
-
-		//auto attributeDescriptions = VertexText::getAttributeDescriptions ();
-		//auto pipeline = createGraphicsPipeline3 ( getBindingDescription2 (), attributeDescriptions, device->descriptorSetLayout );
-
-		vulkanProp->vertex = device->createDataBuffer ( (void*) vertices.data (), sizeof ( vertices[0] ) * vertices.size (), VK_BUFFER_USAGE_VERTEX_BUFFER_BIT );
-		vulkanProp->indices = device->createDataBuffer ( (void*) indices.data (), sizeof ( indices[0] ) * indices.size (), VK_BUFFER_USAGE_INDEX_BUFFER_BIT );
-		vulkanProp->indicesSizes = indices.size ();
-		//device->createDataBuffer ( (void*) vertices.data (), sizeof ( vertices[0] ) * vertices.size (), VK_BUFFER_USAGE_VERTEX_BUFFER_BIT );
-
-		//vulkanProp->pipeline = pipeline.pipeline;
-		//vulkanProp->pipelineLayout = pipeline.pipelineLayout;
-		vulkanProp->buffers = vulkanBuffer;
-
-		return vulkanProp;
-
-
-	}
-
-	Text * TextEntity::createText ( std::string text ) {
-
-		Propertys prop;
-		prop.pipelineLayout = pipelineLayout;
-		prop.pipeline = pipeline;
-		prop.bufDescriptorSetLayout = descriptorSetLayout;
-		auto t = new Text ( device, prop, texture, f, text );
-
-		return t;
-	}
-
-
-
-
-
-	void TextEntity::createImageView ( VkImage image, VkFormat format, VkImageView& imageView ) {
-		VkImageViewCreateInfo viewInfo {};
-		viewInfo.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
-		viewInfo.image = image;
-		viewInfo.viewType = VK_IMAGE_VIEW_TYPE_2D;
-		viewInfo.format = format;
-		viewInfo.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
-		viewInfo.subresourceRange.baseMipLevel = 0;
-		viewInfo.subresourceRange.levelCount = 1;
-		viewInfo.subresourceRange.baseArrayLayer = 0;
-		viewInfo.subresourceRange.layerCount = 1;
-
-		if (vkCreateImageView ( device->device, &viewInfo, nullptr, &imageView ) != VK_SUCCESS) {
-			throw std::runtime_error ( "No se pudo crear la vista de la imagen de la textura!" );
-		}
-	}
-
-	void TextEntity::createTextureSampler ( VkSampler& sampler ) {
-		VkSamplerCreateInfo samplerInfo {};
-		samplerInfo.sType = VK_STRUCTURE_TYPE_SAMPLER_CREATE_INFO;
-		samplerInfo.magFilter = VK_FILTER_NEAREST; //VK_FILTER_NEAREST;// VK_FILTER_LINEAR;
-		samplerInfo.minFilter = VK_FILTER_NEAREST; // VK_FILTER_NEAREST;// VK_FILTER_LINEAR;
-		samplerInfo.addressModeU = VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE;// VK_SAMPLER_ADDRESS_MODE_REPEAT;
-		samplerInfo.addressModeV = VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE;// VK_SAMPLER_ADDRESS_MODE_REPEAT;
-		samplerInfo.addressModeW = VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE;// VK_SAMPLER_ADDRESS_MODE_REPEAT;
-		samplerInfo.anisotropyEnable = VK_TRUE;// VK_FALSE;// VK_TRUE;
-		samplerInfo.maxAnisotropy = 16;// 1.0f;// 16;
-		samplerInfo.borderColor = VK_BORDER_COLOR_INT_OPAQUE_BLACK;
-		samplerInfo.unnormalizedCoordinates = VK_FALSE;
-		samplerInfo.compareEnable = VK_FALSE;
-		samplerInfo.compareOp = VK_COMPARE_OP_ALWAYS;
-		samplerInfo.mipmapMode = VK_SAMPLER_MIPMAP_MODE_NEAREST;// VK_SAMPLER_MIPMAP_MODE_NEAREST;// VK_SAMPLER_MIPMAP_MODE_LINEAR;
-		samplerInfo.mipLodBias = 0.0f;
-		samplerInfo.minLod = 0.0f;
-		samplerInfo.maxLod = 0.0f;
-
-
-		samplerInfo.magFilter = VK_FILTER_LINEAR; // Usar filtrado lineal para interpolación
-		samplerInfo.minFilter = VK_FILTER_LINEAR;
-		samplerInfo.mipmapMode = VK_SAMPLER_MIPMAP_MODE_LINEAR; // Permitir mipmaps lineales
-		//samplerInfo.maxLod = FLT_MAX;
-		//samplerInfo.unnormalizedCoordinates = VK_TRUE;
-
-		if (vkCreateSampler ( device->device, &samplerInfo, nullptr, &sampler ) != VK_SUCCESS) {
-			throw std::runtime_error ( "No se pudo crear el sampler de la textura!" );
-		}
-	}
-
-	VkPipeline TextEntity::createGraphPipeline (
-		VkVertexInputBindingDescription bindingDescription,
-		std::array<VkVertexInputAttributeDescription, 3> attributeDescriptions,
-		VkPipelineLayout pipelineLayout,
-		std::string vertSource,
-		std::string fragSource ) {
-
-		Pipeline pipe {};
-		auto vertShaderCode = device->readFile ( vertSource );
-		auto fragShaderCode = device->readFile ( fragSource );
-
-		VkShaderModule vertShaderModule = device->createShaderModule ( vertShaderCode );
-		VkShaderModule fragShaderModule = device->createShaderModule ( fragShaderCode );
-
-		VkPipelineShaderStageCreateInfo vertShaderStageInfo {};
-		vertShaderStageInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
-		vertShaderStageInfo.stage = VK_SHADER_STAGE_VERTEX_BIT;
-		vertShaderStageInfo.module = vertShaderModule;
-		vertShaderStageInfo.pName = "main";
-
-		VkPipelineShaderStageCreateInfo fragShaderStageInfo {};
-		fragShaderStageInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
-		fragShaderStageInfo.stage = VK_SHADER_STAGE_FRAGMENT_BIT;
-		fragShaderStageInfo.module = fragShaderModule;
-		fragShaderStageInfo.pName = "main";
-
-		VkPipelineShaderStageCreateInfo shaderStages[] = { vertShaderStageInfo, fragShaderStageInfo };
-
-		VkPipelineVertexInputStateCreateInfo vertexInputInfo {};
-		vertexInputInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO;
-		vertexInputInfo.vertexBindingDescriptionCount = 1;
-		vertexInputInfo.vertexAttributeDescriptionCount = static_cast<uint32_t>(attributeDescriptions.size ());
-		vertexInputInfo.pVertexBindingDescriptions = &bindingDescription;
-		vertexInputInfo.pVertexAttributeDescriptions = attributeDescriptions.data ();
-
-		VkPipelineInputAssemblyStateCreateInfo inputAssembly {};
-		inputAssembly.sType = VK_STRUCTURE_TYPE_PIPELINE_INPUT_ASSEMBLY_STATE_CREATE_INFO;
-		inputAssembly.topology = VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST;
-
-		//VK_PRIMITIVE_TOPOLOGY_TRIANGLE_STRIP;
-
-		// VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST;
-		inputAssembly.primitiveRestartEnable = VK_FALSE;
-
-		VkPipelineViewportStateCreateInfo viewportState {};
-		viewportState.sType = VK_STRUCTURE_TYPE_PIPELINE_VIEWPORT_STATE_CREATE_INFO;
-		viewportState.viewportCount = 1;
-		viewportState.scissorCount = 1;
-
-		VkPipelineRasterizationStateCreateInfo rasterizer {};
-		rasterizer.sType = VK_STRUCTURE_TYPE_PIPELINE_RASTERIZATION_STATE_CREATE_INFO;
-		rasterizer.depthClampEnable = VK_FALSE;
-		rasterizer.rasterizerDiscardEnable = VK_FALSE;
-		rasterizer.polygonMode = VK_POLYGON_MODE_FILL;
-		rasterizer.lineWidth = 1.0f;
-
-		/*Ojo aqui*/
-
-		//rasterizer.cullMode = VK_CULL_MODE_BACK_BIT;
-		rasterizer.cullMode = VK_CULL_MODE_NONE;
-
-		rasterizer.frontFace = VK_FRONT_FACE_CLOCKWISE;//VK_FRONT_FACE_CLOCKWISE;//VK_FRONT_FACE_COUNTER_CLOCKWISE;
-		rasterizer.depthBiasEnable = VK_FALSE;
-
-
-
-
-		VkPipelineMultisampleStateCreateInfo multisampling {};
-		multisampling.sType = VK_STRUCTURE_TYPE_PIPELINE_MULTISAMPLE_STATE_CREATE_INFO;
-		multisampling.sampleShadingEnable = VK_FALSE;
-		multisampling.rasterizationSamples = VK_SAMPLE_COUNT_1_BIT;
-
-		VkPipelineDepthStencilStateCreateInfo depthStencil {};
-		depthStencil.sType = VK_STRUCTURE_TYPE_PIPELINE_DEPTH_STENCIL_STATE_CREATE_INFO;
-		depthStencil.depthTestEnable = VK_TRUE;
-		depthStencil.depthWriteEnable = VK_TRUE;
-		depthStencil.depthCompareOp = VK_COMPARE_OP_LESS_OR_EQUAL;
-		depthStencil.depthBoundsTestEnable = VK_FALSE;
-		depthStencil.stencilTestEnable = VK_FALSE;
-
-		VkPipelineColorBlendAttachmentState colorBlendAttachment {};
-		//colorBlendAttachment.colorWriteMask = VK_COLOR_COMPONENT_R_BIT | VK_COLOR_COMPONENT_G_BIT | VK_COLOR_COMPONENT_B_BIT | VK_COLOR_COMPONENT_A_BIT;
-		//colorBlendAttachment.blendEnable = VK_FALSE;
-
-		colorBlendAttachment.colorWriteMask = VK_COLOR_COMPONENT_R_BIT | VK_COLOR_COMPONENT_G_BIT | VK_COLOR_COMPONENT_B_BIT | VK_COLOR_COMPONENT_A_BIT;
-		colorBlendAttachment.blendEnable = VK_TRUE;
-		colorBlendAttachment.srcColorBlendFactor = VK_BLEND_FACTOR_SRC_ALPHA;
-		colorBlendAttachment.dstColorBlendFactor = VK_BLEND_FACTOR_ONE_MINUS_SRC_ALPHA;
-		colorBlendAttachment.colorBlendOp = VK_BLEND_OP_ADD;
-		colorBlendAttachment.srcAlphaBlendFactor = VK_BLEND_FACTOR_ONE;
-		colorBlendAttachment.dstAlphaBlendFactor = VK_BLEND_FACTOR_ZERO;
-		colorBlendAttachment.alphaBlendOp = VK_BLEND_OP_ADD;
-
-
-		VkPipelineColorBlendStateCreateInfo colorBlending {};
-		colorBlending.sType = VK_STRUCTURE_TYPE_PIPELINE_COLOR_BLEND_STATE_CREATE_INFO;
-		colorBlending.logicOpEnable = VK_FALSE;
-		colorBlending.logicOp = VK_LOGIC_OP_COPY;
-		colorBlending.attachmentCount = 1;
-		colorBlending.pAttachments = &colorBlendAttachment;
-		colorBlending.blendConstants[0] = 0.0f;
-		colorBlending.blendConstants[1] = 0.0f;
-		colorBlending.blendConstants[2] = 0.0f;
-		colorBlending.blendConstants[3] = 0.0f;
-
-		std::vector<VkDynamicState> dynamicStates = {
-			VK_DYNAMIC_STATE_VIEWPORT,
-			VK_DYNAMIC_STATE_SCISSOR
-		};
-
-		VkPipelineDynamicStateCreateInfo dynamicState {};
-		dynamicState.sType = VK_STRUCTURE_TYPE_PIPELINE_DYNAMIC_STATE_CREATE_INFO;
-		dynamicState.dynamicStateCount = static_cast<uint32_t>(dynamicStates.size ());
-		dynamicState.pDynamicStates = dynamicStates.data ();
-
-
-		VkGraphicsPipelineCreateInfo pipelineInfo {};
-		pipelineInfo.sType = VK_STRUCTURE_TYPE_GRAPHICS_PIPELINE_CREATE_INFO;
-		pipelineInfo.stageCount = 2;
-		pipelineInfo.pStages = shaderStages;
-		pipelineInfo.pVertexInputState = &vertexInputInfo;
-		pipelineInfo.pInputAssemblyState = &inputAssembly;
-		pipelineInfo.pViewportState = &viewportState;
-		pipelineInfo.pRasterizationState = &rasterizer;
-		pipelineInfo.pMultisampleState = &multisampling;
-		pipelineInfo.pDepthStencilState = &depthStencil;
-		pipelineInfo.pColorBlendState = &colorBlending;
-		pipelineInfo.pDynamicState = &dynamicState;
-		pipelineInfo.layout = pipelineLayout;
-		pipelineInfo.renderPass = device->renderPass;
-		pipelineInfo.subpass = 0;
-		pipelineInfo.basePipelineHandle = VK_NULL_HANDLE;
-
-		VkPipeline pipeline1;
-		if (vkCreateGraphicsPipelines ( device->device, VK_NULL_HANDLE, 1, &pipelineInfo, nullptr, &pipeline1 ) != VK_SUCCESS) {
-			throw std::runtime_error ( "failed to create graphics pipeline!" );
+		void TextEntity::ShadowRender ( UniformBufferObject ubo ) {
 		}
 
-		vkDestroyShaderModule ( device->device, fragShaderModule, nullptr );
-		vkDestroyShaderModule ( device->device, vertShaderModule, nullptr );
+
+
+		std::shared_ptr<RENDERER::Entity3D> TextEntity::init ( std::vector<VertexText> vertices, std::vector<uint32_t> indices, VulkanTexture texture ) {
+			auto vulkanProp = std::make_shared<VulkanProperty> ();
+
+			std::vector<VulkanUBuffer>  vulkanBuffer = device->createUniformBuffer ( frames, sizeof ( UniformBufferObject2 ) );
+
+			//vulkanProp->descriptorSets = device->createDescriptorSets ( x, texture.textureImageView, texture.textureSampler, sizeof ( UniformBufferObject2 ) );
+
+			std::vector<DescriptorSetInfo> bufDSInfo;
+			bufDSInfo.push_back ( { VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, vulkanBuffer, sizeof ( vulkanBuffer ), VK_NULL_HANDLE, VK_NULL_HANDLE, 0 } );
+
+			//std::vector<DSInfo> texDSInfo;
+			bufDSInfo.push_back ( { VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, vulkanBuffer, sizeof ( vulkanBuffer ), texture.imageView, texture.sampler, 1 } );
+			static int timer = 0;
+
+			std::cout << " timer ........ " << timer++ << "\n\n";
+			vulkanProp->descriptorSets = device->createDescriptorSets ( descriptorSetLayout, bufDSInfo );
+
+
+			//auto attributeDescriptions = VertexText::getAttributeDescriptions ();
+			//auto pipeline = createGraphicsPipeline3 ( getBindingDescription2 (), attributeDescriptions, device->descriptorSetLayout );
+
+			vulkanProp->vertex = device->createDataBuffer ( (void*) vertices.data (), sizeof ( vertices[0] ) * vertices.size (), VK_BUFFER_USAGE_VERTEX_BUFFER_BIT );
+			vulkanProp->indices = device->createDataBuffer ( (void*) indices.data (), sizeof ( indices[0] ) * indices.size (), VK_BUFFER_USAGE_INDEX_BUFFER_BIT );
+			vulkanProp->indicesSizes = indices.size ();
+			//device->createDataBuffer ( (void*) vertices.data (), sizeof ( vertices[0] ) * vertices.size (), VK_BUFFER_USAGE_VERTEX_BUFFER_BIT );
+
+			//vulkanProp->pipeline = pipeline.pipeline;
+			//vulkanProp->pipelineLayout = pipeline.pipelineLayout;
+			vulkanProp->buffers = vulkanBuffer;
+
+			return vulkanProp;
+
+
+		}
+
+		Text* TextEntity::createText ( std::string text ) {
+
+			Propertys prop;
+			prop.pipelineLayout = pipelineLayout;
+			prop.pipeline = pipeline;
+			prop.bufDescriptorSetLayout = descriptorSetLayout;
+			auto t = new Text ( device, prop, texture, f, text );
+
+			return t;
+		}
 
 
 
 
 
-		return pipeline1;
+		void TextEntity::createImageView ( VkImage image, VkFormat format, VkImageView& imageView ) {
+			VkImageViewCreateInfo viewInfo {};
+			viewInfo.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
+			viewInfo.image = image;
+			viewInfo.viewType = VK_IMAGE_VIEW_TYPE_2D;
+			viewInfo.format = format;
+			viewInfo.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+			viewInfo.subresourceRange.baseMipLevel = 0;
+			viewInfo.subresourceRange.levelCount = 1;
+			viewInfo.subresourceRange.baseArrayLayer = 0;
+			viewInfo.subresourceRange.layerCount = 1;
+
+			if (vkCreateImageView ( device->device, &viewInfo, nullptr, &imageView ) != VK_SUCCESS) {
+				throw std::runtime_error ( "No se pudo crear la vista de la imagen de la textura!" );
+			}
+		}
+
+		void TextEntity::createTextureSampler ( VkSampler& sampler ) {
+			VkSamplerCreateInfo samplerInfo {};
+			samplerInfo.sType = VK_STRUCTURE_TYPE_SAMPLER_CREATE_INFO;
+			samplerInfo.magFilter = VK_FILTER_NEAREST; //VK_FILTER_NEAREST;// VK_FILTER_LINEAR;
+			samplerInfo.minFilter = VK_FILTER_NEAREST; // VK_FILTER_NEAREST;// VK_FILTER_LINEAR;
+			samplerInfo.addressModeU = VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE;// VK_SAMPLER_ADDRESS_MODE_REPEAT;
+			samplerInfo.addressModeV = VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE;// VK_SAMPLER_ADDRESS_MODE_REPEAT;
+			samplerInfo.addressModeW = VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE;// VK_SAMPLER_ADDRESS_MODE_REPEAT;
+			samplerInfo.anisotropyEnable = VK_TRUE;// VK_FALSE;// VK_TRUE;
+			samplerInfo.maxAnisotropy = 16;// 1.0f;// 16;
+			samplerInfo.borderColor = VK_BORDER_COLOR_INT_OPAQUE_BLACK;
+			samplerInfo.unnormalizedCoordinates = VK_FALSE;
+			samplerInfo.compareEnable = VK_FALSE;
+			samplerInfo.compareOp = VK_COMPARE_OP_ALWAYS;
+			samplerInfo.mipmapMode = VK_SAMPLER_MIPMAP_MODE_NEAREST;// VK_SAMPLER_MIPMAP_MODE_NEAREST;// VK_SAMPLER_MIPMAP_MODE_LINEAR;
+			samplerInfo.mipLodBias = 0.0f;
+			samplerInfo.minLod = 0.0f;
+			samplerInfo.maxLod = 0.0f;
+
+
+			samplerInfo.magFilter = VK_FILTER_LINEAR; // Usar filtrado lineal para interpolación
+			samplerInfo.minFilter = VK_FILTER_LINEAR;
+			samplerInfo.mipmapMode = VK_SAMPLER_MIPMAP_MODE_LINEAR; // Permitir mipmaps lineales
+			//samplerInfo.maxLod = FLT_MAX;
+			//samplerInfo.unnormalizedCoordinates = VK_TRUE;
+
+			if (vkCreateSampler ( device->device, &samplerInfo, nullptr, &sampler ) != VK_SUCCESS) {
+				throw std::runtime_error ( "No se pudo crear el sampler de la textura!" );
+			}
+		}
+
+		VkPipeline TextEntity::createGraphPipeline (
+			VkVertexInputBindingDescription bindingDescription,
+			std::array<VkVertexInputAttributeDescription, 3> attributeDescriptions,
+			VkPipelineLayout pipelineLayout,
+			std::string vertSource,
+			std::string fragSource ) {
+
+			Pipeline pipe {};
+			auto vertShaderCode = device->readFile ( vertSource );
+			auto fragShaderCode = device->readFile ( fragSource );
+
+			VkShaderModule vertShaderModule = device->createShaderModule ( vertShaderCode );
+			VkShaderModule fragShaderModule = device->createShaderModule ( fragShaderCode );
+
+			VkPipelineShaderStageCreateInfo vertShaderStageInfo {};
+			vertShaderStageInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
+			vertShaderStageInfo.stage = VK_SHADER_STAGE_VERTEX_BIT;
+			vertShaderStageInfo.module = vertShaderModule;
+			vertShaderStageInfo.pName = "main";
+
+			VkPipelineShaderStageCreateInfo fragShaderStageInfo {};
+			fragShaderStageInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
+			fragShaderStageInfo.stage = VK_SHADER_STAGE_FRAGMENT_BIT;
+			fragShaderStageInfo.module = fragShaderModule;
+			fragShaderStageInfo.pName = "main";
+
+			VkPipelineShaderStageCreateInfo shaderStages[] = { vertShaderStageInfo, fragShaderStageInfo };
+
+			VkPipelineVertexInputStateCreateInfo vertexInputInfo {};
+			vertexInputInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO;
+			vertexInputInfo.vertexBindingDescriptionCount = 1;
+			vertexInputInfo.vertexAttributeDescriptionCount = static_cast<uint32_t>(attributeDescriptions.size ());
+			vertexInputInfo.pVertexBindingDescriptions = &bindingDescription;
+			vertexInputInfo.pVertexAttributeDescriptions = attributeDescriptions.data ();
+
+			VkPipelineInputAssemblyStateCreateInfo inputAssembly {};
+			inputAssembly.sType = VK_STRUCTURE_TYPE_PIPELINE_INPUT_ASSEMBLY_STATE_CREATE_INFO;
+			inputAssembly.topology = VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST;
+
+			//VK_PRIMITIVE_TOPOLOGY_TRIANGLE_STRIP;
+
+			// VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST;
+			inputAssembly.primitiveRestartEnable = VK_FALSE;
+
+			VkPipelineViewportStateCreateInfo viewportState {};
+			viewportState.sType = VK_STRUCTURE_TYPE_PIPELINE_VIEWPORT_STATE_CREATE_INFO;
+			viewportState.viewportCount = 1;
+			viewportState.scissorCount = 1;
+
+			VkPipelineRasterizationStateCreateInfo rasterizer {};
+			rasterizer.sType = VK_STRUCTURE_TYPE_PIPELINE_RASTERIZATION_STATE_CREATE_INFO;
+			rasterizer.depthClampEnable = VK_FALSE;
+			rasterizer.rasterizerDiscardEnable = VK_FALSE;
+			rasterizer.polygonMode = VK_POLYGON_MODE_FILL;
+			rasterizer.lineWidth = 1.0f;
+
+			/*Ojo aqui*/
+
+			//rasterizer.cullMode = VK_CULL_MODE_BACK_BIT;
+			rasterizer.cullMode = VK_CULL_MODE_NONE;
+
+			rasterizer.frontFace = VK_FRONT_FACE_CLOCKWISE;//VK_FRONT_FACE_CLOCKWISE;//VK_FRONT_FACE_COUNTER_CLOCKWISE;
+			rasterizer.depthBiasEnable = VK_FALSE;
+
+
+
+
+			VkPipelineMultisampleStateCreateInfo multisampling {};
+			multisampling.sType = VK_STRUCTURE_TYPE_PIPELINE_MULTISAMPLE_STATE_CREATE_INFO;
+			multisampling.sampleShadingEnable = VK_FALSE;
+			multisampling.rasterizationSamples = VK_SAMPLE_COUNT_1_BIT;
+
+			VkPipelineDepthStencilStateCreateInfo depthStencil {};
+			depthStencil.sType = VK_STRUCTURE_TYPE_PIPELINE_DEPTH_STENCIL_STATE_CREATE_INFO;
+			depthStencil.depthTestEnable = VK_TRUE;
+			depthStencil.depthWriteEnable = VK_TRUE;
+			depthStencil.depthCompareOp = VK_COMPARE_OP_LESS_OR_EQUAL;
+			depthStencil.depthBoundsTestEnable = VK_FALSE;
+			depthStencil.stencilTestEnable = VK_FALSE;
+
+			VkPipelineColorBlendAttachmentState colorBlendAttachment {};
+			//colorBlendAttachment.colorWriteMask = VK_COLOR_COMPONENT_R_BIT | VK_COLOR_COMPONENT_G_BIT | VK_COLOR_COMPONENT_B_BIT | VK_COLOR_COMPONENT_A_BIT;
+			//colorBlendAttachment.blendEnable = VK_FALSE;
+
+			colorBlendAttachment.colorWriteMask = VK_COLOR_COMPONENT_R_BIT | VK_COLOR_COMPONENT_G_BIT | VK_COLOR_COMPONENT_B_BIT | VK_COLOR_COMPONENT_A_BIT;
+			colorBlendAttachment.blendEnable = VK_TRUE;
+			colorBlendAttachment.srcColorBlendFactor = VK_BLEND_FACTOR_SRC_ALPHA;
+			colorBlendAttachment.dstColorBlendFactor = VK_BLEND_FACTOR_ONE_MINUS_SRC_ALPHA;
+			colorBlendAttachment.colorBlendOp = VK_BLEND_OP_ADD;
+			colorBlendAttachment.srcAlphaBlendFactor = VK_BLEND_FACTOR_ONE;
+			colorBlendAttachment.dstAlphaBlendFactor = VK_BLEND_FACTOR_ZERO;
+			colorBlendAttachment.alphaBlendOp = VK_BLEND_OP_ADD;
+
+
+			VkPipelineColorBlendStateCreateInfo colorBlending {};
+			colorBlending.sType = VK_STRUCTURE_TYPE_PIPELINE_COLOR_BLEND_STATE_CREATE_INFO;
+			colorBlending.logicOpEnable = VK_FALSE;
+			colorBlending.logicOp = VK_LOGIC_OP_COPY;
+			colorBlending.attachmentCount = 1;
+			colorBlending.pAttachments = &colorBlendAttachment;
+			colorBlending.blendConstants[0] = 0.0f;
+			colorBlending.blendConstants[1] = 0.0f;
+			colorBlending.blendConstants[2] = 0.0f;
+			colorBlending.blendConstants[3] = 0.0f;
+
+			std::vector<VkDynamicState> dynamicStates = {
+				VK_DYNAMIC_STATE_VIEWPORT,
+				VK_DYNAMIC_STATE_SCISSOR
+			};
+
+			VkPipelineDynamicStateCreateInfo dynamicState {};
+			dynamicState.sType = VK_STRUCTURE_TYPE_PIPELINE_DYNAMIC_STATE_CREATE_INFO;
+			dynamicState.dynamicStateCount = static_cast<uint32_t>(dynamicStates.size ());
+			dynamicState.pDynamicStates = dynamicStates.data ();
+
+
+			VkGraphicsPipelineCreateInfo pipelineInfo {};
+			pipelineInfo.sType = VK_STRUCTURE_TYPE_GRAPHICS_PIPELINE_CREATE_INFO;
+			pipelineInfo.stageCount = 2;
+			pipelineInfo.pStages = shaderStages;
+			pipelineInfo.pVertexInputState = &vertexInputInfo;
+			pipelineInfo.pInputAssemblyState = &inputAssembly;
+			pipelineInfo.pViewportState = &viewportState;
+			pipelineInfo.pRasterizationState = &rasterizer;
+			pipelineInfo.pMultisampleState = &multisampling;
+			pipelineInfo.pDepthStencilState = &depthStencil;
+			pipelineInfo.pColorBlendState = &colorBlending;
+			pipelineInfo.pDynamicState = &dynamicState;
+			pipelineInfo.layout = pipelineLayout;
+			pipelineInfo.renderPass = device->renderPass;
+			pipelineInfo.subpass = 0;
+			pipelineInfo.basePipelineHandle = VK_NULL_HANDLE;
+
+			VkPipeline pipeline1;
+			if (vkCreateGraphicsPipelines ( device->device, VK_NULL_HANDLE, 1, &pipelineInfo, nullptr, &pipeline1 ) != VK_SUCCESS) {
+				throw std::runtime_error ( "failed to create graphics pipeline!" );
+			}
+
+			vkDestroyShaderModule ( device->device, fragShaderModule, nullptr );
+			vkDestroyShaderModule ( device->device, vertShaderModule, nullptr );
+
+
+
+
+
+			return pipeline1;
+		}
+
+
+
+		VulkanTexture TextEntity::createAtlasTexture ( std::vector<uint8_t> msdfData, int atlasWidth, int atlasHeight ) {
+			VulkanTexture texture;
+			VkDeviceSize imageSize = msdfData.size ();
+			VkFormat format = VK_FORMAT_R8G8B8A8_UNORM;
+
+			// Crear el staging buffer
+			VkBuffer stagingBuffer;
+			VkDeviceMemory stagingBufferMemory;
+			device->createBuffer (
+				imageSize,
+				VK_BUFFER_USAGE_TRANSFER_SRC_BIT,
+				VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT,
+				stagingBuffer, stagingBufferMemory );
+
+			void* data;
+			vkMapMemory ( device->device, stagingBufferMemory, 0, imageSize, 0, &data );
+			memcpy ( data, msdfData.data (), static_cast<size_t>(imageSize) );
+			vkUnmapMemory ( device->device, stagingBufferMemory );
+
+			// Crear la textura Vulkan
+			device->createImage ( atlasWidth, atlasHeight, format, VK_IMAGE_TILING_OPTIMAL,
+				VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT,
+				VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, texture.textureImage, texture.textureImageMemory );
+
+			// Transiciones de layouts y copia de buffer a imagen
+			device->transitionImageLayout ( texture.textureImage, format,
+				VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL );
+			device->copyBufferToImage ( stagingBuffer, texture.textureImage,
+				static_cast<uint32_t>(atlasWidth), static_cast<uint32_t>(atlasHeight) );
+			device->transitionImageLayout ( texture.textureImage, format,
+				VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL );
+
+			vkDestroyBuffer ( device->device, stagingBuffer, nullptr );
+			vkFreeMemory ( device->device, stagingBufferMemory, nullptr );
+
+			createImageView ( texture.textureImage, format, texture.imageView );
+			createTextureSampler ( texture.sampler );
+			return texture;
+		}
+
+		void TextEntity::updateUniformBuffer ( void* uniformBuffersMapped, glm::vec3 position,
+			Camera camera, uint32_t width, uint32_t height ) {
+			static auto startTime = std::chrono::high_resolution_clock::now ();
+
+			// Calcular el tiempo transcurrido
+			auto currentTime = std::chrono::high_resolution_clock::now ();
+			float time = std::chrono::duration<float, std::chrono::seconds::period> ( currentTime - startTime ).count ();
+
+			UniformBufferObject2 ubo {};
+
+			// Calcular el aspecto
+			float aspectRatio = width / static_cast<float>(height);
+
+			// Elegir el tipo de proyección (comentar/descomentar según se necesite)
+			// Proyección Perspectiva (comentada si usas ortográfica)
+			// ubo.proj = glm::perspective(glm::radians(45.0f), aspectRatio, 0.1f, 10.0f);
+			// ubo.proj[1][1] *= -1;  // Invertir el eje Y para el espacio de recorte de Vulkan
+			auto delta = 300.0f;
+			// Proyección Ortográfica (descomentada si usas ortográfica)
+			ubo.proj = glm::ortho ( -delta * aspectRatio, delta * aspectRatio, -delta, delta, 1.0f, 5.0f );
+			//ubo.proj = glm::ortho ( 0.0f, static_cast<float>(width), 0.0f, static_cast<float>(height) );
+			ubo.proj = glm::ortho ( -static_cast<float>(width), static_cast<float>(width), -static_cast<float>(height), static_cast<float>(height), 5.0f, -5.0f );
+			ubo.proj = glm::ortho ( -static_cast<float>(width), static_cast<float>(width), -static_cast<float>(height), static_cast<float>(height) );
+
+			auto deltaX = static_cast<float>(width) / 2;
+			auto deltaY = static_cast<float>(height) / 2;
+			ubo.proj = glm::ortho ( -deltaX, deltaX, -deltaY, deltaY, 1.0f, 25.0f );
+
+			ubo.proj = glm::ortho ( -deltaX, deltaX, -deltaY, deltaY );
+			// Sin invertir el eje Y para una proyección ortográfica
+			ubo.proj[1][1] *= -1;  // Solo se necesita si estás usando Vulkan o OpenGL con un espacio de recorte diferente
+
+			// Modelo y Vista (sin rotación en este caso)
+			ubo.model = glm::mat4 ( 1.0f );  // No hay rotación aplicada
+			ubo.view = glm::lookAt ( glm::vec3 ( 0.0f, 0.0f, 2.0f ),  // Cámara desde (0, 0, 2)
+				glm::vec3 ( 0.0f, 0.0f, 0.0f ),  // Mira al origen
+				glm::vec3 ( 0.0f, 1.0f, 0.0f ) ); // "Arriba" en la dirección Y
+
+			// Copiar los datos del UBO en la memoria mapeada
+			memcpy ( uniformBuffersMapped, &ubo, sizeof ( ubo ) );
+		}
+
+
 	}
 
-
-
-	VulkanTexture TextEntity::createAtlasTexture ( std::vector<uint8_t> msdfData, int atlasWidth, int atlasHeight ) {
-		VulkanTexture texture;
-		VkDeviceSize imageSize = msdfData.size ();
-		VkFormat format = VK_FORMAT_R8G8B8A8_UNORM;
-
-		// Crear el staging buffer
-		VkBuffer stagingBuffer;
-		VkDeviceMemory stagingBufferMemory;
-		device->createBuffer (
-			imageSize,
-			VK_BUFFER_USAGE_TRANSFER_SRC_BIT,
-			VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT,
-			stagingBuffer, stagingBufferMemory );
-
-		void* data;
-		vkMapMemory ( device->device, stagingBufferMemory, 0, imageSize, 0, &data );
-		memcpy ( data, msdfData.data (), static_cast<size_t>(imageSize) );
-		vkUnmapMemory ( device->device, stagingBufferMemory );
-
-		// Crear la textura Vulkan
-		device->createImage ( atlasWidth, atlasHeight, format, VK_IMAGE_TILING_OPTIMAL,
-			VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT,
-			VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, texture.textureImage, texture.textureImageMemory );
-
-		// Transiciones de layouts y copia de buffer a imagen
-		device->transitionImageLayout ( texture.textureImage, format,
-			VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL );
-		device->copyBufferToImage ( stagingBuffer, texture.textureImage,
-			static_cast<uint32_t>(atlasWidth), static_cast<uint32_t>(atlasHeight) );
-		device->transitionImageLayout ( texture.textureImage, format,
-			VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL );
-
-		vkDestroyBuffer ( device->device, stagingBuffer, nullptr );
-		vkFreeMemory ( device->device, stagingBufferMemory, nullptr );
-
-		createImageView ( texture.textureImage, format, texture.imageView );
-		createTextureSampler ( texture.sampler );
-		return texture;
-	}
-
-	void TextEntity::updateUniformBuffer ( void* uniformBuffersMapped, glm::vec3 position,
-		Camera camera, uint32_t width, uint32_t height ) {
-		static auto startTime = std::chrono::high_resolution_clock::now ();
-
-		// Calcular el tiempo transcurrido
-		auto currentTime = std::chrono::high_resolution_clock::now ();
-		float time = std::chrono::duration<float, std::chrono::seconds::period> ( currentTime - startTime ).count ();
-
-		UniformBufferObject2 ubo {};
-
-		// Calcular el aspecto
-		float aspectRatio = width / static_cast<float>(height);
-
-		// Elegir el tipo de proyección (comentar/descomentar según se necesite)
-		// Proyección Perspectiva (comentada si usas ortográfica)
-		// ubo.proj = glm::perspective(glm::radians(45.0f), aspectRatio, 0.1f, 10.0f);
-		// ubo.proj[1][1] *= -1;  // Invertir el eje Y para el espacio de recorte de Vulkan
-		auto delta = 300.0f;
-		// Proyección Ortográfica (descomentada si usas ortográfica)
-		ubo.proj = glm::ortho ( -delta * aspectRatio, delta * aspectRatio, -delta, delta, 1.0f, 5.0f );
-		//ubo.proj = glm::ortho ( 0.0f, static_cast<float>(width), 0.0f, static_cast<float>(height) );
-		ubo.proj = glm::ortho ( -static_cast<float>(width), static_cast<float>(width), -static_cast<float>(height), static_cast<float>(height), 5.0f, -5.0f );
-		ubo.proj = glm::ortho ( -static_cast<float>(width), static_cast<float>(width), -static_cast<float>(height), static_cast<float>(height) );
-
-		auto deltaX = static_cast<float>(width) / 2;
-		auto deltaY = static_cast<float>(height) / 2;
-		ubo.proj = glm::ortho ( -deltaX, deltaX, -deltaY, deltaY, 1.0f, 25.0f );
-
-		ubo.proj = glm::ortho ( -deltaX, deltaX, -deltaY, deltaY );
-		// Sin invertir el eje Y para una proyección ortográfica
-		ubo.proj[1][1] *= -1;  // Solo se necesita si estás usando Vulkan o OpenGL con un espacio de recorte diferente
-
-		// Modelo y Vista (sin rotación en este caso)
-		ubo.model = glm::mat4 ( 1.0f );  // No hay rotación aplicada
-		ubo.view = glm::lookAt ( glm::vec3 ( 0.0f, 0.0f, 2.0f ),  // Cámara desde (0, 0, 2)
-			glm::vec3 ( 0.0f, 0.0f, 0.0f ),  // Mira al origen
-			glm::vec3 ( 0.0f, 1.0f, 0.0f ) ); // "Arriba" en la dirección Y
-
-		// Copiar los datos del UBO en la memoria mapeada
-		memcpy ( uniformBuffersMapped, &ubo, sizeof ( ubo ) );
-	}
-
-	
 }

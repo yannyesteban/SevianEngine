@@ -4,32 +4,34 @@
 #include "VulkanProperty.h"
 //#include "RenderInterface.h"
 
-namespace VULKAN {
-    struct Entity : Entity3D
-    {
+namespace SEVIAN {
+    namespace VULKAN {
+        struct Entity : RENDERER::Entity3D
+        {
 
-        VertexBuffer vertex;
-        VertexBuffer indices;
+            VertexBuffer vertex;
+            VertexBuffer indices;
 
-        VkPipeline pipeline = VK_NULL_HANDLE;
-        VkPipelineLayout pipelineLayout = VK_NULL_HANDLE;
+            VkPipeline pipeline = VK_NULL_HANDLE;
+            VkPipelineLayout pipelineLayout = VK_NULL_HANDLE;
 
-        std::vector<VkDescriptorSet> descriptorSets;
+            std::vector<VkDescriptorSet> descriptorSets;
 
-        size_t indicesSizes;
+            size_t indicesSizes;
 
-        VkBuffer vertexBuffer = VK_NULL_HANDLE;
-        VkBuffer indexBuffer = VK_NULL_HANDLE;
-        VkDeviceMemory vertexBufferMemory = VK_NULL_HANDLE;
-        VkDeviceMemory indexBufferMemory = VK_NULL_HANDLE;
-        std::vector<VulkanUBuffer> ubo;
-        std::vector<VulkanUBuffer> ubo2;
-        std::vector<VulkanUBuffer> light;
-        std::vector<VulkanUBuffer> me;
+            VkBuffer vertexBuffer = VK_NULL_HANDLE;
+            VkBuffer indexBuffer = VK_NULL_HANDLE;
+            VkDeviceMemory vertexBufferMemory = VK_NULL_HANDLE;
+            VkDeviceMemory indexBufferMemory = VK_NULL_HANDLE;
+            std::vector<VulkanUBuffer> ubo;
+            std::vector<VulkanUBuffer> ubo2;
+            std::vector<VulkanUBuffer> light;
+            std::vector<VulkanUBuffer> me;
 
-        void render ( ::SEVIAN::UniformBufferObject ubo );
-        void ShadowRender ( ::SEVIAN::UniformBufferObject ubo );
-        void ShadowRender ( ::SEVIAN::UniformDataDept ubo );
+            void render ( ::SEVIAN::UniformBufferObject ubo );
+            void ShadowRender ( ::SEVIAN::UniformBufferObject ubo );
+            void ShadowRender ( ::SEVIAN::UniformDataDept ubo );
 
-    };
+        };
+    }
 }

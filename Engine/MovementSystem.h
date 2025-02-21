@@ -12,10 +12,10 @@ namespace SEVIAN {
     class MovementSystem : public System
     {
         //int device;
-        std::shared_ptr<RenderInterface> renderer;
+        std::shared_ptr<RENDERER::RenderInterface> renderer;
 
     public:
-        MovementSystem ( std::shared_ptr<RenderInterface>  r ) : renderer ( r ) { }
+        MovementSystem ( std::shared_ptr<RENDERER::RenderInterface>  r ) : renderer ( r ) { }
         void init ( std::vector<std::shared_ptr<Entity>>& entities, float deltaTime ) override;
         void update ( std::vector<std::shared_ptr<Entity>>& entities, float deltaTime ) override;
 

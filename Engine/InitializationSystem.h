@@ -10,10 +10,10 @@ namespace SEVIAN {
 
     class InitializationSystem : public System
     {
-        std::shared_ptr<RenderInterface> renderer;
+        std::shared_ptr<RENDERER::RenderInterface> renderer;
 
     public:
-        InitializationSystem ( std::shared_ptr<RenderInterface>  r ) : renderer ( r ) { }
+        InitializationSystem ( std::shared_ptr<RENDERER::RenderInterface>  r ) : renderer ( r ) { }
        
         void init ( std::vector<std::shared_ptr<Entity>>& entities, float deltaTime ) override;
         void update ( std::vector<std::shared_ptr<Entity>>& entities, float deltaTime ) override;

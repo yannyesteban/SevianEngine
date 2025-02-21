@@ -10,14 +10,14 @@
 namespace SEVIAN {
 	
 
-	class App1: public GameApp
+	class App1: public RENDERER::GameApp
 	{
 	private:
 		World world;
 
-		std::shared_ptr<RenderInterface> renderer;
-		std::shared_ptr<TextureInterface> texture;
-		std::shared_ptr<ShaderInterface> shader;
+		std::shared_ptr<RENDERER::RenderInterface> renderer;
+		std::shared_ptr<RENDERER::TextureInterface> texture;
+		std::shared_ptr<RENDERER::ShaderInterface> shader;
 
 		
 	public: 

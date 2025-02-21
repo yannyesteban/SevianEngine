@@ -6,7 +6,27 @@
 
 
 
+
 namespace SEVIAN {
+	std::shared_ptr<Entity> createSprite2DEntity ( Scene& scene, RENDERER::iSpriteManager* manager, const SEVIAN::SpriteInfo& spriteInfo ) {
+		auto entity = scene.createEntity ();
+
+		RenderComponent render;
+
+
+		auto element = manager->createSprite ( spriteInfo );
+
+		render.element = std::move ( element );
+		entity->addComponent<RenderComponent> ( render );
+		
+		entity->addComponent<TransformComponent> ();
+		entity->addComponent<PositionComponent> ( spriteInfo.position );
+		entity->addComponent<ScaleComponent> ( spriteInfo.scale );
+		entity->addComponent<RotationComponent> ( spriteInfo.rotation );
+		return entity;
+	}
+
+
 
 	std::shared_ptr<Entity> createCamera ( Scene& scene ) {
 		auto entity = scene.createEntity ();
@@ -69,12 +89,12 @@ namespace SEVIAN {
 		entity->addComponent<ScaleComponent> ( glm::vec3 ( 1.0f, 1.0f, 1.0f ) );
 		entity->addComponent<InputComponent> ();
 
-		entity->addComponent<NameComponent> (name);
+		entity->addComponent<NameComponent> ( name );
 
 
 		SpriteComponent sprite = SpriteComponent ( glm::vec3 ( deltaX, deltaY, deltaZ ), width, height, textureName, color );
 		entity->addComponent<SpriteComponent> ( sprite );
-		
+
 
 		return entity;
 	}
@@ -300,9 +320,9 @@ namespace SEVIAN {
 	std::shared_ptr<Entity> createCubeEntity ( const std::string& textureName, const std::string& textureFile, const Key& name, Scene& scene, float deltaX, float deltaY, float deltaZ ) {
 		auto entity = scene.createEntity ();
 
-		glm::vec3 color1 = {(float)5/255, (float) 51/255, (float) 255/255 };
+		glm::vec3 color1 = { (float) 5 / 255, (float) 51 / 255, (float) 255 / 255 };
 		glm::vec3 color2 = { (float) 255 / 255, (float) 255 / 255, (float) 51 / 255 };
-		glm::vec3 color3= { (float) 96 / 255, (float) 96 / 255, (float) 96 / 255 };
+		glm::vec3 color3 = { (float) 96 / 255, (float) 96 / 255, (float) 96 / 255 };
 		glm::vec3 color4 = { (float) 204 / 255, (float) 0 / 255, (float) 0 / 255 };
 		glm::vec3 color5 = { (float) 0 / 255, (float) 255 / 255, (float) 0 / 255 };
 		glm::vec3 color6 = { (float) 32 / 255, (float) 32 / 255, (float) 32 / 255 };

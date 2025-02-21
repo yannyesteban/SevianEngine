@@ -179,7 +179,7 @@ namespace SEVIAN {
 	struct Camera
 	{
 		glm::vec3 position = glm::vec3 ( 0.0f, 0.0f, 5.0f );
-		glm::vec3 front;
+		glm::vec3 front = glm::vec3 ( 1.0f );
 		glm::vec3 up = glm::vec3 ( 0.0f, 1.0f, 0.0f );
 
 		float zoomLevel = 45.0f;
@@ -189,6 +189,63 @@ namespace SEVIAN {
 		float sensitivity = 0.1f;
 	};
 
+	class Camera2D
+	{
+	public:
+		Camera2D ( float screenWidth, float screenHeight ) {
+			updateProjection ( screenWidth, screenHeight );
+			updateView ();
+		}
+
+		void updateProjection ( float screenWidth, float screenHeight ) {
+			// Sistema de coordenadas: origen en esquina superior izquierda, Y hacia abajo
+
+			
+
+			m_projection = glm::ortho (
+				0.0f,        // left
+				screenWidth, // right
+				0.0f,        // top
+				screenHeight, // bottom (para Y invertido)
+				-1.0f, 1.0f  // near/far
+			);
+
+			//m_projection[1][1] *= -1;
+		}
+
+		void updateView () {
+			m_view = glm::translate ( glm::mat4 ( 1.0f ), glm::vec3 ( -m_position, 0.0f ) );
+			m_view = glm::scale ( m_view, glm::vec3 ( m_zoom, m_zoom, 1.0f ) );
+		}
+
+		// Setters
+		void setPosition ( const glm::vec2& position ) {
+			m_position = position;
+			updateView ();
+		}
+
+		void setZoom ( float zoom ) {
+			m_zoom = zoom;
+			updateView ();
+		}
+
+		// Getters
+		const glm::mat4& getViewProjection () const {
+			return m_projection * m_view;
+		}
+		const glm::mat4& getView () const {
+			return m_view;
+		}
+		const glm::mat4& getProjection () const {
+			return m_projection;
+		}
+
+	private:
+		glm::mat4 m_projection;
+		glm::mat4 m_view;
+		glm::vec2 m_position = { 0.0f, 0.0f };
+		float m_zoom = 1.0f;
+	};
 
 	struct Model3D
 	{
@@ -224,8 +281,11 @@ namespace SEVIAN {
 	{
 		std::string texture;
 		glm::vec3 position = glm::vec3 ( 0.0f, 0.0f, 0.0f );
+
 		glm::vec2 size = glm::vec2 ( 0.0f, 0.0f );
 		glm::vec3 color = glm::vec3 ( 0.0f, 0.0f, 0.0f );
+		glm::vec3 scale = glm::vec3 ( 1.0f, 1.0f, 1.0f );
+		glm::vec3 rotation = glm::vec3 ( 1.0f, 1.0f, 1.0f );
 		
 	};
 

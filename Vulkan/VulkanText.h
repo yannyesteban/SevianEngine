@@ -18,83 +18,83 @@
 #define HEIGHT  100
 
 
+namespace SEVIAN {
+
+	namespace VULKAN {
 
 
-namespace VULKAN {
 
-	
+		static VkVertexInputBindingDescription getBindingDescription2 () {
+			VkVertexInputBindingDescription bindingDescription {};
+			bindingDescription.binding = 0;
+			bindingDescription.stride = sizeof ( SEVIAN::VertexTextOld );
+			bindingDescription.inputRate = VK_VERTEX_INPUT_RATE_VERTEX;
 
-	static VkVertexInputBindingDescription getBindingDescription2 () {
-		VkVertexInputBindingDescription bindingDescription {};
-		bindingDescription.binding = 0;
-		bindingDescription.stride = sizeof ( SEVIAN::VertexTextOld );
-		bindingDescription.inputRate = VK_VERTEX_INPUT_RATE_VERTEX;
+			return bindingDescription;
+		}
 
-		return bindingDescription;
+		static std::vector<VkVertexInputAttributeDescription> getAttributeDescriptions2 () {
+			std::vector<VkVertexInputAttributeDescription> attributeDescriptions ( 2, {} );
+			/*    glm::vec3 position;
+			glm::vec3 normal;
+			glm::vec2 texCoords;
+			glm::vec3 color;*/
+			attributeDescriptions[0].binding = 0;
+			attributeDescriptions[0].location = 0;
+			attributeDescriptions[0].format = VK_FORMAT_R32G32_SFLOAT;
+			attributeDescriptions[0].offset = offsetof ( SEVIAN::VertexTextOld, pos );
+
+			attributeDescriptions[1].binding = 0;
+			attributeDescriptions[1].location = 1;
+			attributeDescriptions[1].format = VK_FORMAT_R32G32_SFLOAT;
+			attributeDescriptions[1].offset = offsetof ( SEVIAN::VertexTextOld, texCoord );
+
+
+
+			return attributeDescriptions;
+		}
+
+
+
+
+
+		class VulkanText
+		{
+		private:
+			VkDescriptorSetLayout descriptorSetLayout = VK_NULL_HANDLE;
+			VkPipelineLayout pipelineLayout = VK_NULL_HANDLE;
+			VkPipeline pipeline = VK_NULL_HANDLE;
+			VkPipeline createGraphPipeline ( VkVertexInputBindingDescription bindingDescription, std::vector<VkVertexInputAttributeDescription> attributeDescriptions, VkPipelineLayout pipelineLayout, std::string vertSource, std::string fragSource );
+
+		public:
+
+			FT_Library  library;
+			FT_Face     face;
+			std::map<char, Character> Characters;
+
+			std::vector<Frame> frames;
+			VkDescriptorPool descriptorPool;
+
+			std::vector<std::shared_ptr<RENDERER::Entity3D>> tx;
+			bool play = false;
+
+			Device* device;
+			void initialize ();
+			void start ();
+			void draw ( std::string text, uint32_t currentFrame, VkCommandBuffer commandBuffer, glm::vec3 position,
+				Camera camera, uint32_t width, uint32_t height );
+			void createTextureImage ( FT_Face face, char c, Character& character );
+			void createImageView ( VkImage image, VkFormat format, VkImageView& imageView );
+			void createTextureSampler ( VkSampler& sampler );
+
+			std::shared_ptr<RENDERER::Entity3D> init ( std::vector<VertexTextOld> vertices, std::vector<uint32_t> indices, /*VulkanTexture*/ Character texture );
+			Pipeline createGraphicsPipeline3 ( VkVertexInputBindingDescription bindingDescription, std::vector<VkVertexInputAttributeDescription> attributeDescriptions, VkDescriptorSetLayout& descriptorSetLayout );
+
+
+
+
+		};
 	}
 
-	static std::vector<VkVertexInputAttributeDescription> getAttributeDescriptions2 () {
-		std::vector<VkVertexInputAttributeDescription> attributeDescriptions ( 2, {} );
-		/*    glm::vec3 position;
-		glm::vec3 normal;
-		glm::vec2 texCoords;
-		glm::vec3 color;*/
-		attributeDescriptions[0].binding = 0;
-		attributeDescriptions[0].location = 0;
-		attributeDescriptions[0].format = VK_FORMAT_R32G32_SFLOAT;
-		attributeDescriptions[0].offset = offsetof ( SEVIAN::VertexTextOld, pos );
 
-		attributeDescriptions[1].binding = 0;
-		attributeDescriptions[1].location = 1;
-		attributeDescriptions[1].format = VK_FORMAT_R32G32_SFLOAT;
-		attributeDescriptions[1].offset = offsetof ( SEVIAN::VertexTextOld, texCoord );
-
-
-
-		return attributeDescriptions;
-	}
-
-
-
-
-
-	class VulkanText
-	{
-	private:
-		VkDescriptorSetLayout descriptorSetLayout = VK_NULL_HANDLE;
-		VkPipelineLayout pipelineLayout = VK_NULL_HANDLE;
-		VkPipeline pipeline = VK_NULL_HANDLE;
-		VkPipeline createGraphPipeline ( VkVertexInputBindingDescription bindingDescription, std::vector<VkVertexInputAttributeDescription> attributeDescriptions, VkPipelineLayout pipelineLayout, std::string vertSource, std::string fragSource );
-
-	public:
-		
-		FT_Library  library;
-		FT_Face     face;
-		std::map<char, Character> Characters;
-
-		std::vector<Frame> frames;
-		VkDescriptorPool descriptorPool;
-
-		std::vector<std::shared_ptr<Entity3D>> tx;
-		bool play = false;
-
-		Device* device;
-		void initialize ();
-		void start ();
-		void draw ( std::string text, uint32_t currentFrame, VkCommandBuffer commandBuffer, glm::vec3 position,
-			Camera camera, uint32_t width, uint32_t height );
-		void createTextureImage ( FT_Face face, char c, Character& character );
-		void createImageView ( VkImage image, VkFormat format, VkImageView& imageView );
-		void createTextureSampler ( VkSampler& sampler );
-
-		std::shared_ptr<Entity3D> init ( std::vector<VertexTextOld> vertices, std::vector<uint32_t> indices, /*VulkanTexture*/ Character texture);
-		Pipeline createGraphicsPipeline3 ( VkVertexInputBindingDescription bindingDescription, std::vector<VkVertexInputAttributeDescription> attributeDescriptions, VkDescriptorSetLayout& descriptorSetLayout );
-
-
-
-
-	};
 }
-
-
-

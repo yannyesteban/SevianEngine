@@ -6,9 +6,9 @@ namespace SEVIAN {
     {
     public:
         virtual ~RendererFactory () = default;
-        virtual std::shared_ptr<RenderInterface> createRenderer () = 0;
-        virtual std::shared_ptr<TextureInterface> createTexture () = 0;
-        virtual std::shared_ptr<ShaderInterface> createShader () = 0;
+        virtual std::shared_ptr<RENDERER::RenderInterface> createRenderer () = 0;
+        virtual std::shared_ptr<RENDERER::TextureInterface> createTexture () = 0;
+        virtual std::shared_ptr<RENDERER::ShaderInterface> createShader () = 0;
         
     };
 }

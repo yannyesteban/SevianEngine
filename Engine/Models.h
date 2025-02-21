@@ -15,6 +15,13 @@
 
 namespace SEVIAN {
 
+    struct RenderComponent : public Component
+    {
+        
+
+        std::shared_ptr<RENDERER::IRenderizable> element;
+        void update ( float deltaTime ) override;
+    };
 
     struct Mesh
     {
@@ -29,7 +36,7 @@ namespace SEVIAN {
     struct MeshesComponent : public Component
     {
         std::vector<Mesh> meshes;
-        std::shared_ptr<Entity3D> prop;
+        std::shared_ptr<RENDERER::Entity3D> prop;
         void update ( float deltaTime ) override;
        
     };
@@ -76,7 +83,7 @@ namespace SEVIAN {
         VkPipelineLayout pipelineLayout = VK_NULL_HANDLE;
 
         //PropertyRender* prop = nullptr;
-        std::shared_ptr<Entity3D> prop;
+        std::shared_ptr<RENDERER::Entity3D> prop;
 
         MeshComponent ( const std::vector<Vertex>& verts, const std::vector<uint32_t>& inds )
             : vertices ( verts ), indices ( inds ) {
@@ -125,10 +132,15 @@ namespace SEVIAN {
 
     struct RotationComponent : public Component
     {
-        glm::vec3 rotation;
+        glm::vec3 rotation = glm::vec3(0.0f);
+        glm::quat quaternion = glm::quat ( 1.0f, 0.0f, 0.0f, 0.0f );
+
         void update ( float deltaTime ) override;
         RotationComponent ( const glm::vec3& rotation )
             : rotation ( rotation ) {
+        }
+        void setEulerAngles ( float pitch, float yaw, float roll ) {
+            quaternion = glm::quat ( glm::radians ( glm::vec3 ( pitch, yaw, roll ) ) );
         }
     };
 
@@ -184,11 +196,51 @@ namespace SEVIAN {
         float angleY = 0.0f; // Ángulo en el eje Y
         float distance = 5.0f; // Distancia desde el origen (zoom)
 
+        alignas(16) glm::mat4 view {1.0f};
+        alignas(16) glm::mat4 proj {1.0f};
+
+
+
+    };
+
+    struct Camera2DComponent : public Camera, public Component // Asumiendo que tienes una clase base Component
+    {
+        void update ( float deltaTime ) override;
+
+        float orthoLeft = 0.0f;
+        float orthoRight = 800.0f; // Ancho de pantalla predeterminado
+        float orthoBottom = 0.0f;
+        float orthoTop = 600.0f;   // Alto de pantalla predeterminado
+
+        glm::mat4 proj2D;
+        glm::mat4 view2D; // Opcional, si necesitas vista 2D no estática. Si no, puede ser identidad.
+        float width = 0.0f;
+        float height = 0.0f;
+
+        void updateOrthographicProjection ( float screenWidth, float screenHeight ) {
+            orthoRight = screenWidth;
+            orthoTop = screenHeight;
+            proj2D = glm::ortho ( orthoLeft, orthoRight, orthoBottom, orthoTop, -1.0f, 1.0f );
+        }
+        float zoom = 1.0f;                     // Nivel de zoom
+        float rotation = 0.0f;
+        // Parámetros de proyección (basados en pantalla)
+        float left, right, bottom, top;
+        float near = -1.0f, far = 1.0f;
         alignas(16) glm::mat4 view;
         alignas(16) glm::mat4 proj;
+        void updateProjection ( float screenWidth, float screenHeight ) {
+            // Ajusta según zoom y posición
+            left = -screenWidth / 2.0f / zoom;
+            right = screenWidth / 2.0f / zoom;
+            bottom = -screenHeight / 2.0f / zoom;
+            top = screenHeight / 2.0f / zoom;
 
+            proj = glm::ortho ( left, right, bottom, top, near, far );
+            proj[1][1] *= -1; // Inversión Y para Vulkan
+        }
 
-
+        // Opcional: Métodos para zoom 2D, panning, etc., si los necesitas.
     };
 
     struct LightComponent : public Component

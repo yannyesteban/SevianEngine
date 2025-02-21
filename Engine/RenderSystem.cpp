@@ -25,9 +25,9 @@ namespace SEVIAN {
 				
 				info.texture = texture->name;
 				info.path = texture->path;
-				auto e = renderer->createEntity ( info );
+				//auto e = renderer->createEntity ( info );
 				std::cout << " model " << texture->path << "</n";
-				mesh->prop = std::move ( e );
+				//mesh->prop = std::move ( e );
 				//units[index] = std::move ( e );
 				continue;
 			}
@@ -39,9 +39,9 @@ namespace SEVIAN {
 				info.entityId = entity->getID ();
 				info.model = model->path;
 				info.texture = model->texture;
-				auto e = renderer->createModel ( info );
+				//auto e = renderer->createModel ( info );
 				std::cout << " model " << model->path << "</n";
-				units[info.entityId] = std::move ( e );
+				//units[info.entityId] = std::move ( e );
 				continue;
 			}
 
@@ -70,9 +70,9 @@ namespace SEVIAN {
 					info2.height = sprite->height;
 					info2.width = sprite->width;
 					info2.color = sprite->color;
-					auto e = renderer->createSprite ( info2 );
+					//auto e = renderer->createSprite ( info2 );
 					std::cout << " sprite " << sprite->color.g << "</n";
-					units[info.entityId] = std::move ( e );
+					//units[info.entityId] = std::move ( e );
 				}
 			}
 		}

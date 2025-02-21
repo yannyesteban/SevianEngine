@@ -139,3 +139,9 @@ void SEVIAN::CameraSystem::update ( std::vector<std::shared_ptr<Entity>>& entiti
 		}
 	}
 }
+
+void SEVIAN::Camera2DSystem::init ( std::vector<std::shared_ptr<Entity>>& entities, float deltaTime ) {
+}
+
+void SEVIAN::Camera2DSystem::update ( std::vector<std::shared_ptr<Entity>>& entities, float deltaTime ) {
+}

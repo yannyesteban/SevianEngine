@@ -105,6 +105,9 @@
     <ClCompile Include="RenderSystem2.cpp">
       <Filter>Archivos de origen</Filter>
     </ClCompile>
+    <ClCompile Include="InputManager.cpp">
+      <Filter>Archivos de origen</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="App1.h">
@@ -189,6 +192,9 @@
       <Filter>Archivos de encabezado</Filter>
     </ClInclude>
     <ClInclude Include="RenderSystem2.h">
+      <Filter>Archivos de encabezado</Filter>
+    </ClInclude>
+    <ClInclude Include="InputManager.h">
       <Filter>Archivos de encabezado</Filter>
     </ClInclude>
   </ItemGroup>
@@ -300,6 +306,12 @@
       <Filter>shaders</Filter>
     </None>
     <None Include="button.frag">
+      <Filter>shaders</Filter>
+    </None>
+    <None Include="Sprite2D.vert">
+      <Filter>shaders</Filter>
+    </None>
+    <None Include="Sprite2D.frag">
       <Filter>shaders</Filter>
     </None>
   </ItemGroup>

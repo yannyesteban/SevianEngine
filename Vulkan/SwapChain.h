@@ -3,24 +3,24 @@
 #include <GLFW/glfw3.h>
 #include <vector>
 #include <stdexcept>
+namespace SEVIAN {
+	namespace VULKAN {
+		class SwapChain
+		{
+		public:
+			VkDevice device;
+			VkSwapchainKHR swapchain;
+			std::vector<VkImage> swapChainImages;
+			VkRenderPass renderPass;
+			VkFormat imageFormat;
+			VkExtent2D extent;
+			std::vector<VkImageView> imageViews;
+			std::vector<VkFramebuffer> framebuffers;
 
-namespace VULKAN {
-	class SwapChain
-	{
-	public:
-		VkDevice device;
-		VkSwapchainKHR swapchain;
-		std::vector<VkImage> swapChainImages;
-		VkRenderPass renderPass;
-		VkFormat imageFormat;
-		VkExtent2D extent;
-		std::vector<VkImageView> imageViews;
-		std::vector<VkFramebuffer> framebuffers;
+			~SwapChain ();
+			void createRenderPass ();
+		};
+	}
 
-		~SwapChain ();
-		void createRenderPass ();
-	};
 }
-
-
 

@@ -23,3 +23,16 @@ namespace SEVIAN {
 	};
 
 }
+
+namespace SEVIAN {
+	class Camera2DSystem : public System
+	{
+	private:
+
+	public:
+		Camera2DSystem () { };
+		void init ( std::vector<std::shared_ptr<Entity>>& entities, float deltaTime ) override;
+		void update ( std::vector<std::shared_ptr<Entity>>& entities, float deltaTime ) override;
+	};
+
+}
