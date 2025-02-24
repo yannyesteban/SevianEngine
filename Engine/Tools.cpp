@@ -3,6 +3,9 @@
 #include <bitset>
 
 namespace SEVIAN {
+
+	std::vector<std::shared_ptr<INPUT::IInputManager>> Tools::managers;
+
 	Key lastKey = Key::UNKNOWN;
 	Camera* lastCamera;
 	std::bitset<static_cast<size_t>(Key::MAX_KEYS)> keyStates;
@@ -122,25 +125,37 @@ namespace SEVIAN {
 
 		SEVIAN::INPUT::IInputManager* game = static_cast<SEVIAN::INPUT::IInputManager*>(glfwGetWindowUserPointer ( window ));
 		if (game) {
-			game->handleKeyEvent ( key, action, mods );
+			//game->handleKeyEvent ( key, action, mods );
+		}
+
+		for (const auto& manager : managers) {
+			manager->handleKeyEvent ( key, action, mods );
 		}
 
 	}
 
 	void Tools::CursorCallback ( GLFWwindow* window, double xpos, double ypos ) {
-		SEVIAN::INPUT::IInputManager* game = static_cast<SEVIAN::INPUT::IInputManager*>(glfwGetWindowUserPointer ( window ));
-
-		std::cout << "Mouse move " << xpos << " " << ypos << "\n";
-		if (game) {
-			game->handleMouseMoveEvent ( xpos, ypos );
+	
+		for (const auto& manager : managers) {
+			manager->handleMouseMoveEvent ( xpos, ypos );
 		}
+		
+	
 	}
 
-	void Tools::MouseButtonCallback ( GLFWwindow* window, int button, int action, int mods ) {
+	void Tools::MouseButtonCallback ( GLFWwindow* window, int button, int _action, int mods ) {
+		auto action = Tools::GLFWKeyAction ( _action );
+		for (const auto& manager : managers) {
+			manager->handleMouseButtonEvent ( button, action, mods );
+		}
 
 	}
 
 	void Tools::ScrollCallback ( GLFWwindow* window, double xoffset, double yoffset ) {
+	}
+
+	void Tools::addManager ( std::shared_ptr<INPUT::IInputManager> manager ) {
+		managers.emplace_back ( manager );
 	}
 
 

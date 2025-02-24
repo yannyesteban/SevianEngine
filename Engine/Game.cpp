@@ -39,6 +39,8 @@ int SEVIAN::Game::play () {
 	glfwWindowHint ( GLFW_CLIENT_API, GLFW_NO_API );
 	GLFWwindow* window = glfwCreateWindow ( info.width, info.height, info.title.c_str (), NULL, NULL );
 	auto inputManager = std::make_shared<InputManager> ();
+
+	Tools::addManager ( inputManager );
 	glfwSetWindowUserPointer ( window, inputManager.get () );
 	glfwSetKeyCallback ( window, Tools::keyCallback2 );
 	glfwSetCursorPosCallback ( window, Tools::CursorCallback );
@@ -82,7 +84,8 @@ int SEVIAN::Game::play () {
 	GameInfo gameInfo;
 
 
-	gameInfo.widgetManager = std::make_shared<WIDGET::WidgetManager> ( render );
+	gameInfo.widgetManager = std::make_shared<WIDGET::WidgetManager> ( render, inputManager );
+	gameInfo.widgetManager->id = "root";
 	WIDGET::TextInfo textInfo { "arial", "Yanny Esteban" };
 	textInfo.x = 100.0f;
 	textInfo.y = 100.0f;
@@ -91,9 +94,9 @@ int SEVIAN::Game::play () {
 
 	textInfo.scale = 40.0f;
 
-	auto labelOk = std::make_shared<WIDGET::Label> ( render, textInfo );
-	gameInfo.widgetManager->addWidget ( labelOk );
-
+	auto labelOk = std::make_unique<WIDGET::Label> ( render, textInfo );
+	gameInfo.widgetManager->appendChild ( std::move(labelOk) ); // <-error
+	
 
 	WIDGET::TextInfo okButtonInfo { "arial", "Aceptar" };
 	okButtonInfo.x = 300.0f;
@@ -102,16 +105,37 @@ int SEVIAN::Game::play () {
 	okButtonInfo.height = 100.0f;
 	okButtonInfo.scale = 10.0f;
 
-	auto okButton = std::make_shared<WIDGET::Button> ( render, okButtonInfo );
-	gameInfo.widgetManager->addWidget ( okButton );
+	auto okButton = std::make_unique<WIDGET::Button> ( render, okButtonInfo );
+	okButton->id = "okButton";
+	okButton->attachEvent ( EventType::Click,  []( const Event& event ) {
+		std::cout << "Botón Aceptar presionado\n";
+		return false;
+		} );
+	/**/okButton->attachEvent (EventType::MouseEnter, [](const Event& event) {
+		std::cout << "Entrando al Botón\n";
+		return false;
 
-	WIDGET::TextInfo cancelButtonInfo { "arial", "Cancelar" };
+		} );
+	okButton->attachEvent ( EventType::MouseLeave, []( const Event& event ) {
+		std::cout << "Saliendo del Botón\n";
+		return false;
+
+		} );
+	okButton->attachEvent ( EventType::DblClick, []( const Event& event ) {
+		std::cout << "Presionando Doble click\n";
+		return false;
+		} );
+	gameInfo.widgetManager->appendChild ( std::move ( okButton ) );
+	
+	/*WIDGET::TextInfo cancelButtonInfo { "arial", "Cancelar" };
 	cancelButtonInfo.x = 400.0f;
 	cancelButtonInfo.y = 200.0f;
 	cancelButtonInfo.width = 150.0f;
 	cancelButtonInfo.height = 50.0f;
 	cancelButtonInfo.scale = 10.0f;
 	auto cancelButton = gameInfo.widgetManager->create<WIDGET::Button> ( cancelButtonInfo );
+
+	*/
 	//gameInfo.widgetManager->addWidget ( cancelButton );
 
 

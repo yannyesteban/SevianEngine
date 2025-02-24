@@ -139,7 +139,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="ButtonWidget.h" />
-    <ClInclude Include="Event.h" />
+    <ClInclude Include="Event1.h" />
     <ClInclude Include="LabelWidget.h" />
     <ClInclude Include="SpriteWidget.h" />
     <ClInclude Include="Style.h" />

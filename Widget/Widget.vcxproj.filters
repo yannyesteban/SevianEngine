@@ -41,7 +41,7 @@
     <ClInclude Include="WidgetManager.h">
       <Filter>Archivos de encabezado</Filter>
     </ClInclude>
-    <ClInclude Include="Event.h">
+    <ClInclude Include="Event1.h">
       <Filter>Archivos de encabezado</Filter>
     </ClInclude>
     <ClInclude Include="Style.h">

@@ -1,6 +1,7 @@
 #pragma once
 #include <glm/glm.hpp> 
 #include <unordered_map>
+#include <functional>
 
 namespace SEVIAN::INPUT {
 	
@@ -103,16 +104,18 @@ namespace SEVIAN::INPUT {
 
 	{
 	private:
+		// Callbacks para eventos de teclado
+		std::vector<std::function<void ( INPUT::Key, INPUT::KeyAction, int )>> keySubscribers;
 	public:
 		virtual void handleKeyEvent ( Key key, KeyAction action, int mods ) = 0;
 		virtual void handleMouseMoveEvent ( double x, double y ) = 0;
 		virtual void handleMouseButtonEvent ( int button, KeyAction action, int mods ) = 0;
 
 		virtual bool isKeyPressed ( Key key ) const = 0;
+		virtual void subscribeKeyInput ( std::function<void ( INPUT::Key, INPUT::KeyAction, int )> ) = 0;
+		virtual void subscribeMouseButtonInput ( std::function<void ( int, INPUT::KeyAction, int )> ) = 0;
+		virtual void subscribeMouseMoveInput ( std::function<void ( double, double )> ) = 0;
 
-		//glm::vec2 getMousePosition () const { return mousePosition; }
-		//glm::vec2 getMouseDelta () const { return mouseDelta; }
-		//bool isMouseButtonPressed ( int button ) const { return mouseButtons[button]; }
 	};
 
 

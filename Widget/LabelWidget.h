@@ -16,10 +16,15 @@ namespace SEVIAN::WIDGET {
 		std::shared_ptr<RENDERER::IRenderizable> object;
 	protected:
 	public:
+		
+		std::vector<std::unique_ptr<Widget>> widgets;
+
+
 		Label ( std::shared_ptr<RENDERER::RenderInterface> render, TextInfo info );
-		void render () override;
+		
 		void update ( float deltaTime ) override;
 		std::shared_ptr<RENDERER::IRenderizable> getRenderObject () override;
+
 	};
 }
 

@@ -22,9 +22,7 @@ namespace SEVIAN::WIDGET {
 
 	}
 
-	void Label::render () {
-
-	}
+	
 
 	void Label::update ( float deltaTime ) {
 	}

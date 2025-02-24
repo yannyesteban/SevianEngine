@@ -138,6 +138,7 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClInclude Include="ElapsedTimer.h" />
+    <ClInclude Include="Event.h" />
     <ClInclude Include="FontManager.h" />
     <ClInclude Include="IInputManager.h" />
     <ClInclude Include="iRenderManager.h" />

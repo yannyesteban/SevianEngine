@@ -5,7 +5,7 @@ namespace SEVIAN::WIDGET {
         public Widget
     {
     public:
-        void render ();
+       
         std::shared_ptr<RENDERER::IRenderizable> getRenderObject () override;
         void update ( float deltaTime ) override;
 

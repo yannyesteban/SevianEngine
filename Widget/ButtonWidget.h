@@ -19,7 +19,7 @@ namespace SEVIAN::WIDGET {
 	protected:
 	public:
 		Button ( std::shared_ptr<RENDERER::RenderInterface> render, TextInfo info );
-		void render () override;
+		
 		void update ( float deltaTime ) override;
 		std::shared_ptr<RENDERER::IRenderizable> getRenderObject () override;
 	};

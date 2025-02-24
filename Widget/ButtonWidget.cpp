@@ -16,8 +16,7 @@ namespace SEVIAN::WIDGET {
         object = spriteManager->createSprite ( spriteInfo );
     }
 
-    void Button::render () {
-    }
+    
 
     void Button::update ( float deltaTime ) {
     }

@@ -3,84 +3,47 @@
 #include <glm/glm.hpp> 
 #include <memory>
 #include "Widget.h"
+#include "LabelWidget.h"
 #include <vector>
 #include <RenderInterface.h>
+#include "IInputManager.h"
 
 namespace SEVIAN {
-    namespace WIDGET {
 
-        enum class EventType
-        {
-            MouseMove,
-            MouseDown,
-            MouseUp,
-            KeyPress,
-            // Agrega otros tipos de eventos según sea necesario
-        };
+	namespace WIDGET {
 
-        struct Event
-        {
-            EventType type;
-            glm::vec2 mousePos;   // Para eventos de mouse
-            int keyCode;     // Para eventos de teclado
-            // Otros datos del evento...
-        };
+		class WidgetManager : public Widget
+		{
+		private:
+			//std::vector<std::shared_ptr<Widget>> widgets;
+			std::shared_ptr<RENDERER::RenderInterface> renderer;
+			std::shared_ptr<INPUT::IInputManager> inputManager;
+			float lastMouseX = 0.0f;
+			float lastMouseY = 0.0f;
 
+			Widget* lastWidget = nullptr;
+			Widget* lastMouseDown = nullptr;
+			Widget* lastClickWidget = nullptr;
 
-        class WidgetManager
-        {
-        private:
-            std::vector<std::shared_ptr<Widget>> widgets;
-            std::shared_ptr<RENDERER::RenderInterface> renderer;
+			int clickCount = 0;
+			std::chrono::steady_clock::time_point lastClickTime;
 
-        public:
-            WidgetManager ( std::shared_ptr<RENDERER::RenderInterface> renderer );
-            template<typename T, typename... Args>
-            std::shared_ptr<T> create ( Args&&... args ) {
-                auto widget = std::make_shared<T> ( renderer, std::forward<Args> ( args )... );
-                widgets.push_back ( widget );
-                return widget;
-            }
+		public:
 
-            void addWidget ( std::shared_ptr<Widget> child );
+			WidgetManager ( std::shared_ptr<RENDERER::RenderInterface> renderer, std::shared_ptr<INPUT::IInputManager> inputManager );
 
-            void removeWidget ( std::shared_ptr<Widget> widget ) {
-                widgets.erase ( std::remove ( widgets.begin (), widgets.end (), widget ), widgets.end () );
-            }
+			void update ( float deltaTime );
+			void render ( std::shared_ptr<RENDERER::RenderInterface> render, Camera2D camera );
+			std::shared_ptr<RENDERER::IRenderizable> getRenderObject () override;
+			std::vector<Widget*> buildPropagationChain ( Widget* target );
+			bool dispatchEvent ( Widget* root, Event& event );
 
-            // Actualiza todos los widgets
-            void update ( float deltaTime ) {
-                for (auto& widget : widgets) {
-                    widget->update ( deltaTime );
-                }
-            }
+			void onKeyPress ( INPUT::Key key, INPUT::KeyAction action, int mods );
+			void onMouseMove ( float x, float y );
+			void onMouseButton ( int button, INPUT::KeyAction action, float x, float y );
 
-            // Renderiza todos los widgets
-            void render ( std::shared_ptr<RENDERER::RenderInterface> render, Camera2D camera );
-            /*
-            bool handleEvent ( const Event& event ) {
-                for (auto it = widgets.rbegin (); it != widgets.rend (); ++it) {
-                    // Primero se verifica si el evento cae en el área del widget
-                    if ((*it)->hitTest ( event.mousePos )) {
-                        if ((*it)->handleEvent ( event )) {
-                            // Si el widget consume el evento, se detiene la propagación.
-                            return true;
-                        }
-                    }
-                }
-                return false;
-            }
-            */
+			Widget* getWidgetAt ( float x, float y );
 
-            // Propaga eventos a los widgets, típicamente en orden inverso (desde el widget de primer plano)
-            bool handleEvent ( const Event& event ) {
-                // Puedes recorrer en orden inverso si los últimos agregados están en primer plano
-                for (auto it = widgets.rbegin (); it != widgets.rend (); ++it) {
-                    //if ((*it)->handleEvent ( event )) return true;
-                }
-                return false;
-            }
-        };
-
-    }
+		};
+	}
 }

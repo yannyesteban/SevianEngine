@@ -91,6 +91,9 @@ namespace SEVIAN {
 	{
 	public:
 
+
+		static std::vector<std::shared_ptr<INPUT::IInputManager>> managers;
+		
 		static bool isKeyPressed ( Key key );
 		static void setLastKey ( Key key );
 
@@ -106,6 +109,8 @@ namespace SEVIAN {
 		static void CursorCallback ( GLFWwindow* window, double xpos, double ypos );
 		static void MouseButtonCallback ( GLFWwindow* window, int button, int action, int mods );
 		static void ScrollCallback ( GLFWwindow* window, double xoffset, double yoffset );
+
+		static void addManager ( std::shared_ptr<INPUT::IInputManager> manager );
 	};
 }
 

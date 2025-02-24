@@ -86,7 +86,7 @@ void SEVIAN::RenderSystem2::update ( std::vector<std::shared_ptr<Entity>>& entit
 		
 	}
 
-	static int index = 0;
+	
 	auto width = 1000.0f;
 	auto height = 1000.0f;
 	
@@ -97,8 +97,6 @@ void SEVIAN::RenderSystem2::update ( std::vector<std::shared_ptr<Entity>>& entit
 	
 	info.widgetManager->render ( renderer, camera2D );
 
-	std::cout << "timer " << index << "\n";
-	index++;
 	renderer->endRenderPass ();
 	renderer->endFrame ();
 
