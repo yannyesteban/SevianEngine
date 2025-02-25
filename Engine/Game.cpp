@@ -107,24 +107,48 @@ int SEVIAN::Game::play () {
 
 	auto okButton = std::make_unique<WIDGET::Button> ( render, okButtonInfo );
 	okButton->id = "okButton";
-	okButton->attachEvent ( EventType::Click,  []( const Event& event ) {
+	okButton->addEventListener ( EventType::Click,  []( const Event& event ) {
 		std::cout << "Botón Aceptar presionado\n";
 		return false;
 		} );
-	/**/okButton->attachEvent (EventType::MouseEnter, [](const Event& event) {
+	/**/okButton->addEventListener (EventType::MouseEnter, [](const Event& event) {
 		std::cout << "Entrando al Botón\n";
 		return false;
 
 		} );
-	okButton->attachEvent ( EventType::MouseLeave, []( const Event& event ) {
+	okButton->addEventListener ( EventType::MouseLeave, []( const Event& event ) {
 		std::cout << "Saliendo del Botón\n";
 		return false;
 
 		} );
-	okButton->attachEvent ( EventType::DblClick, []( const Event& event ) {
+	okButton->addEventListener ( EventType::DblClick, []( const Event& event ) {
 		std::cout << "Presionando Doble click\n";
 		return false;
 		} );
+	okButton->addEventListener ( EventType::DragStart, []( const Event& event ) {
+		std::cout << "Drag Start\n";
+		return false;
+		} );
+	okButton->addEventListener ( EventType::Drag, []( const Event& event ) {
+		std::cout << "Drag ......\n";
+		return false;
+		} );
+	okButton->addEventListener ( EventType::DragEnd, []( const Event& event ) {
+		std::cout << "Drag End\n";
+		return false;
+		} );
+
+	okButton->addEventListener ( EventType::Focus, []( const Event& event ) {
+		std::cout << "Is Focus\n";
+		return false;
+		} );
+
+	okButton->addEventListener ( EventType::Blur, []( const Event& event ) {
+		std::cout << "Is Blur\n";
+		return false;
+		} );
+
+
 	gameInfo.widgetManager->appendChild ( std::move ( okButton ) );
 	
 	/*WIDGET::TextInfo cancelButtonInfo { "arial", "Cancelar" };

@@ -1,12 +1,14 @@
 #pragma once
 #include <string>
+#include <memory>
 #include <glm/glm.hpp> 
 #include "RenderInterface.h"
 #include "TextEngine.h"
+#include "EventTarget.h"
 //#include "Text.h"
 #include "Event.h"
 #include "Style.h"
-#include <memory>
+
 
 
 namespace SEVIAN {
@@ -26,7 +28,7 @@ namespace SEVIAN {
 			Style style {};
 
 		};
-		class Widget
+		class Widget : public EventTarget
 		{
 		public:
 			std::string id;
@@ -41,6 +43,7 @@ namespace SEVIAN {
 			bool isClippingEnabled = false; // Recorta hijos a su área
 			bool isInteractive = true;      // Si responde a eventos
 			using Callback = std::function<bool ( const Event& )>;
+			bool draggable = false;
 		private: 
 			std::shared_ptr<RENDERER::RenderInterface> renderer;
 			
@@ -56,6 +59,11 @@ namespace SEVIAN {
 			//virtual void render () = 0;
 			virtual std::shared_ptr<RENDERER::IRenderizable> getRenderObject () = 0;
 			
+			bool canFocus = true;  // Si el widget puede recibir foco
+			bool focused = false;     // Si actualmente tiene el foco
+
+			virtual void setFocusable ( bool value ) { canFocus = value; }
+
 			template<typename T, typename... Args>
 			T* create ( Args&&... args ) {
 				auto widget = std::make_unique<T> ( renderer, std::forward<Args> ( args )... );
@@ -98,6 +106,9 @@ namespace SEVIAN {
 			std::map<EventType, std::vector<Callback>> bubbleCallbacks;
 			
 			Widget* getWidgetAt ( float px, float py );
+
+			bool dispatchEvent ( Event& event ) override;
+			bool processListeners ( Event& event, bool capture );
 		};
 	}
 }
