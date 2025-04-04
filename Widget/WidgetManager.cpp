@@ -1,11 +1,162 @@
 #include "WidgetManager.h"
 #include <algorithm>
+#include "Linear.h"
+#include "StackingContext.h"
 
 namespace SEVIAN::WIDGET {
 
-	WidgetManager::WidgetManager ( std::shared_ptr<RENDERER::RenderInterface> renderer, std::shared_ptr<INPUT::IInputManager> inputManager ) :
-		renderer ( renderer ), inputManager ( inputManager ) {
+	void WidgetManager::render ( std::shared_ptr<RENDERER::RenderInterface> render, Camera2D camera ) {
 
+
+		auto newNode = std::make_unique<StackingContextNode> ( this );
+		newNode->createsStackingContext = true;
+
+		//collectContextStack ( this, newNode.get () );
+
+		// Recopilar la jerarquía de stacking contexts
+		for (auto& child : this->children) {
+			collectContextStack ( child.get (), newNode.get () );
+		}
+
+		renderStackingContext ( newNode.get (), camera );
+
+		//collectWidgets ( this );
+		//for (auto& widget : allWidgets) {
+		//	//std::cout << "Render stage: " << this->id << "\n";
+		//	if (!widget->positioned) {
+		//		auto o = widget->getRenderObject ( camera );
+
+		//		render->draw ( o, camera );
+		//	}
+
+
+		//}
+
+		//for (auto& widget : allWidgets) {
+		//	//std::cout << "Render stage: " << this->id << "\n";
+		//	if (widget->positioned) {
+		//		auto o = widget->getRenderObject ( camera );
+
+		//		//render->draw ( o, camera );
+		//	}
+
+
+		//}
+	}
+
+
+	void WidgetManager::collectContextStack ( Widget* widget, StackingContextNode* parentContext ) {
+		
+		auto layout = widget->getStyle<LayoutComponent> ();
+		
+
+		auto newNode = StackingContextNode::newNode ( widget );
+		
+		// Guardamos el puntero al nodo actual antes de moverlo
+		StackingContextNode* currentContext = newNode.get ();
+
+		// Añadimos el nodo al padre
+		parentContext->children.push_back ( std::move ( newNode ) );
+
+		// 3. Procesar los hijos
+		for (auto& child : widget->children) {
+			if (currentContext->createsStackingContext) {
+				// Si este widget crea un nuevo contexto, sus hijos pertenecen a este nuevo contexto
+				collectContextStack ( child.get (), currentContext );
+			}
+			else {
+				// Si no crea un nuevo contexto, los hijos pertenecen al mismo contexto que el padre
+				collectContextStack ( child.get (), parentContext );
+			}
+		}
+	}
+
+	void WidgetManager::renderStackingContext ( const StackingContextNode* node, Camera2D camera ) {
+		if (node->widget) {
+			renderWidget ( node->widget, camera ); // Implementa esto según tus capas
+		}
+		
+
+		std::vector<StackingContextNode*> negativeZChildren;
+		for (const auto& child : node->children) {
+			if (child->layer == LayerType::NegativeZIndex) {
+				negativeZChildren.push_back ( child.get () );
+			}
+		}
+		std::sort ( negativeZChildren.begin (), negativeZChildren.end (),
+			[]( const StackingContextNode* a, const StackingContextNode* b ) {
+				return a->zIndex.value < b->zIndex.value; // Orden ascendente
+			} );
+
+		for (const auto* child : negativeZChildren) {
+			if (child->createsStackingContext) {
+				renderStackingContext ( child, camera ); // Renderizar subárbol completo
+			}
+			else {
+				renderWidget ( child->widget, camera ); // Renderizar widget directamente
+			}
+		}
+
+		// Paso 2: Renderizar hijos estáticos o en el mismo contexto
+		for (const auto& child : node->children) {
+			if (child->layer == LayerType::Content) {
+				renderStackingContext ( child.get(), camera);
+				//renderWidget ( child->widget, camera ); // Orden de aparición
+			}
+		}
+
+		// Paso 3: Renderizar hijos con z-index 0 o auto (que crean contexto)
+		std::vector<StackingContextNode*> zeroZChildren;
+		for (const auto& child : node->children) {
+			if (child->layer == LayerType::ZeroZIndex) {
+				zeroZChildren.push_back ( child.get () );
+			}
+		}
+		// No ordenamos aquí, respetamos el orden de aparición según CSS
+		for (const auto* child : zeroZChildren) {
+			renderStackingContext ( child, camera );
+			if (child->createsStackingContext) {
+				//renderStackingContext ( child, camera );
+			}
+			// Los que no crean contexto ya se renderizaron en el paso 2
+		}
+
+		// Paso 4: Renderizar hijos con z-index positivo
+		std::vector<StackingContextNode*> positiveZChildren;
+		for (const auto& child : node->children) {
+			if (child->layer == LayerType::PositiveZIndex) {
+				positiveZChildren.push_back ( child.get () );
+			}
+		}
+		std::sort ( positiveZChildren.begin (), positiveZChildren.end (),
+			[]( const StackingContextNode* a, const StackingContextNode* b ) {
+				return a->zIndex.value < b->zIndex.value; // Orden ascendente
+			} );
+		for (const auto* child : positiveZChildren) {
+			renderStackingContext ( child, camera );
+			/*if (child->createsStackingContext) {
+				renderStackingContext ( child, camera );
+			}
+			else {
+				renderWidget ( child->widget, camera );
+			}*/
+		}
+
+	}
+
+	void WidgetManager::renderWidget ( Widget* widget, Camera2D camera ) {
+		auto o = widget->getRenderObject ( camera );
+
+		renderer->draw ( o, camera );
+	}
+
+	WidgetManager::WidgetManager ( std::shared_ptr<RENDERER::RenderInterface> renderer, std::shared_ptr<INPUT::IInputManager> inputManager ) :
+		renderer ( renderer ), inputManager ( inputManager ), widgetRenderer ( renderer->getManager<RENDERER::iWidgetManager> () ) {
+
+		setLayout ( std::make_unique<Block> ( renderer->getViewport () ) );
+
+		SEVIAN::SpriteInfo spriteInfo { "escultura", {0.0f, 0.0f, 0.0f}, {1.0f, 1.0f}, {0.9f, 0.1f, 2.0f} };
+		object = widgetRenderer->createSprite ( spriteInfo );
 
 		inputManager->subscribeKeyInput ( [&]( INPUT::Key key, INPUT::KeyAction action, int mods ) {
 			onKeyPress ( key, action, mods );
@@ -20,33 +171,12 @@ namespace SEVIAN::WIDGET {
 			} );
 	}
 
-	void WidgetManager::update ( float deltaTime ) {
-		for (auto& widget : children) {
-			widget->update ( deltaTime );
-		}
-	}
+	
 
-	void WidgetManager::render ( std::shared_ptr<RENDERER::RenderInterface> render, Camera2D camera ) {
+	
 
-		for (auto& widget : children) {
-			UniformBufferObject ubo {};
 
-			ubo.model = widget->getModelMatrix ();
-			ubo.view = camera.getView ();
-			ubo.proj = camera.getProjection ();
 
-			render->draw ( widget->getRenderObject (), { ubo } );
-
-			/*if (widget->isVisible)
-				widget->render ( );
-				*/
-		}
-	}
-
-	std::shared_ptr<RENDERER::IRenderizable> WidgetManager::getRenderObject () {
-
-		return std::shared_ptr<RENDERER::IRenderizable> ();
-	}
 
 	std::vector<Widget*> WidgetManager::buildPropagationChain ( Widget* target ) {
 
@@ -58,79 +188,6 @@ namespace SEVIAN::WIDGET {
 		}
 		std::reverse ( chain.begin (), chain.end () );
 		return chain;
-	}
-
-	bool WidgetManager::dispatchEvent1 ( Widget* root, Event& event ) {
-		// Se busca el widget objetivo usando hitTest a partir de la raíz
-		//auto target = root->getWidgetAt ( event.x, event.y );
-
-		Widget* target = nullptr;
-		if (event.type == EventType::MouseLeave && lastWidget) {
-			target = lastWidget;
-		}
-		else if (root ){
-			target = root->getWidgetAt ( event.x, event.y );
-		}
-
-
-		if (!target) return false; // Si no se encontró widget, no se hace nada
-
-		// Se construye la cadena de widgets desde la raíz hasta el widget objetivo
-		auto chain = buildPropagationChain ( target );
-
-		// Fase de captura: desde la raíz hasta el padre del widget objetivo
-		for (size_t i = 0; i < chain.size () - 1; ++i) {
-			auto widget = chain[i];
-			auto it = widget->captureCallbacks.find ( event.type );
-			if (it != widget->captureCallbacks.end ()) {
-				for (auto& callback : it->second) {
-
-					if (callback ( event )) { // Si la callback consume el evento
-						std::cout << "Evento consumido en fase de captura por un widget.\n";
-						return true;
-					}
-
-				}
-			}
-		}
-		// Fase objetivo: en el widget objetivo se pueden ejecutar primero los callbacks de captura y luego los de burbujeo
-		{
-			auto widget = chain.back ();
-			auto it = widget->captureCallbacks.find ( event.type );
-			if (it != widget->captureCallbacks.end ()) {
-				for (auto& callback : it->second) {
-					if (callback ( event )) {
-						std::cout << "Evento consumido en fase objetivo (burbujeo interno) por el widget target.\n";
-						return true;
-					}
-				}
-			}
-			it = widget->bubbleCallbacks.find ( event.type );
-			if (it != widget->bubbleCallbacks.end ()) {
-				for (auto& callback : it->second) {
-					if (callback ( event )) {
-						std::cout << "Evento consumido en fase de burbujeo por un widget ancestro.\n";
-						return true;
-					}
-				}
-			}
-		}
-		// Fase de burbujeo: desde el padre del widget objetivo hasta la raíz (en orden inverso)
-		for (int i = static_cast<int>(chain.size ()) - 2; i >= 0; --i) {
-			auto widget = chain[i];
-			auto it = widget->bubbleCallbacks.find ( event.type );
-			if (it != widget->bubbleCallbacks.end ()) {
-				for (auto& callback : it->second) {
-					if (callback ( event )) {
-						std::cout << "Evento consumido en fase de burbujeo por un widget ancestro.\n";
-						return true;
-					}
-				}
-			}
-		}
-
-		return false;
-
 	}
 
 	void WidgetManager::onKeyPress ( INPUT::Key key, INPUT::KeyAction action, int mods ) {
@@ -457,13 +514,11 @@ namespace SEVIAN::WIDGET {
 			blurEvent.type = EventType::Blur;
 			blurEvent.bubbles = false;  // Configura según tus necesidades
 			focusedWidget->dispatchEvent ( blurEvent );
-		}
-
-		if (focusedWidget) {
-			FocusEvent blurEvent {};
-			blurEvent.type = EventType::FocusOut;
-			blurEvent.bubbles = true;  // Configura según tus necesidades
-			focusedWidget->dispatchEvent ( blurEvent );
+		
+			FocusEvent FocusOutEvent {};
+			FocusOutEvent.type = EventType::FocusOut;
+			FocusOutEvent.bubbles = true;  // Configura según tus necesidades
+			focusedWidget->dispatchEvent ( FocusOutEvent );
 		}
 
 		// Establecer nuevo widget con foco
@@ -475,13 +530,11 @@ namespace SEVIAN::WIDGET {
 			focusEvent.type = EventType::Focus;
 			focusEvent.bubbles = false;  // Configura según tus necesidades
 			focusedWidget->dispatchEvent ( focusEvent );
-		}
-
-		if (focusedWidget) {
-			FocusEvent focusEvent {};
-			focusEvent.type = EventType::FocusIn;
-			focusEvent.bubbles = true;  // Configura según tus necesidades
-			focusedWidget->dispatchEvent ( focusEvent );
+		
+			FocusEvent focusInEvent {};
+			focusInEvent.type = EventType::FocusIn;
+			focusInEvent.bubbles = true;  // Configura según tus necesidades
+			focusedWidget->dispatchEvent ( focusInEvent );
 		}
 	}
 
@@ -514,6 +567,74 @@ namespace SEVIAN::WIDGET {
 			}
 		}
 		return nullptr;
+	}
+
+	glm::mat4 WidgetManager::getModelMatrix () {
+		//std::cout << "Stack::update: " << this->id << "\n";
+
+		layout->arrange ( this );
+
+		//auto o = getRenderObject();
+
+
+		glm::vec4 backGroundColor = { 1.0f, 0.3f, 0.0f, 1.0f };
+		glm::vec4 borderColor = { 0.0f, 0.1f, 0.1f, 1.0f };
+		float borderWith = 0.0f;
+		float borderRadius = 0.0f;
+		int useTexture = 0;
+
+		auto* background = this->getStyle<BackgroundComponent> ();
+
+		if (background) {
+			//color = glm::vec4 ( background->backGroundColor, 1.0f );
+			//object->addData ( RENDERER::DataResource::STYLE, (void *)&background->backGroundColor.toVec4() );
+			backGroundColor = background->backGroundColor.toVec4 ();
+
+
+
+
+		}
+		auto* style = this->getStyle<LayoutComponent> ();
+
+		if (style) {
+			borderColor = style->border.color.toVec4 ();
+			borderWith = style->border.size.px ();
+			borderRadius = style->border.radius.px ();
+
+		}
+
+
+		if (id == "stack 05") {
+			//
+			std::cout << "";
+		}
+
+		styleUbo = {
+			size,
+			backGroundColor,
+			borderColor,
+			borderWith,
+			borderRadius,
+			0
+
+		};
+
+		object->addData ( RENDERER::DataResource::STYLE, &styleUbo );
+
+		auto translation = glm::mat4 ( 1.0f );
+		glm::mat4 rotationMatrix = glm::mat4 ( 1.0f );
+
+		auto scaleMatrix = glm::scale ( glm::mat4 ( 1.0f ), glm::vec3 ( size.x, size.y, 1.0f ) );
+
+		//PositionComponent* position = this->getStyle<PositionComponent> ();
+		translation = glm::translate ( glm::mat4 ( 1.0f ), glm::vec3 ( position.x, position.y, 1.0f ) );
+		scaleMatrix = glm::scale ( glm::mat4 ( 1.0f ), glm::vec3 ( size.x, size.y, 1.0f ) );
+
+
+
+
+		auto modelMatrix = translation * rotationMatrix * scaleMatrix;
+		return modelMatrix;
 	}
 	
 }

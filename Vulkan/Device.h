@@ -60,6 +60,7 @@ namespace SEVIAN {
 			void createUniformBuffers ( Frame& frame, VkDeviceSize bufferSize );
 			std::vector<VulkanUBuffer> createUniformBuffer ( std::vector<Frame>& frames, VkDeviceSize bufferSize );
 			std::vector<VulkanUBuffer> createUniformBuffer ( VkDeviceSize bufferSize );
+			VulkanUBuffer createUniform ( VkDeviceSize bufferSize );
 			void createCommandBuffers ( std::vector<Frame>& frames, VkCommandPool commandPool );
 			void createSyncObjects ( Frame& frames );
 

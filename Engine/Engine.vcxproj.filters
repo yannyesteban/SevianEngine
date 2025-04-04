@@ -314,5 +314,11 @@
     <None Include="Sprite2D.frag">
       <Filter>shaders</Filter>
     </None>
+    <None Include="WidgetBasic.vert">
+      <Filter>shaders</Filter>
+    </None>
+    <None Include="WidgetBasic.frag">
+      <Filter>shaders</Filter>
+    </None>
   </ItemGroup>
 </Project>

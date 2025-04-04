@@ -87,12 +87,11 @@ void SEVIAN::RenderSystem2::update ( std::vector<std::shared_ptr<Entity>>& entit
 	}
 
 	
-	auto width = 1000.0f;
-	auto height = 1000.0f;
 	
+	
+	auto viewport = renderer->getViewport ();
 
-
-	Camera2D camera2D { width, height };
+	Camera2D camera2D { viewport.width, viewport.height };
 
 	
 	info.widgetManager->render ( renderer, camera2D );

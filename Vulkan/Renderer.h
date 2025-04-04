@@ -95,7 +95,9 @@ namespace SEVIAN {
             VulkanEntity* ve;
 
             VulkanRenderer () { }
-            VulkanRenderer ( GLFWwindow* window, uint32_t width, uint32_t height ) : window ( window ), width ( width ), height ( height ) { }
+            VulkanRenderer ( GLFWwindow* window, uint32_t width, uint32_t height ) : window ( window ), width ( width ), height ( height ) {
+                setViewport ( width, height );
+            }
             //~VulkanRenderer () override {     // Liberar recursos específicos de esta clase            }
             SEVIAN::RENDERER::GameApp* app;
 
@@ -159,7 +161,14 @@ namespace SEVIAN {
             void draw ( std::shared_ptr<RENDERER::iElement> components, RENDERER::GlobalInfo info ) override;
             void draw ( std::shared_ptr<RENDERER::RenderObject> object, RENDERER::GlobalInfo info ) override;
             void draw ( std::shared_ptr<RENDERER::IRenderizable> object, RENDERER::GlobalInfo info ) override;
+            void draw ( std::shared_ptr<RENDERER::IRenderizable> object, Camera2D camera ) override;
             void draw ( std::shared_ptr<RENDERER::IRenderizable> object ) override;
+
+            // Heredado vía RenderInterface
+            void setViewport ( float width, float height ) override;
+
+            RENDERER::Viewport getViewport () override;
+
             static void keyCallback ( GLFWwindow* window, int key, int scancode, int action, int mods ) {
                 VulkanRenderer* app = reinterpret_cast<VulkanRenderer*>(glfwGetWindowUserPointer ( window ));
 
@@ -180,6 +189,7 @@ namespace SEVIAN {
             GLFWwindow* window;
             uint32_t width = 800;
             uint32_t height = 800;
+            RENDERER::Viewport viewport ;
             std::string title = "Vulkan 1.0";
             std::shared_ptr<TextureManager> textureManager;
 
@@ -254,7 +264,10 @@ namespace SEVIAN {
             //std::unique_ptr<MeshManager> meshManager;
             std::unordered_map<std::type_index, std::unique_ptr<RENDERER::iRenderManager>> managers;
 
-        };
+
+           
+
+};
 
         class VulkanTextureNO : public RENDERER::TextureInterface
         {

@@ -6,7 +6,7 @@ namespace SEVIAN::WIDGET {
     {
     public:
        
-        std::shared_ptr<RENDERER::IRenderizable> getRenderObject () override;
+        //std::shared_ptr<RENDERER::IRenderizable> getRenderObject ( Camera2D camera ) override;
         void update ( float deltaTime ) override;
 
     };

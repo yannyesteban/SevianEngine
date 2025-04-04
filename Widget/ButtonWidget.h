@@ -21,7 +21,7 @@ namespace SEVIAN::WIDGET {
 		Button ( std::shared_ptr<RENDERER::RenderInterface> render, TextInfo info );
 		
 		void update ( float deltaTime ) override;
-		std::shared_ptr<RENDERER::IRenderizable> getRenderObject () override;
+		//std::shared_ptr<RENDERER::IRenderizable> getRenderObject ( Camera2D camera ) override;
 	};
 }
 

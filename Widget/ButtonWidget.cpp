@@ -21,8 +21,6 @@ namespace SEVIAN::WIDGET {
     void Button::update ( float deltaTime ) {
     }
 
-    std::shared_ptr<RENDERER::IRenderizable> Button::getRenderObject () {
-        return object;
-    }
+    
 
 }

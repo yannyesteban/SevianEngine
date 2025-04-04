@@ -142,6 +142,7 @@
     <ClInclude Include="EventTarget.h" />
     <ClInclude Include="FontManager.h" />
     <ClInclude Include="IInputManager.h" />
+    <ClInclude Include="IPipeline.h" />
     <ClInclude Include="iRenderManager.h" />
     <ClInclude Include="Render.h" />
     <ClInclude Include="RendererFactory.h" />
@@ -156,6 +157,7 @@
     <ClCompile Include="EventTarget.cpp" />
     <ClCompile Include="FontManager.cpp" />
     <ClCompile Include="IInputManager.cpp" />
+    <ClCompile Include="IPipeline.cpp" />
     <ClCompile Include="iRenderManager.cpp" />
     <ClCompile Include="maincpp.cpp" />
     <ClCompile Include="Render.cpp" />

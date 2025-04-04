@@ -8,6 +8,7 @@
 #include "createSquareEntity.h"
 #include "SpriteManager.h"
 #include "WidgetManager.h"
+#include "WidgetRenderer.h"
 
 namespace SEVIAN {
 

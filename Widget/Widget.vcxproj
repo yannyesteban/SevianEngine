@@ -131,18 +131,35 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="ButtonWidget.cpp" />
+    <ClCompile Include="Color.cpp" />
+    <ClCompile Include="Label.cpp" />
     <ClCompile Include="LabelWidget.cpp" />
+    <ClCompile Include="Linear.cpp" />
     <ClCompile Include="SpriteWidget.cpp" />
+    <ClCompile Include="Stack.cpp" />
+    <ClCompile Include="Stacking.cpp" />
+    <ClCompile Include="StackingContext.cpp" />
+    <ClCompile Include="StackingNode.cpp" />
+    <ClCompile Include="StyleComponet.cpp" />
     <ClCompile Include="Widget.cpp" />
     <ClCompile Include="WidgetManager.cpp" />
     <ClCompile Include="ZLayout.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="ButtonWidget.h" />
+    <ClInclude Include="Color.h" />
     <ClInclude Include="Event1.h" />
+    <ClInclude Include="Label.h" />
     <ClInclude Include="LabelWidget.h" />
+    <ClInclude Include="Layout.h" />
+    <ClInclude Include="Linear.h" />
     <ClInclude Include="SpriteWidget.h" />
+    <ClInclude Include="Stack.h" />
+    <ClInclude Include="Stacking.h" />
+    <ClInclude Include="StackingContext.h" />
+    <ClInclude Include="StackingNode.h" />
     <ClInclude Include="Style.h" />
+    <ClInclude Include="StyleComponet.h" />
     <ClInclude Include="Widget.h" />
     <ClInclude Include="WidgetManager.h" />
     <ClInclude Include="ZLayout.h" />

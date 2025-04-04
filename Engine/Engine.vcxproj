@@ -241,6 +241,8 @@
     <None Include="text_vert.vert" />
     <None Include="total_f.frag" />
     <None Include="total_v.vert" />
+    <None Include="WidgetBasic.frag" />
+    <None Include="WidgetBasic.vert" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

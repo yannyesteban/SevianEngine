@@ -54,6 +54,9 @@
     <ClInclude Include="EventTarget.h">
       <Filter>Archivos de encabezado</Filter>
     </ClInclude>
+    <ClInclude Include="IPipeline.h">
+      <Filter>Archivos de encabezado</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="maincpp.cpp">
@@ -84,6 +87,9 @@
       <Filter>Archivos de origen</Filter>
     </ClCompile>
     <ClCompile Include="EventTarget.cpp">
+      <Filter>Archivos de origen</Filter>
+    </ClCompile>
+    <ClCompile Include="IPipeline.cpp">
       <Filter>Archivos de origen</Filter>
     </ClCompile>
   </ItemGroup>

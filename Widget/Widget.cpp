@@ -1,5 +1,5 @@
 #include "Widget.h"
-
+#include "Layout.h"
 
 namespace SEVIAN {
     namespace WIDGET {
@@ -35,12 +35,40 @@ namespace SEVIAN {
 
         
 
-        void Widget::update ( float deltaTime ) {
-        }
+        //void Widget::updateLayout () {
+        //    if (layout) {
+        //        //layout->arrange ( this );
+        //    }
+        //}
+
+       /* void Widget::update ( float deltaTime ) {
+            for (auto& widget : children) {
+                widget->update ( deltaTime );
+            }
+        }*/
 
        
-        std::shared_ptr<RENDERER::IRenderizable> Widget::getRenderObject () {
-            return std::shared_ptr<RENDERER::IRenderizable> ();
+
+        void Widget::update ( float deltaTime ) {
+            for (auto& widget : children) {
+                widget->update ( deltaTime );
+            }
+        }
+
+        std::shared_ptr<RENDERER::IRenderizable> Widget::getRenderObject ( Camera2D camera ) {
+
+            UniformBufferObject ubo {};
+
+            ubo.model = getModelMatrix ();
+            ubo.view = camera.getView ();
+            ubo.proj = camera.getProjection ();
+
+           
+
+
+            object->addData ( RENDERER::DataResource::TRANSFORM, &ubo );
+
+            return object;
         }
 
         void Widget::appendChild ( std::unique_ptr<Widget> child ) {

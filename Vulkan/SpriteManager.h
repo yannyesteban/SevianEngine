@@ -3,13 +3,13 @@
 #include "Device.h"
 //#include "VKElement.h"
 #include "Renderer.h"
-
+#include "VulkanRendererManager.h"
 
 
 namespace SEVIAN {
 
 	namespace VULKAN {
-		class SpriteManager : public RENDERER::iSpriteManager
+		class SpriteManager : public RENDERER::iSpriteManager, public VulkanRendererManager
 		{
 			// Heredado vía iSpriteManager
 		private:

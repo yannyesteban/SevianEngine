@@ -12,11 +12,63 @@
 
 namespace SEVIAN {
 
-
+   
  
 
     namespace RENDERER {
 
+        struct Viewport
+        {
+            float width;
+            float height;
+        };
+
+        struct IMemoryData
+        {
+            ~IMemoryData () = default;
+        };
+
+
+        enum class ShaderResourceType
+        {
+            UniformBuffer,
+            StorageBuffer,
+            CombinedImageSampler,
+            PushConstant
+            // Puedes agregar otros tipos si lo necesitas
+        };
+
+        enum class DataResource
+        {
+            NONE,
+            TRANSFORM,
+			TEXTURE,
+			MATERIAL,
+			LIGHT,
+			VERTEX,
+			INDEX,
+			UBO,
+			TEXT,
+			SPRITE,
+			MESH,
+			ENTITY,
+			BONE,
+			ANIMATION,
+            STYLE,
+            USE_TEXTURE
+			
+        };
+
+      
+
+
+        struct PushConstantData
+        {
+            //glm::mat4 projection; // Matriz de proyección (16 floats = 64 bytes)
+            glm::vec4 color;      // Color del widget (4 floats = 16 bytes)
+
+            // Total: 80 bytes, cabe en los 128 bytes mínimos
+        };
         struct Transform
         {
             glm::vec3 position { 0.0f };
@@ -54,9 +106,22 @@ namespace SEVIAN {
             //virtual MaterialHandle getMaterial () const = 0;
             //virtual TextureHandle getBaseColorTexture () const = 0;
 
+            /*template<typename T>
+			void setData ( DataResource type, T data ) {
+				resourcesData[type] = std::make_unique<T> ( data );
+			}*/
             // 5. Tipos de renderizable
             enum class Type { MESH, SPRITE, TEXT, LIGHT };
+
+			/*std::unordered_map<DataResource, std::unique_ptr<IMemoryData>> memoryData;
+			std::unordered_map<DataResource, std::unique_ptr<IMemoryData>> resourcesData;*/
+
+            std::string test = "hello";
             //virtual Type getType () const = 0;
+
+            virtual void addData ( DataResource , void * data) = 0;
+            virtual std::unordered_map < DataResource, void *> getData (  ) = 0;
+            virtual void* getData ( DataResource ) = 0;
         };
 
         struct iElement
@@ -120,7 +185,7 @@ namespace SEVIAN {
 
         };
 
-        class iTextManager: public iRenderManager
+        class iTextManager : public iRenderManager
         {
         public:
             //virtual ~iTextManager () = default;
@@ -138,6 +203,16 @@ namespace SEVIAN {
             virtual std::unique_ptr<IRenderizable> createSprite ( SEVIAN::SpriteInfo info ) = 0;
 
         };
+
+        class iWidgetManager : public iRenderManager
+        {
+        public:
+            virtual std::unique_ptr<IRenderizable> createSprite ( SEVIAN::SpriteInfo info ) = 0;
+           // virtual void setPushValues ( PushConstantData pushData ) = 0;
+
+        };
+
+
         class iParticleManager
         {
         public:
@@ -248,8 +323,11 @@ namespace SEVIAN {
             virtual void draw ( std::shared_ptr<RENDERER::iElement> components, RENDERER::GlobalInfo info ) = 0;
             virtual void draw ( std::shared_ptr<RENDERER::RenderObject> object, RENDERER::GlobalInfo info ) = 0;
             virtual void draw ( std::shared_ptr<RENDERER::IRenderizable> object, RENDERER::GlobalInfo info ) = 0;
+            virtual void draw ( std::shared_ptr<RENDERER::IRenderizable> object, Camera2D camera ) = 0;
             virtual void draw ( std::shared_ptr<RENDERER::IRenderizable> object) = 0;
 
+            virtual void setViewport ( float width, float height ) = 0;
+            virtual Viewport getViewport () = 0;
 
             template<typename T, typename T2, typename... Args>
             void registerManager ( Args&&... args ) {

@@ -16,6 +16,12 @@ namespace SEVIAN {
     Batch Updates: Procesar múltiples elementos en paralelo.
     */
 	namespace UNIT {
+
+        static float parentSize = 0.0f;
+        static float fontSize = 0.0f;
+        static float rootFontSize = 0.0f;
+        static float viewportWidth = 0.0f;
+        static float viewportHeight = 0.0f;
         enum class UnitType
         {
             Pixel,      // Unidad absoluta (px)
@@ -25,9 +31,13 @@ namespace SEVIAN {
             Vw,         // 1% del ancho del viewport
             Vh,         // 1% del alto del viewport
             Auto,        // Valor calculado automáticamente (ej: centrado)
+            Viewport,   // vw/vh - Porcentaje del viewport idea of claude 
+            //Fraction    // fr - Fracción del espacio disponible (como en Grid) idea of claude 
 
 
             Fraction, // Agrega un tipo de unidad fr (fracción) para Grid:
+            Calc,
+			Normal,
         };
         struct Unit
         {
@@ -44,14 +54,179 @@ namespace SEVIAN {
             static Unit vw ( float val ) { return { val, UnitType::Vw }; }
             static Unit vh ( float val ) { return { val, UnitType::Vh }; }
             static Unit fr ( float val ) { return { val, UnitType::Fraction }; }
+            static Unit Calc ( ) { return { 0.0f, UnitType::Calc }; }
+            static Unit AUTO ( ) { return { 0.0f, UnitType::Auto }; }
+            static Unit NORMAL () { return { 0.0f, UnitType::Normal }; }
 
-            Unit operator+( const Unit& other ) const {
-                if (type == other.type) {
-                    return { value + other.value, type };
+            bool isRelative () {
+                switch (type) {
+                case UnitType::Pixel:
+                case UnitType::Vw:
+                case UnitType::Vh:
+                case UnitType::Auto:
+                case UnitType::Em:
+                case UnitType::Rem:
+                    return false;
+                case UnitType::Percent:
+                case UnitType::Viewport:
+                case UnitType::Fraction:
+                    return true;
+                default:
+                    return false;;
                 }
-                // Lógica para mezclar unidades (ej: convertir todo a píxeles)
-                // Nota: Esto es simplificado, requeriría un contexto.
-                return *this;
+            }
+            void add ();
+            
+
+            //Unit operator+( const Unit& other ) const {
+            //    if (type == other.type) {
+            //        return { value + other.value, type };
+            //    }
+            //    // Lógica para mezclar unidades (ej: convertir todo a píxeles)
+            //    // Nota: Esto es simplificado, requeriría un contexto.
+            //    return *this;
+            //}
+            
+            bool operator==( UnitType otherType ) const;
+            //bool operator==( UnitType otherType ) const {
+            //    return type == otherType; // Simplemente compara el tipo de unidad del objeto con el tipo dado
+            //}
+            bool operator!=( UnitType otherType ) const;
+            bool operator==( const Unit& otherUnit ) const;
+            bool operator!=( const Unit& otherUnit ) const;
+
+            friend bool operator==( const Unit& unit, float pixels );
+
+            friend bool operator!=( const Unit& unit, float pixels );
+
+            friend bool operator==( float pixels, const Unit& unit );
+
+            friend bool operator!=( float pixels, const Unit& unit ) ;
+
+            friend float operator+( const Unit& left, const Unit& right );
+
+            friend float operator+( const Unit& unit, float pixels );
+
+            friend float operator+( float pixels, const Unit& unit );
+
+            friend float operator-( const Unit& left, const Unit& right );
+
+            friend float operator-( const Unit& unit, float pixels );
+
+            friend float operator-( float pixels, const Unit& unit );
+
+            friend bool operator>( const Unit& left, const Unit& right );
+            friend bool operator<( const Unit& left, const Unit& right );
+
+            friend bool operator>=( const Unit& left, const Unit& right );
+
+            friend bool operator<=( const Unit& left, const Unit& right );
+
+            friend bool operator>( const Unit& unit, float pixels );
+
+            friend bool operator<( const Unit& unit, float pixels );
+
+            friend bool operator>=( const Unit& unit, float pixels );
+
+            friend bool operator<=( const Unit& unit, float pixels );
+
+            // Conmutatividad para las comparaciones con float
+            friend bool operator>( float pixels, const Unit& unit );
+
+            friend bool operator<( float pixels, const Unit& unit );
+
+            friend bool operator>=( float pixels, const Unit& unit );
+
+            friend bool operator<=( float pixels, const Unit& unit );
+
+            // Parse from string (basic implementation)
+            static Unit fromString ( const std::string& str ) {
+                if (str == "auto") return AUTO ();
+                if (str == "normal") return NORMAL ();
+
+                // Encuentra el valor numérico y la unidad
+                size_t unitPos = 0;
+                float val = std::stof ( str, &unitPos );
+                std::string unitStr = str.substr ( unitPos );
+
+                if (unitStr == "px" || unitStr.empty ()) return px ( val );
+                if (unitStr == "%") return pc ( val );
+                if (unitStr == "em") return em ( val );
+                if (unitStr == "rem") return rem ( val );
+                if (unitStr == "vw") return vw ( val );
+                if (unitStr == "vh") return vh ( val );
+                if (unitStr == "fr") return fr ( val );
+
+                // Por defecto, devuelve píxeles
+                return px ( val );
+            }
+
+            float px () const {
+                switch (type) {
+                case UnitType::Pixel:
+                    return value;
+                case UnitType::Percent:
+                    return (value / 100.0f) * parentSize;
+                case UnitType::Em:
+                    return value * fontSize;
+                case UnitType::Rem:
+                    return value * rootFontSize;
+                case UnitType::Viewport:
+                    // Si es vw o vh dependerá del contexto donde se use
+                    return (value / 100.0f) * (type == UnitType::Viewport ? viewportWidth : viewportHeight);
+                case UnitType::Auto:
+                case UnitType::Fraction:
+                    // Estos requieren cálculos especiales por el layout manager
+                    return 0.0f;
+                default:
+                    return value;
+                }
+            }
+
+
+            float resolve ( float parentSize, float fontSize, float rootFontSize, float viewportWidth, float viewportHeight ) const {
+                switch (type) {
+                case UnitType::Pixel:
+                    return value;
+                case UnitType::Percent:
+                    return (value / 100.0f) * parentSize;
+                case UnitType::Em:
+                    return value * fontSize;
+                case UnitType::Rem:
+                    return value * rootFontSize;
+                case UnitType::Vw:
+                    // Si es vw o vh dependerá del contexto donde se use
+                    return (value / 100.0f) * viewportWidth;
+                case UnitType::Vh:
+                    // Si es vw o vh dependerá del contexto donde se use
+                    return (value / 100.0f) * viewportHeight;
+                case UnitType::Viewport:
+                    // Si es vw o vh dependerá del contexto donde se use
+                    return (value / 100.0f) * (type == UnitType::Viewport ? viewportWidth : viewportHeight);
+                case UnitType::Auto:
+                case UnitType::Fraction:
+                    // Estos requieren cálculos especiales por el layout manager
+                    return 0.0f;
+                default:
+                    return value;
+                }
+            }
+
+            // Soporte para serialización/deserialización
+            std::string toString () const {
+                if (type == UnitType::Auto) return "auto";
+
+                std::string result = std::to_string ( value );
+                switch (type) {
+                case UnitType::Pixel: result += "px"; break;
+                case UnitType::Percent: result += "%"; break;
+                case UnitType::Em: result += "em"; break;
+                case UnitType::Rem: result += "rem"; break;
+                case UnitType::Viewport: result += "vw"; break; // Simplificado
+                case UnitType::Fraction: result += "fr"; break;
+                default: break;
+                }
+                return result;
             }
 
         private:
@@ -63,44 +238,10 @@ namespace SEVIAN {
         
         };
 
-        Unit parseUnitString ( const std::string& unitString ) {
-            std::stringstream ss ( unitString );
-            float value;
-            std::string unitTypeStr;
+        
 
-            ss >> value >> unitTypeStr;
-
-            if (unitTypeStr == "px") {
-                return  { value, UnitType::Pixel };
-            }
-            else if (unitTypeStr == "%") {
-                return Unit { value, UnitType::Percent };
-            }
-            else if (unitTypeStr == "vw") {
-                return Unit { value, UnitType::Vw };
-            }
-            else if (unitTypeStr == "vh") {
-                return  { value, UnitType::Vh };
-            }
-            else {
-                throw std::invalid_argument ( "Unidad desconocida: " + unitTypeStr );
-            }
-        }
-        float resolveUnitToPixels ( const Unit& unit, float parentWidth, float parentHeight, int viewportWidth, int viewportHeight ) {
-            switch (unit.type) { // Usando getter para el tipo
-            case UnitType::Pixel:
-                return unit.value; // Usando getter para el valor
-            case UnitType::Percent:
-                // Asume que el porcentaje es relativo al ancho del padre para el ancho, y al alto para el alto
-                return (unit.value / 100.0f) * parentWidth;
-            case UnitType::Vw:
-                return (unit.value / 100.0f) * viewportWidth;
-            case UnitType::Vh:
-                return (unit.value / 100.0f) * viewportHeight;
-            default:
-                return unit.value;
-            }
-        }
+        
+        float resolveUnitToPixels ( const Unit& unit, float parentWidth, float parentHeight, int viewportWidth, int viewportHeight );
 
         class UnitResolver
         {

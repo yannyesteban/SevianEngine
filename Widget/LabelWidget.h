@@ -4,7 +4,7 @@
 #include <TextManager.h>
 
 namespace SEVIAN::WIDGET {
-	class Label :
+	class TextWidget :
 		public Widget
 	{
 
@@ -20,10 +20,10 @@ namespace SEVIAN::WIDGET {
 		std::vector<std::unique_ptr<Widget>> widgets;
 
 
-		Label ( std::shared_ptr<RENDERER::RenderInterface> render, TextInfo info );
+		TextWidget ( std::shared_ptr<RENDERER::RenderInterface> render, TextInfo info );
 		
 		void update ( float deltaTime ) override;
-		std::shared_ptr<RENDERER::IRenderizable> getRenderObject () override;
+		//std::shared_ptr<RENDERER::IRenderizable> getRenderObject ( Camera2D camera ) override;
 
 	};
 }

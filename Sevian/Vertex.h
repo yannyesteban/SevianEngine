@@ -88,6 +88,17 @@ namespace SEVIAN {
 	};
 
 
+	struct StyleUbo
+	{
+		alignas(16) glm::vec2 size;
+		alignas(16) glm::vec4 backgroundColor;
+		alignas(16) glm::vec4 borderColor;
+		alignas(4) float borderWith = 0.0f;
+		alignas(4) float borderRadius = 0.0f;
+		int useTexture = 0;
+	};
+	
+
 	struct UniformBufferObjectX
 	{
 		
@@ -187,9 +198,11 @@ namespace SEVIAN {
 		float yaw = -90.0f;
 		float pitch = 0.0f;
 		float sensitivity = 0.1f;
+
+
 	};
 
-	class Camera2D
+	class Camera2D: Camera
 	{
 	public:
 		Camera2D ( float screenWidth, float screenHeight ) {

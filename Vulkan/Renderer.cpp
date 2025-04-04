@@ -324,6 +324,15 @@ namespace SEVIAN {
 			memcpy ( frame.uniformBuffersMapped, &ubo, sizeof ( ubo ) );
 		}
 
+		void VulkanRenderer::setViewport ( float width, float height ) {
+			viewport.width = width;
+			viewport.height = height;
+		}
+
+		RENDERER::Viewport VulkanRenderer::getViewport () {
+			return viewport;
+		}
+
 		void VulkanRenderer::beginFrame () {
 			Frame frame = device->nextFrame ();
 
@@ -699,7 +708,7 @@ namespace SEVIAN {
 
 
 
-			
+
 
 			if (1 == 2) {
 				ubo.proj = glm::ortho ( -deltaX, deltaX, 0.0f, deltaY * 2.0f );
@@ -713,7 +722,7 @@ namespace SEVIAN {
 			//camera.proj = glm::ortho ( 0.0f, deltaX * 2.0f, -deltaY, deltaY, -1.0f, 1.0f );
 			ubo.proj[1][1] *= -1;
 
-			
+
 
 			memcpy ( uniformBuffersMapped, &ubo, sizeof ( ubo ) );
 		}
@@ -752,7 +761,7 @@ namespace SEVIAN {
 
 				Frame frame = device->getFrame ();
 				updateUniformBuffer1 ( element->ubo[frameIndex].buffersMapped, glm::vec3 ( 0.0f ), width, height );
-				
+
 				VkBuffer vertexBuffers[] = { element->vertexBuffer.buffer };
 				VkDeviceSize offsets[] = { 0 };
 
@@ -796,11 +805,74 @@ namespace SEVIAN {
 			}
 		}
 
+		void VulkanRenderer::draw ( std::shared_ptr<RENDERER::IRenderizable> object, Camera2D camera ) {
+
+			auto element = std::dynamic_pointer_cast<VKElement>(object);
+
+			if (element) {
+				if (!element->pipeline) {
+					return;
+				}
+
+				uint32_t frameIndex = device->currentIndex ();
+
+				Frame frame = device->getFrame ();
+				auto& elementFrame = element->frames[frameIndex];
+
+				vkCmdBindPipeline ( frame.commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, element->pipeline );
+
+				VkBuffer vertexBuffers[] = { element->vertexBuffer.buffer };
+				VkDeviceSize offsets[] = { 0 };
+
+				for (auto& f : elementFrame.memoryData) {
+
+					auto ubo = element->getData ( f.first );
+
+					//UniformBufferObject ubo2 = static_cast<UniformBufferObject>(ubo);
+                    // Reemplaza la línea problemática con un constructor adecuado
+                    //UniformBufferObject ubo2 = *static_cast<UniformBufferObject*>(ubo);
+					if (ubo) {
+						memcpy ( f.second.buffersMapped, ubo, sizeof ( UniformBufferObject ) );
+					}
+
+
+				}
+
+				for (auto& p : element->pushConstantsInfo) {
+
+					auto pushData = element->getData ( p->id );
+
+
+					
+					//SEVIAN::Border border {};
+				
+					//border.color = glm::vec4 ( 0.2f, 0.3f, 0.5f, 1.0f );
+
+
+					vkCmdPushConstants ( frame.commandBuffer, element->pipelineLayout, p->stage, p->offset, p->size, pushData );
+
+				}
+
+				
+
+				vkCmdBindVertexBuffers ( frame.commandBuffer, 0, 1, vertexBuffers, offsets );
+				//vkCmdBindIndexBuffer(commandBuffer, indices.buffer, 0, VK_INDEX_TYPE_UINT16);
+				vkCmdBindIndexBuffer ( frame.commandBuffer, element->indicesBuffer.buffer, 0, VK_INDEX_TYPE_UINT32 );
+
+				vkCmdBindDescriptorSets ( frame.commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, element->pipelineLayout, 0, 1, &element->frames[frameIndex].descriptorSets[0], 0, nullptr );
+				vkCmdDrawIndexed ( frame.commandBuffer, static_cast<uint32_t>(element->indicesSizes), 1, 0, 0, 0 );
+
+				//element->render ( frame.commandBuffer, frameIndex, camera );
+				for (auto& _element : element->childs) {
+					draw ( _element, camera );
+				}
+			}
+		}
+
 		void VulkanRenderer::draw ( std::shared_ptr<RENDERER::RenderObject> object, RENDERER::GlobalInfo info ) {
 
 
 			for (auto& _element : object->elements) {
-
 
 				//auto element = std::dynamic_pointer_cast<Element1>(_element);
 
@@ -811,8 +883,6 @@ namespace SEVIAN {
 					Frame frame = device->getFrame ();
 					updateUniformBuffer1 ( element->ubo[frameIndex].buffersMapped, glm::vec3 ( 0.0f ), width, height );
 
-
-
 					VkBuffer vertexBuffers[] = { element->vertexBuffer.buffer };
 					VkDeviceSize offsets[] = { 0 };
 
@@ -820,15 +890,11 @@ namespace SEVIAN {
 					vkCmdBindVertexBuffers ( frame.commandBuffer, 0, 1, vertexBuffers, offsets );
 					//vkCmdBindIndexBuffer(commandBuffer, indices.buffer, 0, VK_INDEX_TYPE_UINT16);
 					vkCmdBindIndexBuffer ( frame.commandBuffer, element->indicesBuffer.buffer, 0, VK_INDEX_TYPE_UINT32 );
-
+					//vkCmdBindIndexBuffer(command_buffer, rb->IndexBuffer, 0, sizeof(ImDrawIdx) == 2 ? VK_INDEX_TYPE_UINT16 : VK_INDEX_TYPE_UINT32);
 					vkCmdBindDescriptorSets ( frame.commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, element->pipelineLayout, 0, 1, &element->descriptorSets[frameIndex], 0, nullptr );
 					vkCmdDrawIndexed ( frame.commandBuffer, static_cast<uint32_t>(element->indicesSizes), 1, 0, 0, 0 );
 				}
 			}
-
-
-
-
 		}
 
 

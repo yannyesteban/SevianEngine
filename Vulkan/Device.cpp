@@ -285,6 +285,17 @@ namespace SEVIAN {
 			return buffers;
 		}
 
+
+		VulkanUBuffer Device::createUniform ( VkDeviceSize bufferSize ) {
+
+			VulkanUBuffer buffers;
+
+			createBuffer ( bufferSize, VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, buffers.buffers, buffers.buffersMemory );
+			vkMapMemory ( device, buffers.buffersMemory, 0, bufferSize, 0, &buffers.buffersMapped );
+
+			return buffers;
+		}
+
 		void Device::createCommandBuffers ( std::vector<Frame>& frames, VkCommandPool commandPool ) {
 			std::vector<VkCommandBuffer> commandBuffers;
 			commandBuffers.resize ( frames.size () );

@@ -12,6 +12,76 @@
 
 namespace SEVIAN {
     namespace VULKAN {
+        enum class ResourceType
+        {
+            Descriptor,
+            Pushconstant
+        };
+        struct Resource
+        {
+            RENDERER::DataResource id = RENDERER::DataResource::NONE;
+
+            virtual ~Resource () = default;
+            ResourceType resourceType;
+
+            ResourceType getType () {
+                return resourceType;
+            }
+        };
+
+
+        struct DescriptorBinding : Resource
+        {
+            RENDERER::DataResource id = RENDERER::DataResource::NONE;
+            VkDescriptorType type;
+            uint32_t set;
+            uint32_t binding;
+            VkShaderStageFlagBits stage;
+
+
+            DescriptorBinding ( RENDERER::DataResource id, VkDescriptorType type, uint32_t set, uint32_t binding, VkShaderStageFlagBits stage ) :
+                id ( id ), type ( type ), set ( set ), binding ( binding ), stage ( stage ) {
+            };
+
+        private:
+            ResourceType resourceType = ResourceType::Descriptor;
+        };
+        struct PushConstantInfo : Resource
+        {
+            RENDERER::DataResource id = RENDERER::DataResource::NONE;
+            VkShaderStageFlags stage;
+            uint32_t size;
+            uint32_t offset;
+
+            PushConstantInfo ( RENDERER::DataResource id, VkShaderStageFlags stage, uint32_t size, uint32_t offset ) :id ( id ), stage ( stage ), size ( size ), offset ( offset ) { };
+
+        private:
+            ResourceType resourceType = ResourceType::Pushconstant;
+        };
+
+        struct DescriptorRecord
+        {
+            std::vector<DescriptorBinding> bindings;
+
+            void add ( RENDERER::DataResource id, VkDescriptorType type, uint32_t set, uint32_t binding, VkShaderStageFlagBits stage ) {
+                bindings.push_back ( { id, type, set, binding, stage } );
+            }
+        };
+
+
+        enum class BindType { UniformBuffer, PushConstant };
+
+        enum class RenderStage : uint32_t
+        { // Especificar el tipo subyacente
+            Vertex = 1 << 0,  // 1
+            Fragment = 1 << 1, // 2
+            Geometry = 1 << 2, // 4
+            Compute = 1 << 3,  // 8
+            // ... otros stages ...
+        };
+        inline RenderStage operator|( RenderStage a, RenderStage b ) {
+            return static_cast<RenderStage>(static_cast<uint32_t>(a) | static_cast<uint32_t>(b));
+        }
         
 
         struct SwapChainSupportDetails
@@ -24,8 +94,8 @@ namespace SEVIAN {
         struct VertexBuffer
         {
 
-            VkBuffer buffer;
-            VkDeviceMemory memory;
+            VkBuffer buffer = VK_NULL_HANDLE;
+            VkDeviceMemory memory = VK_NULL_HANDLE;
         };
 
         struct VulkanUBuffer
@@ -35,7 +105,11 @@ namespace SEVIAN {
             void* buffersMapped;
         };
 
-      
+        struct FrameData
+        {
+            std::unordered_map<RENDERER::DataResource, VulkanUBuffer> memoryData;
+            std::vector<VkDescriptorSet> descriptorSets;
+        };
 
         struct Element1 : public SEVIAN::RENDERER::iElement
         {
@@ -102,6 +176,7 @@ namespace SEVIAN {
         };
 
         enum TypeLayout { UNIFORM_BUFFER, IMAGE_SAMPLER };
+        
         struct Frame
         {
             VkDescriptorSet descriptorSet;
@@ -136,19 +211,6 @@ namespace SEVIAN {
             VkDescriptorType descriptorType; // Tipo de descriptor
             uint32_t binding;               // Índice de binding
         };
-
-        struct DescriptorSetInfo
-        {
-            VkDescriptorType descriptorType; // Tipo de descriptor
-            std::vector<VulkanUBuffer>& buffers;
-            VkDeviceSize range = 0;             // Tamaño del rango del buffer
-
-            VkImageView imageView = VK_NULL_HANDLE;
-            VkSampler sampler = VK_NULL_HANDLE;
-            uint32_t binding;               // Índice de binding
-            VkImageLayout imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
-        };
-
         struct VulkanTexture
         {
             const char* id;
@@ -162,6 +224,36 @@ namespace SEVIAN {
             int texChannels;
 
         };
+
+
+        struct DescriptorSetDataInfo
+        {
+            RENDERER::DataResource id = RENDERER::DataResource::NONE;
+            uint32_t binding;               // Índice de binding
+            VkDescriptorType descriptorType; // Tipo de descriptor
+           
+            VkDeviceSize bufferSize = 0;             // Tamaño del rango del buffer
+            VulkanTexture*  texture;
+            //VkImageView imageView = VK_NULL_HANDLE;
+            //VkSampler sampler = VK_NULL_HANDLE;
+            
+            VkImageLayout imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+        };
+
+        struct DescriptorSetInfo
+        {
+		
+            VkDescriptorType descriptorType; // Tipo de descriptor
+            std::vector<VulkanUBuffer>& buffers;
+            VkDeviceSize range = 0;             // Tamaño del rango del buffer
+
+            VkImageView imageView = VK_NULL_HANDLE;
+            VkSampler sampler = VK_NULL_HANDLE;
+            uint32_t binding;               // Índice de binding
+            VkImageLayout imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+        };
+
+        
 
         struct Vertex2
         {

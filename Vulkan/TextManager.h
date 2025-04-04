@@ -7,8 +7,9 @@
 #include "TextureManager.h"
 #include "TextEntity.h"
 //#include "RenderInterface.h"
+#include "VulkanRendererManager.h"
 namespace SEVIAN::VULKAN {
-    class TextManager : public RENDERER::iTextManager
+    class TextManager : public RENDERER::iTextManager, public VulkanRendererManager
     {
     private:
 		VulkanInfo vulkan;

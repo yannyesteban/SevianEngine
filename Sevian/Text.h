@@ -105,10 +105,7 @@ namespace SEVIAN {
 			void render ();
 			void render2 ();
 		};
-		class Layout
-		{
-			std::vector<Box> boxes;
-		};
+		
 	}
 
 
