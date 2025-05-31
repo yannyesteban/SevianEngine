@@ -54,7 +54,8 @@ namespace SEVIAN {
 
 			Device ( VkPhysicalDevice pPhysicalDevice, VkDevice pDevice, VkQueue pGraphicsQueue );
 			VkDescriptorSetLayout createDescriptorSetLayout ();
-			VkDescriptorSetLayout createDescriptorSetLayout ( std::vector <DescriptorSetLayoutInfo> info );
+			VkDescriptorSetLayout createDescriptorSetLayout ( std::vector<DescriptorSetLayoutInfo> info );
+			VkDescriptorSetLayout createDescriptorSetLayout ( std::vector<DescriptorBinding*> info );
 
 			VkDescriptorPool createDescriptorPool ();
 			void createUniformBuffers ( Frame& frame, VkDeviceSize bufferSize );
@@ -69,6 +70,8 @@ namespace SEVIAN {
 			std::vector<VkDescriptorSet> createDescriptorSets ( std::vector <DescriptorSetInfo> info );
 			std::vector<VkDescriptorSet> createDescriptorSets ( VkDescriptorSetLayout descriptorSetLayout, std::vector <DescriptorSetInfo> info );
 
+			std::vector<VkPushConstantRange> createPushConstantRange ( std::vector<PushConstantInfo*> pushConstantsInfo );
+
 			VkFormat findSupportedFormat ( const std::vector<VkFormat>& candidates, VkImageTiling tiling, VkFormatFeatureFlags features );
 			VkFormat findDepthFormat ();
 			VkFormat findShadowMapFormat ();
@@ -77,6 +80,7 @@ namespace SEVIAN {
 
 
 			VkPipelineLayout createPipelineLayout ( std::vector<VkDescriptorSetLayout> descriptorSetLayouts );
+			VkPipelineLayout createPipelineLayout ( std::vector<VkDescriptorSetLayout> layouts, std::vector<VkPushConstantRange> pushConstantRangesVector );
 
 			VkPipeline createGraphicsPipeline ( VkVertexInputBindingDescription bindingDescription,
 				std::vector < VkVertexInputAttributeDescription> attributeDescriptions, VkDescriptorSetLayout& descriptorSetLayout );

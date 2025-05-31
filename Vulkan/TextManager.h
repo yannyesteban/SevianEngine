@@ -8,10 +8,21 @@
 #include "TextEntity.h"
 //#include "RenderInterface.h"
 #include "VulkanRendererManager.h"
+#include "ResourceData.h"
+
+
 namespace SEVIAN::VULKAN {
-    class TextManager : public RENDERER::iTextManager, public VulkanRendererManager
+
+    class TextManager : public RENDERER::iTextManager
     {
+
+	private:
+		std::shared_ptr<ResourceData> resourceData;
+		std::vector<std::vector<DescriptorBinding*>> descriptorInfo;
     private:
+
+
+
 		VulkanInfo vulkan;
 		VkDescriptorSetLayout descriptorSetLayout = VK_NULL_HANDLE;
 

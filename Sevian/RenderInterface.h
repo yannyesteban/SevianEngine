@@ -5,7 +5,7 @@
 #include <memory>
 #include "Vertex.h"
 #include "TextEngine.h"
-#include "iRenderManager.h"
+#include "iObjectManager.h"
 #include "Text.h"
 #include <typeindex>
 
@@ -185,7 +185,7 @@ namespace SEVIAN {
 
         };
 
-        class iTextManager : public iRenderManager
+        class iTextManager : public ObjectManager
         {
         public:
             //virtual ~iTextManager () = default;
@@ -197,14 +197,14 @@ namespace SEVIAN {
 
         };
 
-        class iSpriteManager : public iRenderManager
+        class iSpriteManager : public ObjectManager
         {
         public:
             virtual std::unique_ptr<IRenderizable> createSprite ( SEVIAN::SpriteInfo info ) = 0;
 
         };
 
-        class iWidgetManager : public iRenderManager
+        class iWidgetManager : public ObjectManager
         {
         public:
             virtual std::unique_ptr<IRenderizable> createSprite ( SEVIAN::SpriteInfo info ) = 0;
@@ -271,7 +271,9 @@ namespace SEVIAN {
         class RenderInterface
         {
         private:
-            std::unordered_map<std::type_index, std::unique_ptr<RENDERER::iRenderManager>> managers;
+            std::unordered_map<std::type_index, std::unique_ptr<RENDERER::ObjectManager>> managers;
+
+
 
             std::string testValue = "Esteban";
         public:
@@ -330,16 +332,35 @@ namespace SEVIAN {
             virtual Viewport getViewport () = 0;
 
             template<typename T, typename T2, typename... Args>
+            void registerManager2 ( Args&&... args ) {
+                auto type = std::type_index ( typeid(T) );
+                /*
+                 std::unordered_map<std::type_index, std::unique_ptr<RENDERER::iRenderManager>> managers;
+                 */
+                managers[type] = std::make_unique<T2> ( std::forward<Args> ( args )... );
+            }
+
+            template<typename T, typename T2, typename... Args>
             void registerManager ( Args&&... args ) {
                 auto type = std::type_index ( typeid(T) );
                 managers[type] = std::make_unique<T2> ( std::forward<Args> ( args )... );
             }
+            
 
             template<typename T>
             T* getManager () {
                 auto it = managers.find ( std::type_index ( typeid(T) ) );
                 if (it != managers.end ()) {
                     return static_cast<T*>(it->second.get ());
+                }
+                throw std::runtime_error ( "Manager not registered" );
+            }
+
+            template<typename T>
+            T* getManager2 () {
+                auto it = managers.find ( std::type_index ( typeid(T) ) );
+                if (it != managers.end ()) {
+                    return dynamic_cast<T*>(it->second.get ());
                 }
                 throw std::runtime_error ( "Manager not registered" );
             }

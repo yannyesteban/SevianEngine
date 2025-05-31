@@ -105,7 +105,7 @@
       <PreprocessorDefinitions>_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <LanguageStandard>stdcpp17</LanguageStandard>
-      <AdditionalIncludeDirectories>C:\source\lib\glfw-3.3.8\include;C:\source\glm;C:\Users\yanny\Downloads\opencv\build\include;C:\vcpkg\packages\msdfgen_x64-windows\include\msdfgen</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>C:\source\lib\glfw-3.3.8\include;C:\source\lib\glm;C:\source\lib\opencv\x;C:\source\lib\opencv\build\include;C:\vcpkg\packages\msdfgen_x64-windows\include\msdfgen</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -143,6 +143,7 @@
     <ClInclude Include="FontManager.h" />
     <ClInclude Include="IInputManager.h" />
     <ClInclude Include="IPipeline.h" />
+    <ClInclude Include="iObjectManager.h" />
     <ClInclude Include="iRenderManager.h" />
     <ClInclude Include="Render.h" />
     <ClInclude Include="RendererFactory.h" />

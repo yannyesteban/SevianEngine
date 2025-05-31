@@ -3,12 +3,7 @@
 namespace SEVIAN::WIDGET {
 
 
-
-
-
-
-	Block::Block ( RENDERER::Viewport viewport ) : viewport ( viewport ) {
-	}
+	Block::Block ( RENDERER::Viewport viewport ) : viewport ( viewport ) { 	}
 
 	void Block::arrange ( Widget* widget ) {
 		container = widget;
@@ -72,7 +67,7 @@ namespace SEVIAN::WIDGET {
 		if (container->id == "root") {
 			std::cout << container->id << "\n";
 		}
-		if (container->id == "ref") {
+		if (container->id == "text1") {
 			std::cout << container->id << "\n";
 		}
 

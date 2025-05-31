@@ -262,7 +262,7 @@ namespace SEVIAN {
 
             MeshManager* meshManager;
             //std::unique_ptr<MeshManager> meshManager;
-            std::unordered_map<std::type_index, std::unique_ptr<RENDERER::iRenderManager>> managers;
+            std::unordered_map<std::type_index, std::unique_ptr<RENDERER::ObjectManager>> managers;
 
 
            

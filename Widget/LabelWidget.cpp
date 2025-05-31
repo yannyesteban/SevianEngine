@@ -3,7 +3,7 @@
 
 
 namespace SEVIAN::WIDGET {
-	TextWidget::TextWidget ( std::shared_ptr<RENDERER::RenderInterface> render, TextInfo _info ) :
+	LabelWidget::LabelWidget ( std::shared_ptr<RENDERER::RenderInterface> render, TextInfo _info ) :
 		renderer ( render->getManager<RENDERER::iTextManager> () ), box ( { _info.width, _info.height } ) {
 	
 		position.x = info.x;
@@ -25,7 +25,7 @@ namespace SEVIAN::WIDGET {
 
 	
 
-	void TextWidget::update ( float deltaTime ) {
+	void LabelWidget::update ( float deltaTime ) {
 	}
 	
 	

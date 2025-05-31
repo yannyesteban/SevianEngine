@@ -4,11 +4,26 @@
 
 namespace SEVIAN::VULKAN {
 
-	SpriteManager::SpriteManager ( VulkanInfo vulkan ) :device ( vulkan.device ), descriptorPool ( vulkan.descriptorPool ), frames ( vulkan.frames ) {
-		setDescriptorSetLayout ();
-		setPipelineLayout ();
-		setGraphPipeline ();
-	}
+	SpriteManager::SpriteManager ( std::shared_ptr<VulkanRenderer> renderer ) :device ( renderer->device ), descriptorPool ( renderer->descriptorPool ), frames ( renderer->frames ) {
+
+		resourceData = std::make_shared<ResourceData> ( device );
+
+		resourceData->addResourceData ( RENDERER::DataResource::TRANSFORM, 0, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 0, VK_SHADER_STAGE_VERTEX_BIT );
+		resourceData->addResourceData ( RENDERER::DataResource::TEXTURE, 0, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 1, VK_SHADER_STAGE_FRAGMENT_BIT );
+
+		resourceData->addPushConstant ( RENDERER::DataResource::STYLE, VK_SHADER_STAGE_FRAGMENT_BIT, sizeof ( StyleUbo ), 0 );
+
+		resourceData->init ();
+
+		pipeline = createGraphPipeline (
+			QVertex::getBindingDescription (),
+			QVertex::getAttributeDescriptions (),
+			resourceData->pipelineLayout,
+			"shaders/Sprite2D.vert.spv",
+			"shaders/Sprite2D.frag.spv"
+		);
+	};
+
 
 
 	std::unique_ptr<RENDERER::IRenderizable> SpriteManager::createSprite ( SEVIAN::SpriteInfo info ) {
@@ -52,35 +67,37 @@ namespace SEVIAN::VULKAN {
 			0, 2, 3,
 			0, 1, 2
 		};
-		//std::vector<::VULKAN::VulkanUBuffer> ubo = vulkan.device->createUniformBuffer ( vulkan.device->frames, sizeof ( UniformBufferObject ) );
-		ubo = device->createUniformBuffer ( device->frames, sizeof ( UniformBufferObject ) );
-		
-		element->ubo = ubo;
-		
+
+		element->frames.resize ( MAX_FRAMES_IN_FLIGHT );
 		auto texture = device->createTexture ( "textures/aTravel.jpeg" );
-		std::vector<DescriptorSetInfo> descriptorSetsInfo;
-		descriptorSetsInfo.push_back ( { VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, ubo, sizeof ( UniformBufferObject ), VK_NULL_HANDLE, VK_NULL_HANDLE, 0 } );
+		auto texture_ptr = texture.get ();
+		for (auto& descriptor : resourceData->descriptorInfo) {
 
-		descriptorSetsInfo.push_back ( { VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, ubo, sizeof ( UniformBufferObject ), texture->imageView, texture->sampler, 1 } );
+			std::vector < DescriptorSetDataInfo > dataInfo;
+			for (auto& _info : descriptor) {
+				if (_info->type == VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER) {
+					dataInfo.push_back ( { _info->id, _info->binding, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, sizeof ( UniformBufferObject ), nullptr, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL } );
+				}
+				else if (_info->type == VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER) {
+					dataInfo.push_back ( { _info->id, _info->binding, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 0, texture_ptr, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL } );
+				}
 
-		
+			}
+
+			resourceData->createDescriptorSets ( element->frames, descriptorPool, resourceData->descriptorSetLayout, dataInfo );
+		}
 
 		element->pipeline = pipeline;
-		element->pipelineLayout = pipelineLayout;
-
-		element->descriptorSets = device->createDescriptorSets ( descriptorSetLayout, descriptorSetsInfo );
-
+		element->pipelineLayout = resourceData->pipelineLayout;
+		element->pushConstantsInfo = resourceData->pushConstantsInfo;
 
 		element->vertexBuffer = device->createDataBuffer ( (void*) vertices.data (), sizeof ( vertices[0] ) * vertices.size (), VK_BUFFER_USAGE_VERTEX_BUFFER_BIT );
 		element->indicesBuffer = device->createDataBuffer ( (void*) indices.data (), sizeof ( indices[0] ) * indices.size (), VK_BUFFER_USAGE_INDEX_BUFFER_BIT );
 
 		element->indicesSizes = indices.size ();
 
-		//RENDERER::iElement elementData = static_cast<RENDERER::iElement> ( element );
 
-		//object->elements.push_back ( static_cast<std::shared_ptr<RENDERER::iElement>> (element) );
-		//object
-
+		
 
 		return element;
 
@@ -88,38 +105,6 @@ namespace SEVIAN::VULKAN {
 		
 	}
 
-	
-
-	void SpriteManager::setDescriptorSetLayout () {
-
-		std::vector<DescriptorSetLayoutInfo> bufDSLInfo;
-		bufDSLInfo.push_back ( { VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 0 } );
-		bufDSLInfo.push_back ( { VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 1 } );
-
-		descriptorSetLayout = device->createDescriptorSetLayout ( bufDSLInfo );
-
-
-	}
-
-	void SpriteManager::setPipelineLayout () {
-
-		std::vector<VkDescriptorSetLayout> layouts = { descriptorSetLayout };
-		pipelineLayout = device->createPipelineLayout ( layouts );
-	}
-
-	void SpriteManager::setGraphPipeline () {
-
-		std::vector<VkDescriptorSetLayout> layouts = { descriptorSetLayout };
-		pipelineLayout = device->createPipelineLayout ( layouts );
-		pipeline = createGraphPipeline (
-			QVertex::getBindingDescription (),
-			QVertex::getAttributeDescriptions (),
-			pipelineLayout,
-			"shaders/Sprite2D.vert.spv",
-			"shaders/Sprite2D.frag.spv"
-		);
-
-	}
 
 	VkPipeline SpriteManager::createGraphPipeline (
 

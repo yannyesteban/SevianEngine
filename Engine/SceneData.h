@@ -4,7 +4,7 @@
 #include <assimp/scene.h>          // Output data structure
 #include <assimp/postprocess.h>    // Post processing flags
 #include <iostream>
-#include "Vertex.h"
+//#include "Vertex.h"
 #include "Entity.h"
 #include "Scene.h"
 #include "models.h" 

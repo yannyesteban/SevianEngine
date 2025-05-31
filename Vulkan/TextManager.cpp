@@ -25,27 +25,23 @@ namespace SEVIAN {
 		}
 
 		TextManager::TextManager ( std::shared_ptr<VulkanRenderer> renderer ) :device ( renderer->device ), descriptorPool ( renderer->descriptorPool ), frames ( renderer->frames ) {
-			std::vector<DescriptorSetLayoutInfo> bufDSLInfo;
-			bufDSLInfo.push_back ( { VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 0 } );
-			bufDSLInfo.push_back ( { VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 1 } );
 
-			descriptorSetLayout = device->createDescriptorSetLayout ( bufDSLInfo );
-			//ubo = device->createUniformBuffer ( device->frames, sizeof ( UniformBufferObject ) );
+			resourceData = std::make_shared<ResourceData> ( device );
 
-			std::vector<VkDescriptorSetLayout> layouts = { descriptorSetLayout };
-			pipelineLayout = device->createPipelineLayout ( layouts );
+			resourceData->addResourceData ( RENDERER::DataResource::TRANSFORM, 0, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 0, VK_SHADER_STAGE_VERTEX_BIT );
+			resourceData->addResourceData ( RENDERER::DataResource::TEXTURE, 0, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 1, VK_SHADER_STAGE_FRAGMENT_BIT );
 
+			//resourceData->addPushConstant ( RENDERER::DataResource::STYLE, VK_SHADER_STAGE_FRAGMENT_BIT, sizeof ( StyleUbo ), 0 );
+
+			resourceData->init ();
 			pipeline = createGraphPipeline (
 				VertexText::getBindingDescription (),
 				VertexText::getAttributeDescriptions (),
-				pipelineLayout,
+				resourceData->pipelineLayout,
 				"shaders/msdf.vert.spv",
 				"shaders/msdf.frag.spv"
 			);
 		}
-
-
-
 
 		void TextManager::addFont ( Font font, bool setDefault = false ) {
 
@@ -113,6 +109,7 @@ namespace SEVIAN {
 
 		std::unique_ptr<RENDERER::IRenderizable> TextManager::createText ( float x, float y, std::vector<Quad> quads, std::string textureName ) {
 
+			auto element = std::make_unique<VKElement> ();
 			uint32_t indexOffset = 0;
 			std::vector<VertexText> vertices;
 			std::vector<uint32_t> indices;
@@ -164,50 +161,33 @@ namespace SEVIAN {
 				//x += quad.advance;
 			}
 
-
+			element->frames.resize ( MAX_FRAMES_IN_FLIGHT );
 			texture = getTexture ( textureName );
 
-			auto element = std::make_unique<VKElement> ();
-			//auto element = std::make_shared<Element1> ();
+			for (auto& descriptor : resourceData->descriptorInfo) {
 
+				std::vector < DescriptorSetDataInfo > dataInfo;
+				for (auto& _info : descriptor) {
+					if (_info->type == VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER) {
+						dataInfo.push_back ( { _info->id, _info->binding, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, sizeof ( UniformBufferObject ), nullptr, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL } );
+					}
+					else if (_info->type == VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER) {
+						dataInfo.push_back ( { _info->id, _info->binding, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 0, &texture, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL } );
+					}
 
-			auto vulkanProp = std::make_shared<VulkanProperty> ();
+				}
 
-			std::vector<VulkanUBuffer>  ubo2 = device->createUniformBuffer ( sizeof ( UniformBufferObject ) );
-
-			element->ubo = ubo2;
+				resourceData->createDescriptorSets ( element->frames, descriptorPool, resourceData->descriptorSetLayout, dataInfo );
+			}
 			element->pipeline = pipeline;
-			element->pipelineLayout = pipelineLayout;
-
-			//vulkanProp->descriptorSets = device->createDescriptorSets ( x, texture.textureImageView, texture.textureSampler, sizeof ( UniformBufferObject2 ) );
-
-			std::vector<DescriptorSetInfo> bufDSInfo;
-			bufDSInfo.push_back ( { VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, ubo2, sizeof ( UniformBufferObject ), VK_NULL_HANDLE, VK_NULL_HANDLE, 0 } );
-
-			//std::vector<DSInfo> texDSInfo;
-			bufDSInfo.push_back ( { VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, ubo2, sizeof ( UniformBufferObject ), texture.imageView, texture.sampler, 1 } );
-
-			//auto g = device->createDescriptorSets ( propertys.bufDescriptorSetLayout, bufDSInfo );
-
-
-			element->descriptorSets = device->createDescriptorSets ( descriptorSetLayout, bufDSInfo );
-
-
-			auto attributeDescriptions = VertexText::getAttributeDescriptions ();
-			//auto pipeline = createGraphicsPipeline3 ( getBindingDescription2 (), attributeDescriptions, device->descriptorSetLayout );
-
+			element->pipelineLayout = resourceData->pipelineLayout;
+			element->pushConstantsInfo = resourceData->pushConstantsInfo;
 			element->vertexBuffer = device->createDataBuffer ( (void*) vertices.data (), sizeof ( vertices[0] ) * vertices.size (), VK_BUFFER_USAGE_VERTEX_BUFFER_BIT );
 			element->indicesBuffer = device->createDataBuffer ( (void*) indices.data (), sizeof ( indices[0] ) * indices.size (), VK_BUFFER_USAGE_INDEX_BUFFER_BIT );
 			element->indicesSizes = indices.size ();
-			//device->createDataBuffer ( (void*) vertices.data (), sizeof ( vertices[0] ) * vertices.size (), VK_BUFFER_USAGE_VERTEX_BUFFER_BIT );
 
-			//vulkanProp->pipeline = pipeline.pipeline;
-			//vulkanProp->pipelineLayout = pipeline.pipelineLayout;
-			//vulkanProp->buffers = ubo2;
-
-
-
-
+			
+			
 			return element;
 
 

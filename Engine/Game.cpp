@@ -18,6 +18,7 @@
 #include "Label.h"
 #include "ButtonWidget.h"
 #include "FontManager.h"
+#include "TextWidget.h"
 #include <Stack.h>
 //#include "SpriteManager.h"
 
@@ -50,8 +51,8 @@ int SEVIAN::Game::play () {
 	glfwSetMouseButtonCallback ( window, Tools::MouseButtonCallback );
 	glfwSetScrollCallback ( window, Tools::ScrollCallback );
 
-	if (1 == 2) {
-		FONT::Manager::createFont ( "arial", "C:\\source\\2024\\Sevian\\Engine\\fonts\\arial.ttf" );
+	if (1 == 1) {
+		FONT::Manager::createFont ( "arial", "C:\\source\\Sevian\\Engine\\fonts\\arial.ttf" );
 		//FONT::Manager::createFont ( "arialbd", "C:\\source\\2024\\Sevian\\Engine\\fonts\\arialbd.ttf" );
 		//FONT::Manager::createFont ( "baily", "C:\\source\\2024\\Sevian\\Engine\\fonts\\baily.ttf" );
 		//FONT::Manager::createFont ( "hemihead", "C:\\source\\2024\\Sevian\\Engine\\fonts\\hemihead.ttf" );
@@ -68,11 +69,19 @@ int SEVIAN::Game::play () {
 
 
 		//render->registerManager<VULKAN::SpriteManager, VULKAN::SpriteManager> ( std::dynamic_pointer_cast<VULKAN::VulkanRenderer>(render) );
-		render->registerManager<RENDERER::iSpriteManager, VULKAN::SpriteManager> ( std::dynamic_pointer_cast<VULKAN::VulkanRenderer>(render) );
+
+
+
+
 		render->registerManager<RENDERER::iWidgetManager, VULKAN::WidgetRenderer> ( std::dynamic_pointer_cast<VULKAN::VulkanRenderer>(render) );
+
+
+
+		render->registerManager<RENDERER::iSpriteManager, VULKAN::SpriteManager> ( std::dynamic_pointer_cast<VULKAN::VulkanRenderer>(render) );
+
 		//render->registerManager<VULKAN::TextManager> ( INFO );
 
-		if (1 == 2) {
+		if (1 == 1) {
 			render->registerManager<RENDERER::iTextManager, VULKAN::TextManager> ( std::dynamic_pointer_cast<VULKAN::VulkanRenderer>(render) );
 			auto r = render->getManager<RENDERER::iTextManager> ();
 			r->addFont ( FONT::Manager::getFont ( "arial" ), true );
@@ -120,6 +129,7 @@ int SEVIAN::Game::play () {
 	//bodyBackground->backGroundColor = Colors::Yellow;
 
 	auto ref = std::make_unique<WIDGET::Stack> ( render );
+	
 	ref->id = "ref";
 	auto refStyle = ref->addStyle<WIDGET::LayoutComponent> ();
 	auto refBackground = ref->addStyle<WIDGET::BackgroundComponent> ();
@@ -168,11 +178,16 @@ int SEVIAN::Game::play () {
 	stackStyle->border = Border ( 10.0f, BorderStyle::Solid, Colors::rgb ( 202, 198, 198 ), 0.0f );
 
 	auto stackBackground = stack->addStyle<WIDGET::BackgroundComponent> ();
-	stackBackground->backGroundColor = Colors::rgb ( 244, 41, 180 );
+	stackBackground->backGroundColor = Colors::rgb ( 144, 41, 180 );
 
 
 	auto label1 = std::make_unique<WIDGET::Label> ( render, "Hello!" );
 	label1->id = "label1";
+
+
+	auto text1 = std::make_unique<WIDGET::TextWidget> ( render, "Hello!" );
+	text1->id = "text1";
+	stack->appendChild ( std::move ( text1 ) );
 
 	//stack->appendChild ( std::move ( label1 ) );
 

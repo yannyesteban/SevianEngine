@@ -21,6 +21,8 @@
   <ItemGroup>
     <ClInclude Include="Device.h" />
     <ClInclude Include="Form.h" />
+    <ClInclude Include="RenderEngine.h" />
+    <ClInclude Include="ResourceData.h" />
     <ClInclude Include="VulkanRendererManager.h" />
     <ClInclude Include="MeshManager.h" />
     <ClInclude Include="Entity.h" />
@@ -45,6 +47,8 @@
   <ItemGroup>
     <ClCompile Include="Device.cpp" />
     <ClCompile Include="Form.cpp" />
+    <ClCompile Include="RenderEngine.cpp" />
+    <ClCompile Include="ResourceData.cpp" />
     <ClCompile Include="VulkanRendererManager.cpp" />
     <ClCompile Include="MeshManager.cpp" />
     <ClCompile Include="Entity.cpp" />
@@ -151,7 +155,7 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>C:\source\2024\Sevian\Sevian;C:\VulkanSDK\1.3.283.0\Include;C:\source\glm;C:\source\lib\glfw-3.3.8\include;C:\source\lib\stb-master;C:\source\lib\freetype-2.13.2\include;C:\Users\yanny\Downloads\opencv\build\include;C:\source\lib\tinyobjloader;C:\vcpkg\packages\msdfgen_x64-windows\include\msdfgen;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)\Sevian;C:\VulkanSDK\1.4.309.0\Include;C:\source\lib\glm;C:\source\lib\glfw-3.3.8\include;C:\source\lib\stb-master;C:\source\lib\freetype-2.13.2\include;C:\source\lib\opencv\build\include;C:\source\lib\tinyobjloader;C:\vcpkg\packages\msdfgen_x64-windows\include\msdfgen;C:\source\lib\assimp\X\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <LanguageStandard>stdcpp17</LanguageStandard>
     </ClCompile>
     <Link>

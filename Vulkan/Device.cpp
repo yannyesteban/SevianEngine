@@ -173,6 +173,36 @@ namespace SEVIAN {
 
 			return descriptorSetLayout1;
 		}
+		
+		VkDescriptorSetLayout Device::createDescriptorSetLayout ( std::vector<DescriptorBinding*> info )
+		{
+			VkDescriptorSetLayout descriptorSetLayout;
+
+			std::vector<VkDescriptorSetLayoutBinding> bindings = {  };
+
+			for (const auto& _info : info) {
+				VkDescriptorSetLayoutBinding layoutBinding {};
+				layoutBinding.binding = _info->binding;
+				layoutBinding.descriptorCount = 1;
+				layoutBinding.descriptorType = _info->type;
+				layoutBinding.pImmutableSamplers = nullptr;
+				layoutBinding.stageFlags = _info->stage;
+				bindings.push_back ( layoutBinding );
+			}
+
+			VkDescriptorSetLayoutCreateInfo layoutInfo {};
+
+			layoutInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;
+			layoutInfo.bindingCount = static_cast<uint32_t>(bindings.size ());
+			layoutInfo.pBindings = bindings.data ();
+
+			if (vkCreateDescriptorSetLayout ( device, &layoutInfo, nullptr, &descriptorSetLayout ) != VK_SUCCESS) {
+				throw std::runtime_error ( "failed to create descriptor set layout!" );
+			}
+
+			return descriptorSetLayout;
+		}
+		
 		std::unique_ptr<VulkanTexture> Device::createTexture ( const char* src ) {
 			//VulkanTexture Device::createTexture ( const char* src ) {
 
@@ -350,6 +380,27 @@ namespace SEVIAN {
 			if (vkCreatePipelineLayout ( device, &pipelineLayoutInfo, nullptr, &pipelineLayout ) != VK_SUCCESS) {
 				throw std::runtime_error ( "failed to create pipeline layout!" );
 			}
+			return pipelineLayout;
+		}
+
+		VkPipelineLayout Device::createPipelineLayout ( std::vector<VkDescriptorSetLayout> layouts, std::vector<VkPushConstantRange> pushConstantRangesVector )
+		{
+			VkPipelineLayout pipelineLayout {};
+
+
+			VkPipelineLayoutCreateInfo pipelineLayoutInfo {};
+			pipelineLayoutInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
+			pipelineLayoutInfo.setLayoutCount = static_cast<uint32_t>(layouts.size ());
+			pipelineLayoutInfo.pSetLayouts = layouts.data ();
+
+			pipelineLayoutInfo.pushConstantRangeCount = static_cast<uint32_t>(pushConstantRangesVector.size ());
+			pipelineLayoutInfo.pPushConstantRanges = pushConstantRangesVector.data ();
+
+
+			if (vkCreatePipelineLayout ( device, &pipelineLayoutInfo, nullptr, &pipelineLayout ) != VK_SUCCESS) {
+				throw std::runtime_error ( "failed to create pipeline layout!" );
+			}
+
 			return pipelineLayout;
 		}
 
@@ -797,6 +848,23 @@ namespace SEVIAN {
 			}
 
 			return descriptorSets;
+		}
+
+		std::vector<VkPushConstantRange> Device::createPushConstantRange ( std::vector<PushConstantInfo*> pushConstantsInfo )
+		{
+			std::vector<VkPushConstantRange> pushConstantRangesVector;
+			uint32_t currentOffset = 0;
+
+			for (const auto& info : pushConstantsInfo) {
+				VkPushConstantRange pushConstantRange {};
+				pushConstantRange.stageFlags = info->stage;
+				pushConstantRange.offset = currentOffset;
+				pushConstantRange.size = info->size;
+
+				pushConstantRangesVector.push_back ( pushConstantRange );
+				currentOffset += info->size;
+			}
+			return pushConstantRangesVector;
 		}
 
 

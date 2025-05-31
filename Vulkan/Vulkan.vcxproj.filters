@@ -81,6 +81,12 @@
     <ClInclude Include="VulkanRendererManager.h">
       <Filter>Archivos de encabezado</Filter>
     </ClInclude>
+    <ClInclude Include="RenderEngine.h">
+      <Filter>Archivos de encabezado</Filter>
+    </ClInclude>
+    <ClInclude Include="ResourceData.h">
+      <Filter>Archivos de encabezado</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Renderer.cpp">
@@ -144,6 +150,12 @@
       <Filter>Archivos de origen</Filter>
     </ClCompile>
     <ClCompile Include="VulkanRendererManager.cpp">
+      <Filter>Archivos de origen</Filter>
+    </ClCompile>
+    <ClCompile Include="RenderEngine.cpp">
+      <Filter>Archivos de origen</Filter>
+    </ClCompile>
+    <ClCompile Include="ResourceData.cpp">
       <Filter>Archivos de origen</Filter>
     </ClCompile>
   </ItemGroup>

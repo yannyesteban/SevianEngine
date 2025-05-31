@@ -121,7 +121,7 @@ namespace SEVIAN {
 
 				textManager = new TextEntity ( MSDF,
 					"hola",
-					"C:\\source\\2024\\Sevian\\Engine\\fonts\\arial.ttf",
+					"C:\\source\\Sevian\\Engine\\fonts\\arial.ttf",
 					//"C:\\source\\2024\\Sevian\\Engine\\fonts\\hemi.otf",
 
 					device,

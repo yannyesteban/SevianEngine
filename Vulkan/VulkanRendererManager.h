@@ -5,7 +5,7 @@
 #include "Renderer.h"
 
 namespace SEVIAN::VULKAN {
-	class VulkanRendererManager: public RENDERER::iRenderManager
+	class VulkanRendererManager: public RENDERER::ObjectManager
 	{
 	private:
 		Device* device;

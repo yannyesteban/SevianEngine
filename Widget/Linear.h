@@ -44,7 +44,7 @@ namespace SEVIAN::WIDGET {
 	{
 	private:
 		RENDERER::Viewport viewport;
-		Widget* container;
+		Widget* container = nullptr;
 		float estimatedWidth ( float width );
 		float estimatedHeight ( float width );
 		void arrangeChilds ( float posX, float posY, float width, float height );

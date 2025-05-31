@@ -70,6 +70,9 @@
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <ExecutablePath>C:\$(sources)\lib;$(ExecutablePath)</ExecutablePath>
+  </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
       <WarningLevel>Level3</WarningLevel>
@@ -104,14 +107,14 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>C:\source\2024\Sevian\Vulkan;C:\VulkanSDK\1.3.283.0\Include;C:\source\glm;C:\source\lib\glfw-3.3.8\include;C:\source\lib\stb-master;C:\source\2024\Sevian\Sevian;C:\source\lib\freetype-2.13.2\include;C:\Users\yanny\Downloads\opencv\sources\include;C:\source\lib\json\include;C:\vcpkg\packages\msdfgen_x64-windows\include\msdfgen;C:\source\2024\Sevian\Widget;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)\Vulkan;C:\VulkanSDK\1.4.309.0\Include;C:\source\lib\glm;C:\source\lib\glfw-3.3.8\include;C:\source\lib\stb-master;$(SolutionDir)\Sevian;C:\source\lib\freetype-2.13.2\include;C:\source\lib\json\include;C:\vcpkg\packages\msdfgen_x64-windows\include\msdfgen;$(SolutionDir)\Widget;C:\source\lib\opencv\build\include;C:\source\lib\assimp\include;C:\source\lib\assimp\X\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <LanguageStandard>stdcpp17</LanguageStandard>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalLibraryDirectories>C:\source\lib\glfw-3.3.8\build\src\Release;C:\VulkanSDK\1.3.261.1\Lib;C:\source\lib\freetype-2.13.2\output\Release;C:\source\2024\Sevian\x64\Debug;C:\Users\yanny\Downloads\opencv\x\lib\Debug;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-      <AdditionalDependencies>glfw3.lib;freetype.lib;vulkan-1.lib;Vulkan.lib;opencv_core4100d.lib;opencv_dnn4100d.lib;opencv_highgui4100d.lib;opencv_imgcodecs4100d.lib;opencv_imgproc4100d.lib;opencv_ml4100d.lib;Sevian.lib;Widget.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalLibraryDirectories>C:\source\lib\glfw-3.3.8\build\src\Release;C:\VulkanSDK\1.4.309.0\Lib;C:\source\lib\freetype-2.13.2\output\Release;$(SolutionDir)x64\Debug;C:\source\lib\opencv\x\lib\Debug;C:\vcpkg\installed\x64-windows\lib;C:\source\lib\assimp\X\lib\Release;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalDependencies>glfw3.lib;freetype.lib;vulkan-1.lib;Vulkan.lib;opencv_core4100d.lib;opencv_dnn4100d.lib;opencv_highgui4100d.lib;opencv_imgcodecs4100d.lib;opencv_imgproc4100d.lib;opencv_ml4100d.lib;Sevian.lib;Widget.lib;msdfgen-core.lib;msdfgen-ext.lib;assimp-vc143-mt.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
@@ -122,7 +125,7 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>C:\source\2024\Sevian\Vulkan;C:\VulkanSDK\1.3.283.0\Include;C:\source\glm;C:\source\lib\glfw-3.3.8\include;C:\source\lib\stb-master;C:\source\2024\Sevian\Sevian;C:\source\lib\freetype-2.13.2\include;C:\Users\yanny\Downloads\opencv\build\include;C:\source\2024\Sevian\Widget;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>C:\source\2024\Sevian\Vulkan;C:\VulkanSDK\1.3.283.0\Include;C:\source\glm;C:\source\lib\glfw-3.3.8\include;C:\source\lib\stb-master;C:\source\2024\Sevian\Sevian;C:\source\lib\freetype-2.13.2\include;C:\Users\yanny\Downloads\opencv\build\include;C:\source\2024\Sevian\Widget;C:\source\lib\assimp\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <LanguageStandard>stdcpp17</LanguageStandard>
     </ClCompile>
     <Link>
