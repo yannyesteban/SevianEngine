@@ -181,11 +181,11 @@ int SEVIAN::Game::play () {
 	stackBackground->backGroundColor = Colors::rgb ( 144, 41, 180 );
 
 
-	auto label1 = std::make_unique<WIDGET::Label> ( render, "Hello!" );
+	auto label1 = std::make_unique<WIDGET::Label> ( render, "Hello1!" );
 	label1->id = "label1";
 
 
-	auto text1 = std::make_unique<WIDGET::TextWidget> ( render, "Hello!" );
+	auto text1 = std::make_unique<WIDGET::TextWidget> ( render, "Hello2!" );
 	text1->id = "text1";
 	stack->appendChild ( std::move ( text1 ) );
 
